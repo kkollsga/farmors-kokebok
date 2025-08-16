@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mine Oppskrifter - Hjemmelaget og Koselig</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-display {
+            font-family: 'Playfair Display', serif;
+        }
+        .recipe-card {
+            transition: all 0.3s ease;
+        }
+        .recipe-card:hover {
+            transform: translateY(-4px);
+        }
+        .star {
+            transition: all 0.2s ease;
+        }
+        .star:hover {
+            transform: scale(1.2);
+        }
+        .gradient-overlay {
+            background: linear-gradient(135deg, rgba(251,207,232,0.1) 0%, rgba(254,249,195,0.1) 100%);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="font-display text-3xl text-amber-800">Mine Oppskrifter</h1>
+                <div class="flex items-center space-x-4">
+                    <button onclick="showAddRecipe()" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition">
+                        + Ny Oppskrift
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Bar -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        <div class="bg-white rounded-xl shadow-sm p-4">
+            <input type="text" id="searchInput" placeholder="Søk etter oppskrifter..." 
+                   class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
+        </div>
+    </div>
+
+    <!-- Recommendations Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        <div id="recommendations" class="mb-8">
+            <h2 class="font-display text-2xl text-amber-800 mb-4">Anbefalte for deg</h2>
+            <div id="recommendedRecipes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Recommended recipes will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Recipe Grid -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-12">
+        <h2 class="font-display text-2xl text-amber-800 mb-4">Alle Oppskrifter</h2>
+        <div id="recipeGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Recipe cards will be inserted here -->
+        </div>
+    </div>
+
+    <!-- Recipe Modal -->
+    <div id="recipeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div id="modalContent">
+                    <!-- Recipe content will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Recipe Modal -->
+    <div id="addRecipeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl max-w-2xl w-full p-6">
+                <h2 class="font-display text-2xl text-amber-800 mb-4">Legg til ny oppskrift</h2>
+                <form id="addRecipeForm">
+                    <input type="text" id="newTitle" placeholder="Oppskriftens navn" class="w-full mb-3 px-4 py-2 border rounded-lg">
+                    <input type="text" id="newServings" placeholder="Porsjoner (f.eks. 16 stk.)" class="w-full mb-3 px-4 py-2 border rounded-lg">
+                    <textarea id="newIngredients" placeholder="Ingredienser (en per linje)" rows="6" class="w-full mb-3 px-4 py-2 border rounded-lg"></textarea>
+                    <textarea id="newInstructions" placeholder="Fremgangsmåte (en per linje)" rows="6" class="w-full mb-3 px-4 py-2 border rounded-lg"></textarea>
+                    <input type="url" id="newImage" placeholder="Bilde URL (valgfritt)" class="w-full mb-4 px-4 py-2 border rounded-lg">
+                    <div class="flex space-x-3">
+                        <button type="submit" class="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700">Lagre</button>
+                        <button type="button" onclick="closeAddRecipe()" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400">Avbryt</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Recipe data structure
+        let recipes = [
+            {
+                id: 1,
+                title: "Rundstykker",
+                servings: "ca. 16 stk.",
+                ingredients: [
+                    "500 g hvetemel",
+                    "1 pose tørrgjær (ca. 11 g)",
+                    "50 g smør (romtemperert eller smeltet)",
+                    "1 ½ ts salt",
+                    "2 dl melk (lunken)",
+                    "1 ½ dl vann (lunkent)",
+                    "1 ss sukker"
+                ],
+                instructions: [
+                    "Bland det tørre: Ha hvetemel, tørrgjær, salt og sukker i en stor bolle.",
+                    "Tilsett væske og smør: Bland melk og vann, og varm til ca. 37–40 °C (litt varmere enn fingervarmt for tørrgjær). Ha dette i melblandingen sammen med smøret.",
+                    "Elt deigen: Elt i kjøkkenmaskin i 8–10 minutter, eller for hånd i 12–15 minutter, til deigen er smidig og slipper bollen.",
+                    "Hev: Dekk til bollen og la deigen heve på et lunt sted i ca. 1 time, eller til den er dobbelt så stor.",
+                    "Form rundstykker: Del deigen i ca. 16 emner og trill til boller. Legg dem på et stekebrett med bakepapir.",
+                    "Etterhev: Dekk til og la rundstykkene etterheve i 30–40 minutter.",
+                    "Stek: Forvarm ovnen til 220 °C (over- og undervarme). Stek midt i ovnen i 10–12 minutter, til de er gylne og gjennomstekte.",
+                    "Avkjøl: Avkjøl på rist."
+                ],
+                rating: 4.5,
+                ratingCount: 12,
+                madeCount: 45,
+                lastViewed: null,
+                createdAt: new Date('2024-01-15'),
+                image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&h=600&fit=crop"
+            },
+            {
+                id: 2,
+                title: "Kanelboller",
+                servings: "12 stk.",
+                ingredients: [
+                    "500 g hvetemel",
+                    "1 pose tørrgjær",
+                    "2 dl melk",
+                    "100 g smør",
+                    "1 egg",
+                    "100 g sukker",
+                    "1 ts kardemomme",
+                    "Fyll: smør, sukker, kanel"
+                ],
+                instructions: [
+                    "Varm melken til fingervarm og løs opp gjæren.",
+                    "Bland inn egg, sukker og kardemomme.",
+                    "Tilsett mel gradvis og elt til smidig deig.",
+                    "La heve i 45 minutter.",
+                    "Kjevle ut, smør på fyll og rull sammen.",
+                    "Skjær i skiver og la etterheve i 30 minutter.",
+                    "Stek ved 225°C i 8-10 minutter."
+                ],
+                rating: 5,
+                ratingCount: 28,
+                madeCount: 89,
+                lastViewed: new Date('2024-12-20'),
+                createdAt: new Date('2024-01-10'),
+                image: "https://images.unsplash.com/photo-1609126901738-d2134918a689?w=800&h=600&fit=crop"
+            },
+            {
+                id: 3,
+                title: "Focaccia",
+                servings: "1 langpanne",
+                ingredients: [
+                    "500 g hvetemel",
+                    "1 pose tørrgjær",
+                    "3 dl vann",
+                    "1 dl olivenolje",
+                    "2 ts salt",
+                    "Topping: oliven, tomater, rosmarin"
+                ],
+                instructions: [
+                    "Bland mel, gjær og salt.",
+                    "Tilsett vann og olje, elt til smidig deig.",
+                    "La heve i 1 time.",
+                    "Trykk deigen ut i smurt form.",
+                    "Lag fordypninger med fingrene.",
+                    "Drypp over olje og strø på topping.",
+                    "La heve 30 minutter til.",
+                    "Stek ved 220°C i 20-25 minutter."
+                ],
+                rating: 4.8,
+                ratingCount: 15,
+                madeCount: 32,
+                lastViewed: new Date('2024-11-15'),
+                createdAt: new Date('2024-02-01'),
+                image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&h=600&fit=crop"
+            }
+        ];
+
+        // Load data from localStorage
+        function loadData() {
+            const stored = localStorage.getItem('recipeData');
+            if (stored) {
+                recipes = JSON.parse(stored);
+                // Convert date strings back to Date objects
+                recipes.forEach(r => {
+                    r.lastViewed = r.lastViewed ? new Date(r.lastViewed) : null;
+                    r.createdAt = new Date(r.createdAt);
+                });
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('recipeData', JSON.stringify(recipes));
+        }
+
+        // Initialize
+        loadData();
+
+        // Render recipes
+        function renderRecipes(recipesToRender = recipes) {
+            const grid = document.getElementById('recipeGrid');
+            grid.innerHTML = '';
+            
+            recipesToRender.forEach(recipe => {
+                const card = createRecipeCard(recipe);
+                grid.appendChild(card);
+            });
+        }
+
+        // Create recipe card
+        function createRecipeCard(recipe) {
+            const card = document.createElement('div');
+            card.className = 'recipe-card bg-white rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl';
+            card.onclick = () => showRecipe(recipe.id);
+            
+            const imageUrl = recipe.image || `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop`;
+            
+            card.innerHTML = `
+                <div class="h-48 bg-gradient-to-br from-amber-100 to-orange-100 relative overflow-hidden">
+                    ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
+                    `<div class="w-full h-full flex items-center justify-center">
+                        <span class="text-6xl opacity-30">🍞</span>
+                    </div>`}
+                </div>
+                <div class="p-5">
+                    <h3 class="font-display text-xl text-gray-800 mb-2">${recipe.title}</h3>
+                    <p class="text-gray-600 text-sm mb-3">${recipe.servings}</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-1">
+                            ${renderStars(recipe.rating)}
+                            <span class="text-xs text-gray-500 ml-1">(${recipe.ratingCount})</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <span class="mr-1">👨‍🍳</span>
+                            <span>${recipe.madeCount}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Render star rating
+        function renderStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    stars += '<span class="text-amber-400">★</span>';
+                } else if (i - 0.5 <= rating) {
+                    stars += '<span class="text-amber-400">☆</span>';
+                } else {
+                    stars += '<span class="text-gray-300">★</span>';
+                }
+            }
+            return stars;
+        }
+
+        // Show recipe modal
+        function showRecipe(id) {
+            const recipe = recipes.find(r => r.id === id);
+            if (!recipe) return;
+            
+            // Update last viewed
+            recipe.lastViewed = new Date();
+            saveData();
+            
+            const modal = document.getElementById('recipeModal');
+            const content = document.getElementById('modalContent');
+            
+            const imageUrl = recipe.image || `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop`;
+            
+            content.innerHTML = `
+                <div class="relative">
+                    <button onclick="closeRecipe()" class="absolute top-4 right-4 bg-white/90 rounded-full p-2 hover:bg-white z-10">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                    <div class="h-64 bg-gradient-to-br from-amber-100 to-orange-100 relative">
+                        ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
+                        `<div class="w-full h-full flex items-center justify-center">
+                            <span class="text-8xl opacity-30">🍞</span>
+                        </div>`}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                        <div class="absolute bottom-4 left-6 text-white">
+                            <h2 class="font-display text-3xl mb-1">${recipe.title}</h2>
+                            <p class="text-lg opacity-90">${recipe.servings}</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center space-x-4">
+                                <div class="flex items-center">
+                                    ${renderInteractiveStars(recipe)}
+                                </div>
+                                <span class="text-sm text-gray-600">${recipe.ratingCount} vurderinger</span>
+                            </div>
+                            <button onclick="madeThis(${recipe.id})" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition">
+                                Jeg lagde dette! (${recipe.madeCount})
+                            </button>
+                        </div>
+                        
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="font-display text-xl text-amber-800 mb-3">Ingredienser</h3>
+                                <ul class="space-y-2">
+                                    ${recipe.ingredients.map(ing => `
+                                        <li class="flex items-start">
+                                            <span class="text-amber-600 mr-2">•</span>
+                                            <span class="text-gray-700">${ing}</span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h3 class="font-display text-xl text-amber-800 mb-3">Fremgangsmåte</h3>
+                                <ol class="space-y-3">
+                                    ${recipe.instructions.map((inst, i) => `
+                                        <li class="flex items-start">
+                                            <span class="font-semibold text-amber-600 mr-3 mt-0.5">${i + 1}.</span>
+                                            <span class="text-gray-700">${inst}</span>
+                                        </li>
+                                    `).join('')}
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        // Render interactive stars for rating
+        function renderInteractiveStars(recipe) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                const filled = i <= Math.floor(recipe.rating);
+                stars += `<button onclick="rateRecipe(${recipe.id}, ${i})" class="star text-2xl ${filled ? 'text-amber-400' : 'text-gray-300'} hover:text-amber-500">★</button>`;
+            }
+            return stars;
+        }
+
+        // Close recipe modal
+        function closeRecipe() {
+            document.getElementById('recipeModal').classList.add('hidden');
+        }
+
+        // Rate recipe
+        function rateRecipe(id, rating) {
+            const recipe = recipes.find(r => r.id === id);
+            if (!recipe) return;
+            
+            // Update rating (simple average)
+            const totalRating = recipe.rating * recipe.ratingCount;
+            recipe.ratingCount++;
+            recipe.rating = (totalRating + rating) / recipe.ratingCount;
+            
+            saveData();
+            showRecipe(id); // Refresh modal
+            renderRecipes(); // Refresh grid
+        }
+
+        // Made this recipe
+        function madeThis(id) {
+            const recipe = recipes.find(r => r.id === id);
+            if (!recipe) return;
+            
+            recipe.madeCount++;
+            saveData();
+            showRecipe(id); // Refresh modal
+            renderRecipes(); // Refresh grid
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = recipes.filter(recipe => 
+                recipe.title.toLowerCase().includes(query) ||
+                recipe.ingredients.some(ing => ing.toLowerCase().includes(query))
+            );
+            renderRecipes(filtered);
+        });
+
+        // Get recommendations
+        function getRecommendations() {
+            const recommended = document.getElementById('recommendedRecipes');
+            
+            // Sort by various criteria for recommendations
+            let recs = [];
+            
+            // Recently viewed but not in the last 3 days
+            const threeDaysAgo = new Date();
+            threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+            const oldViewed = recipes.filter(r => r.lastViewed && r.lastViewed < threeDaysAgo)
+                .sort((a, b) => a.lastViewed - b.lastViewed)
+                .slice(0, 2);
+            
+            // Never viewed
+            const neverViewed = recipes.filter(r => !r.lastViewed).slice(0, 2);
+            
+            // Highly rated
+            const highRated = [...recipes].sort((a, b) => b.rating - a.rating).slice(0, 2);
+            
+            // Combine recommendations
+            const recIds = new Set();
+            [...oldViewed, ...neverViewed, ...highRated].forEach(r => {
+                if (!recIds.has(r.id) && recs.length < 3) {
+                    recIds.add(r.id);
+                    recs.push(r);
+                }
+            });
+            
+            recommended.innerHTML = '';
+            recs.forEach(recipe => {
+                const card = createRecipeCard(recipe);
+                recommended.appendChild(card);
+            });
+        }
+
+        // Show add recipe modal
+        function showAddRecipe() {
+            document.getElementById('addRecipeModal').classList.remove('hidden');
+        }
+
+        // Close add recipe modal
+        function closeAddRecipe() {
+            document.getElementById('addRecipeModal').classList.add('hidden');
+            document.getElementById('addRecipeForm').reset();
+        }
+
+        // Add new recipe
+        document.getElementById('addRecipeForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const newRecipe = {
+                id: Date.now(),
+                title: document.getElementById('newTitle').value,
+                servings: document.getElementById('newServings').value,
+                ingredients: document.getElementById('newIngredients').value.split('\n').filter(i => i.trim()),
+                instructions: document.getElementById('newInstructions').value.split('\n').filter(i => i.trim()),
+                image: document.getElementById('newImage').value || null,
+                rating: 0,
+                ratingCount: 0,
+                madeCount: 0,
+                lastViewed: null,
+                createdAt: new Date()
+            };
+            
+            recipes.push(newRecipe);
+            saveData();
+            renderRecipes();
+            getRecommendations();
+            closeAddRecipe();
+        });
+
+        // Close modals on outside click
+        document.getElementById('recipeModal').addEventListener('click', (e) => {
+            if (e.target.id === 'recipeModal') closeRecipe();
+        });
+        document.getElementById('addRecipeModal').addEventListener('click', (e) => {
+            if (e.target.id === 'addRecipeModal') closeAddRecipe();
+        });
+
+        // Initial render
+        renderRecipes();
+        getRecommendations();
+    </script>
+</body>
+</html>
