@@ -88,10 +88,10 @@
             <div class="bg-white rounded-2xl max-w-2xl w-full p-6">
                 <h2 class="font-display text-2xl text-amber-800 mb-4">Legg til ny oppskrift</h2>
                 <form id="addRecipeForm">
-                    <input type="text" id="newTitle" placeholder="Oppskriftens navn" class="w-full mb-3 px-4 py-2 border rounded-lg">
-                    <input type="text" id="newServings" placeholder="Porsjoner (f.eks. 16 stk.)" class="w-full mb-3 px-4 py-2 border rounded-lg">
-                    <textarea id="newIngredients" placeholder="Ingredienser (en per linje)" rows="6" class="w-full mb-3 px-4 py-2 border rounded-lg"></textarea>
-                    <textarea id="newInstructions" placeholder="Fremgangsmåte (en per linje)" rows="6" class="w-full mb-3 px-4 py-2 border rounded-lg"></textarea>
+                    <input type="text" id="newTitle" placeholder="Oppskriftens navn" class="w-full mb-3 px-4 py-2 border rounded-lg" required>
+                    <input type="text" id="newServings" placeholder="Porsjoner (f.eks. 16 stk.)" class="w-full mb-3 px-4 py-2 border rounded-lg" required>
+                    <textarea id="newIngredients" placeholder="Ingredienser (en per linje)" rows="6" class="w-full mb-3 px-4 py-2 border rounded-lg" required></textarea>
+                    <textarea id="newInstructions" placeholder="Fremgangsmåte (en per linje)" rows="6" class="w-full mb-3 px-4 py-2 border rounded-lg" required></textarea>
                     <input type="url" id="newImage" placeholder="Bilde URL (valgfritt)" class="w-full mb-4 px-4 py-2 border rounded-lg">
                     <div class="flex space-x-3">
                         <button type="submit" class="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700">Lagre</button>
@@ -103,10 +103,10 @@
     </div>
 
     <script>
-        // Recipe data structure
-        let recipes = [
-            {
-                id: 1,
+        // Recipe database (shared/static data)
+        let recipeDatabase = {
+            "recipe_1": {
+                id: "recipe_1",
                 title: "Rundstykker",
                 servings: "ca. 16 stk.",
                 ingredients: [
@@ -128,15 +128,11 @@
                     "Stek: Forvarm ovnen til 220 °C (over- og undervarme). Stek midt i ovnen i 10–12 minutter, til de er gylne og gjennomstekte.",
                     "Avkjøl: Avkjøl på rist."
                 ],
-                rating: 4.5,
-                ratingCount: 12,
-                madeCount: 45,
-                lastViewed: null,
-                createdAt: new Date('2024-01-15'),
-                image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&h=600&fit=crop"
+                image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&h=600&fit=crop",
+                createdAt: "2024-01-15"
             },
-            {
-                id: 2,
+            "recipe_2": {
+                id: "recipe_2",
                 title: "Kanelboller",
                 servings: "12 stk.",
                 ingredients: [
@@ -158,15 +154,11 @@
                     "Skjær i skiver og la etterheve i 30 minutter.",
                     "Stek ved 225°C i 8-10 minutter."
                 ],
-                rating: 5,
-                ratingCount: 28,
-                madeCount: 89,
-                lastViewed: new Date('2024-12-20'),
-                createdAt: new Date('2024-01-10'),
-                image: "https://images.unsplash.com/photo-1609126901738-d2134918a689?w=800&h=600&fit=crop"
+                image: "https://images.unsplash.com/photo-1609126901738-d2134918a689?w=800&h=600&fit=crop",
+                createdAt: "2024-01-10"
             },
-            {
-                id: 3,
+            "recipe_3": {
+                id: "recipe_3",
                 title: "Focaccia",
                 servings: "1 langpanne",
                 ingredients: [
@@ -187,43 +179,101 @@
                     "La heve 30 minutter til.",
                     "Stek ved 220°C i 20-25 minutter."
                 ],
+                image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&h=600&fit=crop",
+                createdAt: "2024-02-01"
+            }
+        };
+
+        // User data (personal interactions with recipes)
+        let userData = {
+            "recipe_1": {
+                rating: 4.5,
+                userRating: null,
+                ratingCount: 12,
+                madeCount: 45,
+                lastViewed: null,
+                favorite: false
+            },
+            "recipe_2": {
+                rating: 5,
+                userRating: null,
+                ratingCount: 28,
+                madeCount: 89,
+                lastViewed: "2024-12-20",
+                favorite: false
+            },
+            "recipe_3": {
                 rating: 4.8,
+                userRating: null,
                 ratingCount: 15,
                 madeCount: 32,
-                lastViewed: new Date('2024-11-15'),
-                createdAt: new Date('2024-02-01'),
-                image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&h=600&fit=crop"
+                lastViewed: "2024-11-15",
+                favorite: false
             }
-        ];
+        };
 
         // Load data from localStorage
         function loadData() {
-            const stored = localStorage.getItem('recipeData');
-            if (stored) {
-                recipes = JSON.parse(stored);
-                // Convert date strings back to Date objects
-                recipes.forEach(r => {
-                    r.lastViewed = r.lastViewed ? new Date(r.lastViewed) : null;
-                    r.createdAt = new Date(r.createdAt);
-                });
+            const storedRecipes = localStorage.getItem('recipeDatabase');
+            const storedUserData = localStorage.getItem('userData');
+            
+            if (storedRecipes) {
+                recipeDatabase = JSON.parse(storedRecipes);
+            }
+            
+            if (storedUserData) {
+                userData = JSON.parse(storedUserData);
             }
         }
 
         // Save data to localStorage
         function saveData() {
-            localStorage.setItem('recipeData', JSON.stringify(recipes));
+            localStorage.setItem('recipeDatabase', JSON.stringify(recipeDatabase));
+            localStorage.setItem('userData', JSON.stringify(userData));
+        }
+
+        // Get recipe with user data merged
+        function getRecipeWithUserData(recipeId) {
+            const recipe = recipeDatabase[recipeId];
+            const userInfo = userData[recipeId] || {
+                rating: 0,
+                userRating: null,
+                ratingCount: 0,
+                madeCount: 0,
+                lastViewed: null,
+                favorite: false
+            };
+            
+            return { ...recipe, ...userInfo };
+        }
+
+        // Initialize user data for new recipe
+        function initializeUserData(recipeId) {
+            if (!userData[recipeId]) {
+                userData[recipeId] = {
+                    rating: 0,
+                    userRating: null,
+                    ratingCount: 0,
+                    madeCount: 0,
+                    lastViewed: null,
+                    favorite: false
+                };
+            }
         }
 
         // Initialize
         loadData();
 
         // Render recipes
-        function renderRecipes(recipesToRender = recipes) {
+        function renderRecipes(recipesToRender = null) {
             const grid = document.getElementById('recipeGrid');
             grid.innerHTML = '';
             
-            recipesToRender.forEach(recipe => {
-                const card = createRecipeCard(recipe);
+            const recipeIds = recipesToRender || Object.keys(recipeDatabase);
+            
+            recipeIds.forEach(recipeId => {
+                const recipeData = getRecipeWithUserData(recipeId);
+                const card = createRecipeCard(recipeData);
                 grid.appendChild(card);
             });
         }
@@ -249,11 +299,11 @@
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-1">
                             ${renderStars(recipe.rating)}
-                            <span class="text-xs text-gray-500 ml-1">(${recipe.ratingCount})</span>
+                            <span class="text-xs text-gray-500 ml-1">(${recipe.ratingCount || 0})</span>
                         </div>
                         <div class="flex items-center text-sm text-gray-600">
                             <span class="mr-1">👨‍🍳</span>
-                            <span>${recipe.madeCount}</span>
+                            <span>${recipe.madeCount || 0}</span>
                         </div>
                     </div>
                 </div>
@@ -278,12 +328,15 @@
         }
 
         // Show recipe modal
-        function showRecipe(id) {
-            const recipe = recipes.find(r => r.id === id);
+        function showRecipe(recipeId) {
+            const recipe = getRecipeWithUserData(recipeId);
             if (!recipe) return;
             
             // Update last viewed
-            recipe.lastViewed = new Date();
+            if (!userData[recipeId]) {
+                initializeUserData(recipeId);
+            }
+            userData[recipeId].lastViewed = new Date().toISOString();
             saveData();
             
             const modal = document.getElementById('recipeModal');
@@ -315,10 +368,10 @@
                                 <div class="flex items-center">
                                     ${renderInteractiveStars(recipe)}
                                 </div>
-                                <span class="text-sm text-gray-600">${recipe.ratingCount} vurderinger</span>
+                                <span class="text-sm text-gray-600">${recipe.ratingCount || 0} vurderinger</span>
                             </div>
-                            <button onclick="madeThis(${recipe.id})" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition">
-                                Jeg lagde dette! (${recipe.madeCount})
+                            <button onclick="madeThis('${recipe.id}')" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition">
+                                Jeg lagde dette! (${recipe.madeCount || 0})
                             </button>
                         </div>
                         
@@ -357,9 +410,10 @@
         // Render interactive stars for rating
         function renderInteractiveStars(recipe) {
             let stars = '';
+            const userRating = recipe.userRating || 0;
             for (let i = 1; i <= 5; i++) {
-                const filled = i <= Math.floor(recipe.rating);
-                stars += `<button onclick="rateRecipe(${recipe.id}, ${i})" class="star text-2xl ${filled ? 'text-amber-400' : 'text-gray-300'} hover:text-amber-500">★</button>`;
+                const filled = i <= userRating;
+                stars += `<button onclick="rateRecipe('${recipe.id}', ${i})" class="star text-2xl ${filled ? 'text-amber-400' : 'text-gray-300'} hover:text-amber-500">★</button>`;
             }
             return stars;
         }
@@ -370,38 +424,53 @@
         }
 
         // Rate recipe
-        function rateRecipe(id, rating) {
-            const recipe = recipes.find(r => r.id === id);
-            if (!recipe) return;
+        function rateRecipe(recipeId, rating) {
+            if (!userData[recipeId]) {
+                initializeUserData(recipeId);
+            }
             
-            // Update rating (simple average)
-            const totalRating = recipe.rating * recipe.ratingCount;
-            recipe.ratingCount++;
-            recipe.rating = (totalRating + rating) / recipe.ratingCount;
+            const userInfo = userData[recipeId];
+            const previousUserRating = userInfo.userRating;
+            
+            // If user had already rated, update the average
+            if (previousUserRating) {
+                const totalRating = userInfo.rating * userInfo.ratingCount;
+                const newTotal = totalRating - previousUserRating + rating;
+                userInfo.rating = newTotal / userInfo.ratingCount;
+            } else {
+                // New rating
+                const totalRating = userInfo.rating * userInfo.ratingCount;
+                userInfo.ratingCount++;
+                userInfo.rating = (totalRating + rating) / userInfo.ratingCount;
+            }
+            
+            userInfo.userRating = rating;
             
             saveData();
-            showRecipe(id); // Refresh modal
+            showRecipe(recipeId); // Refresh modal
             renderRecipes(); // Refresh grid
         }
 
         // Made this recipe
-        function madeThis(id) {
-            const recipe = recipes.find(r => r.id === id);
-            if (!recipe) return;
+        function madeThis(recipeId) {
+            if (!userData[recipeId]) {
+                initializeUserData(recipeId);
+            }
             
-            recipe.madeCount++;
+            userData[recipeId].madeCount++;
             saveData();
-            showRecipe(id); // Refresh modal
+            showRecipe(recipeId); // Refresh modal
             renderRecipes(); // Refresh grid
         }
 
         // Search functionality
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
-            const filtered = recipes.filter(recipe => 
-                recipe.title.toLowerCase().includes(query) ||
-                recipe.ingredients.some(ing => ing.toLowerCase().includes(query))
-            );
+            const filtered = Object.keys(recipeDatabase).filter(recipeId => {
+                const recipe = recipeDatabase[recipeId];
+                return recipe.title.toLowerCase().includes(query) ||
+                       recipe.ingredients.some(ing => ing.toLowerCase().includes(query));
+            });
             renderRecipes(filtered);
         });
 
@@ -409,36 +478,59 @@
         function getRecommendations() {
             const recommended = document.getElementById('recommendedRecipes');
             
-            // Sort by various criteria for recommendations
             let recs = [];
+            const recipeIds = Object.keys(recipeDatabase);
             
-            // Recently viewed but not in the last 3 days
+            // Sort by various criteria for recommendations
             const threeDaysAgo = new Date();
             threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-            const oldViewed = recipes.filter(r => r.lastViewed && r.lastViewed < threeDaysAgo)
-                .sort((a, b) => a.lastViewed - b.lastViewed)
-                .slice(0, 2);
+            
+            // Recently viewed but not in the last 3 days
+            const oldViewed = recipeIds.filter(id => {
+                const lastViewed = userData[id]?.lastViewed;
+                if (!lastViewed) return false;
+                const viewedDate = new Date(lastViewed);
+                return viewedDate < threeDaysAgo;
+            }).slice(0, 2);
             
             // Never viewed
-            const neverViewed = recipes.filter(r => !r.lastViewed).slice(0, 2);
+            const neverViewed = recipeIds.filter(id => !userData[id]?.lastViewed).slice(0, 2);
             
             // Highly rated
-            const highRated = [...recipes].sort((a, b) => b.rating - a.rating).slice(0, 2);
+            const highRated = recipeIds
+                .filter(id => userData[id]?.rating > 0)
+                .sort((a, b) => (userData[b]?.rating || 0) - (userData[a]?.rating || 0))
+                .slice(0, 2);
             
-            // Combine recommendations
-            const recIds = new Set();
-            [...oldViewed, ...neverViewed, ...highRated].forEach(r => {
-                if (!recIds.has(r.id) && recs.length < 3) {
-                    recIds.add(r.id);
-                    recs.push(r);
+            // Combine recommendations (unique)
+            const recIdSet = new Set();
+            [...oldViewed, ...neverViewed, ...highRated].forEach(id => {
+                if (!recIdSet.has(id) && recs.length < 3) {
+                    recIdSet.add(id);
+                    recs.push(id);
                 }
             });
             
+            // If we don't have 3 recommendations, add random ones
+            while (recs.length < 3 && recs.length < recipeIds.length) {
+                const randomId = recipeIds[Math.floor(Math.random() * recipeIds.length)];
+                if (!recIdSet.has(randomId)) {
+                    recIdSet.add(randomId);
+                    recs.push(randomId);
+                }
+            }
+            
             recommended.innerHTML = '';
-            recs.forEach(recipe => {
-                const card = createRecipeCard(recipe);
+            recs.forEach(recipeId => {
+                const recipeData = getRecipeWithUserData(recipeId);
+                const card = createRecipeCard(recipeData);
                 recommended.appendChild(card);
             });
+        }
+
+        // Generate unique ID for new recipes
+        function generateRecipeId() {
+            return 'recipe_' + Date.now();
         }
 
         // Show add recipe modal
@@ -456,21 +548,22 @@
         document.getElementById('addRecipeForm').addEventListener('submit', (e) => {
             e.preventDefault();
             
-            const newRecipe = {
-                id: Date.now(),
+            const recipeId = generateRecipeId();
+            
+            // Add to recipe database
+            recipeDatabase[recipeId] = {
+                id: recipeId,
                 title: document.getElementById('newTitle').value,
                 servings: document.getElementById('newServings').value,
                 ingredients: document.getElementById('newIngredients').value.split('\n').filter(i => i.trim()),
                 instructions: document.getElementById('newInstructions').value.split('\n').filter(i => i.trim()),
                 image: document.getElementById('newImage').value || null,
-                rating: 0,
-                ratingCount: 0,
-                madeCount: 0,
-                lastViewed: null,
-                createdAt: new Date()
+                createdAt: new Date().toISOString()
             };
             
-            recipes.push(newRecipe);
+            // Initialize user data for new recipe
+            initializeUserData(recipeId);
+            
             saveData();
             renderRecipes();
             getRecommendations();
@@ -484,6 +577,36 @@
         document.getElementById('addRecipeModal').addEventListener('click', (e) => {
             if (e.target.id === 'addRecipeModal') closeAddRecipe();
         });
+
+        // Export recipes (for sharing)
+        function exportRecipes() {
+            const dataStr = JSON.stringify(recipeDatabase, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const exportFileDefaultName = 'recipes.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        // Import recipes (for sharing)
+        function importRecipes(jsonData) {
+            try {
+                const importedRecipes = JSON.parse(jsonData);
+                Object.keys(importedRecipes).forEach(recipeId => {
+                    recipeDatabase[recipeId] = importedRecipes[recipeId];
+                    if (!userData[recipeId]) {
+                        initializeUserData(recipeId);
+                    }
+                });
+                saveData();
+                renderRecipes();
+                getRecommendations();
+            } catch (e) {
+                console.error('Error importing recipes:', e);
+            }
+        }
 
         // Initial render
         renderRecipes();
