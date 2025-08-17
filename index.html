@@ -28,6 +28,45 @@
         .gradient-overlay {
             background: linear-gradient(135deg, rgba(251,207,232,0.1) 0%, rgba(254,249,195,0.1) 100%);
         }
+        button svg {
+            transition: transform 0.2s ease;
+        }
+        button:active svg {
+            transform: scale(0.9);
+        }
+        /* Filter animations */
+        #filterPillsContainer {
+            transition: max-width 0.3s ease-out, opacity 0.3s ease-out;
+        }
+        #filterToggle {
+            transition: all 0.2s ease;
+        }
+        #clearFilters {
+            transition: opacity 0.2s ease;
+        }
+        /* Checkbox styling */
+        input[type="checkbox"] {
+            cursor: pointer;
+        }
+        input[type="checkbox"]:checked {
+            background-color: rgb(217 119 6);
+            border-color: rgb(217 119 6);
+        }
+        /* Custom scrollbar for recipe sections */
+        .recipe-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .recipe-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        .recipe-scroll::-webkit-scrollbar-thumb {
+            background: #d4d4d4;
+            border-radius: 3px;
+        }
+        .recipe-scroll::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 min-h-screen">
@@ -36,11 +75,6 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div class="flex justify-between items-center">
                 <h1 class="font-display text-3xl text-amber-800">Mine Oppskrifter</h1>
-                <div class="flex items-center space-x-4">
-                    <button onclick="showAddRecipe()" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition">
-                        + Ny Oppskrift
-                    </button>
-                </div>
             </div>
         </div>
     </header>
@@ -50,6 +84,44 @@
         <div class="bg-white rounded-xl shadow-sm p-4">
             <input type="text" id="searchInput" placeholder="Søk etter oppskrifter..." 
                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="bg-white rounded-xl shadow-sm p-3 flex items-center justify-between">
+            <div class="flex items-center gap-2 flex-1">
+                <!-- Filter Button -->
+                <button id="filterToggle" onclick="toggleFilterMenu()" 
+                        class="flex items-center space-x-2 px-3 py-1.5 rounded-lg transition text-sm shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                    </svg>
+                    <span class="font-medium">Filter</span>
+                    <span id="filterCount" class="hidden bg-white/20 text-white text-xs px-1.5 py-0.5 rounded-full">0</span>
+                </button>
+                
+                <!-- Filter Pills Container -->
+                <div id="filterPillsContainer" class="flex flex-wrap gap-2 overflow-hidden transition-all duration-300">
+                    <!-- Filter pills will be inserted here -->
+                </div>
+            </div>
+            
+            <!-- Clear Filters Button -->
+            <button id="clearFilters" onclick="clearAllFilters()" 
+                    class="text-xs text-gray-500 hover:text-amber-600 transition opacity-0 pointer-events-none">
+                Tøm filter
+            </button>
+        </div>
+        
+        <!-- Filter Dropdown Menu -->
+        <div id="filterMenu" class="relative">
+            <div class="absolute top-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-3 z-30 hidden min-w-[280px]">
+                <div class="text-sm font-medium text-gray-700 mb-2">Velg kategorier</div>
+                <div id="filterOptions" class="space-y-1 max-h-96 overflow-y-auto">
+                    <!-- Filter options will be inserted here -->
+                </div>
+            </div>
         </div>
     </div>
 
@@ -72,43 +144,32 @@
     </div>
 
     <!-- Recipe Modal -->
-    <div id="recipeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+    <div id="recipeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                <div id="modalContent">
+            <div class="bg-white rounded-2xl max-w-4xl w-full h-[90vh] flex flex-col overflow-hidden">
+                <div id="modalContent" class="h-full flex flex-col">
                     <!-- Recipe content will be inserted here -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Add Recipe Modal -->
-    <div id="addRecipeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-2xl max-w-2xl w-full p-6">
-                <h2 class="font-display text-2xl text-amber-800 mb-4">Legg til ny oppskrift</h2>
-                <form id="addRecipeForm">
-                    <input type="text" id="newTitle" placeholder="Oppskriftens navn" class="w-full mb-3 px-4 py-2 border rounded-lg" required>
-                    <input type="text" id="newServings" placeholder="Porsjoner (f.eks. 16 stk.)" class="w-full mb-3 px-4 py-2 border rounded-lg" required>
-                    <textarea id="newIngredients" placeholder="Ingredienser (en per linje)" rows="6" class="w-full mb-3 px-4 py-2 border rounded-lg" required></textarea>
-                    <textarea id="newInstructions" placeholder="Fremgangsmåte (en per linje)" rows="6" class="w-full mb-3 px-4 py-2 border rounded-lg" required></textarea>
-                    <input type="url" id="newImage" placeholder="Bilde URL (valgfritt)" class="w-full mb-4 px-4 py-2 border rounded-lg">
-                    <div class="flex space-x-3">
-                        <button type="submit" class="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700">Lagre</button>
-                        <button type="button" onclick="closeAddRecipe()" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400">Avbryt</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Recipe database (shared/static data)
-        let recipeDatabase = {
+        // Filter state
+        let activeFilters = new Map();
+        let filterMenuOpen = false;
+        let searchQuery = '';
+        
+        // Recipe database
+        const recipeDatabase = {
             "recipe_1": {
                 id: "recipe_1",
                 title: "Rundstykker",
+                category: "Brød",          // Product type: Brød, Kake, Bakeverk, etc.
+                meal: "Frokost",           // When to eat: Frokost, Lunsj, Middag, etc.
+                cuisine: "Norsk",          // Origin/style: Norsk, Italiensk, etc.
                 servings: "ca. 16 stk.",
+                description: "Disse luftige rundstykkene er perfekte til søndagsfrokosten. Med en sprø skorpe og myk innmat, smaker de fantastisk med både søtt og salt pålegg. Oppskriften er enkel å følge og gir konsistente resultater hver gang.",
                 ingredients: [
                     "500 g hvetemel",
                     "1 pose tørrgjær (ca. 11 g)",
@@ -134,16 +195,39 @@
             "recipe_2": {
                 id: "recipe_2",
                 title: "Kanelboller",
+                category: "Bakverk",
+                meal: "Snacks",
+                cuisine: "Skandinavisk",
                 servings: "12 stk.",
+                description: "Myke og saftige kanelboller med deilig smak av kanel og kardemomme. Disse bollene fyller hele huset med den herlige duften av hjemmebakst og er en sikker vinner både til kaffen og som søndagsgodt.",
                 ingredients: [
-                    "500 g hvetemel",
-                    "1 pose tørrgjær",
-                    "2 dl melk",
-                    "100 g smør",
-                    "1 egg",
-                    "100 g sukker",
-                    "1 ts kardemomme",
-                    "Fyll: smør, sukker, kanel"
+                    {
+                        group: "Deig",
+                        items: [
+                            "500 g hvetemel",
+                            "1 pose tørrgjær",
+                            "2 dl melk",
+                            "100 g smør",
+                            "1 egg",
+                            "100 g sukker",
+                            "1 ts kardemomme"
+                        ]
+                    },
+                    {
+                        group: "Fyll",
+                        items: [
+                            "75 g mykt smør",
+                            "100 g sukker",
+                            "2 ss kanel"
+                        ]
+                    },
+                    {
+                        group: "Pensling",
+                        items: [
+                            "1 egg til pensling",
+                            "Perlsukker (valgfritt)"
+                        ]
+                    }
                 ],
                 instructions: [
                     "Varm melken til fingervarm og løs opp gjæren.",
@@ -160,14 +244,33 @@
             "recipe_3": {
                 id: "recipe_3",
                 title: "Focaccia",
+                category: "Brød",
+                meal: "Tilbehør",
+                cuisine: "Italiensk",
                 servings: "1 langpanne",
+                description: "Italiensk flatbrød med olivenolje, urter og godt krydder. Focaccia er utrolig allsidig - server den som tilbehør til supper og salater, bruk den til sandwicher, eller nyt den som den er med en god olivenolje til dypping.",
                 ingredients: [
-                    "500 g hvetemel",
-                    "1 pose tørrgjær",
-                    "3 dl vann",
-                    "1 dl olivenolje",
-                    "2 ts salt",
-                    "Topping: oliven, tomater, rosmarin"
+                    {
+                        group: "Deig",
+                        items: [
+                            "500 g hvetemel",
+                            "1 pose tørrgjær",
+                            "3 dl vann",
+                            "1 dl olivenolje",
+                            "2 ts salt"
+                        ]
+                    },
+                    {
+                        group: "Topping",
+                        items: [
+                            "2-3 ss olivenolje til pensling",
+                            "Grove havsaltflak",
+                            "Frisk rosmarin",
+                            "Cherrytomater (halverte)",
+                            "Sorte oliven (valgfritt)",
+                            "Hvitløk i skiver (valgfritt)"
+                        ]
+                    }
                 ],
                 instructions: [
                     "Bland mel, gjær og salt.",
@@ -181,54 +284,271 @@
                 ],
                 image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&h=600&fit=crop",
                 createdAt: "2024-02-01"
+            },
+            "recipe_4": {
+                id: "recipe_4",
+                title: "Fiskegrateng",
+                category: "Grateng",
+                meal: "Middag",
+                cuisine: "Norsk",
+                servings: "4 porsjoner",
+                description: "En klassisk norsk husmannskost som aldri går av moten. Denne kremete fiskegratengen med hvit saus og sprø ostelokk er både enkel å lage og smaker fantastisk. Perfekt hverdagsmiddag som hele familien vil elske.",
+                ingredients: [
+                    {
+                        group: "Hovedingredienser",
+                        items: [
+                            "600 g hvit fisk (torsk eller sei)",
+                            "Salt og pepper til krydring"
+                        ]
+                    },
+                    {
+                        group: "Hvit saus",
+                        items: [
+                            "3 ss smør",
+                            "3 ss hvetemel",
+                            "4 dl melk",
+                            "Salt og pepper etter smak"
+                        ]
+                    },
+                    {
+                        group: "Topping",
+                        items: [
+                            "1 dl revet ost (gjerne Norvegia)",
+                            "1 dl brødmuler"
+                        ]
+                    }
+                ],
+                instructions: [
+                    "Forvarm ovnen til 200°C.",
+                    "Legg fisken i en smurt ildfast form.",
+                    "Smelt smør i en kjele og rør inn mel.",
+                    "Tilsett melk gradvis under omrøring.",
+                    "La sausen småkoke til den tykner.",
+                    "Krydre med salt og pepper.",
+                    "Hell sausen over fisken.",
+                    "Dryss over ost og brødmuler.",
+                    "Gratiner i ovnen i 25-30 minutter."
+                ],
+                image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=800&h=600&fit=crop",
+                createdAt: "2024-02-10"
+            },
+            "recipe_5": {
+                id: "recipe_5",
+                title: "Sjokoladekake",
+                category: "Kake",
+                meal: "Dessert",
+                cuisine: "Internasjonal",
+                servings: "12 biter",
+                description: "En dekadent og rik sjokoladekake som smelter på tungen. Med intens sjokoladesmak og en fuktig, nesten klissete konsistens, er dette den ultimate kaken for sjokoladeelskere. Server gjerne med en klatt krem eller vaniljeis.",
+                ingredients: [
+                    {
+                        group: "Kakedeig",
+                        items: [
+                            "200 g mørk sjokolade",
+                            "200 g smør",
+                            "4 egg",
+                            "250 g sukker",
+                            "150 g hvetemel",
+                            "1 ts bakepulver",
+                            "1 ts vaniljesukker"
+                        ]
+                    },
+                    {
+                        group: "Til servering (valgfritt)",
+                        items: [
+                            "Melis til dryss",
+                            "Friske bær",
+                            "Pisket krem eller vaniljeis"
+                        ]
+                    }
+                ],
+                instructions: [
+                    "Forvarm ovnen til 180°C.",
+                    "Smelt sjokolade og smør sammen.",
+                    "Pisk egg og sukker til eggedosis.",
+                    "Bland inn sjokoladeblandingen.",
+                    "Sikt inn mel og bakepulver.",
+                    "Hell i kakeform.",
+                    "Stek i 25-30 minutter.",
+                    "Avkjøl før servering."
+                ],
+                image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&h=600&fit=crop",
+                createdAt: "2024-02-15"
+            },
+            "recipe_6": {
+                id: "recipe_6",
+                title: "Havregrøt",
+                category: "Grøt",
+                meal: "Frokost",
+                cuisine: "Skandinavisk",
+                servings: "2 porsjoner",
+                description: "Start dagen med en næringsrik og mettende havregrøt. Denne klassiske frokosten er full av fiber og gir deg energi som varer. Topp med dine favorittbær, nøtter og litt honning for ekstra smak og næring.",
+                ingredients: [
+                    "1 dl havregryn",
+                    "2 dl melk",
+                    "2 dl vann",
+                    "1/2 ts salt",
+                    "Topping: bær, nøtter, honning"
+                ],
+                instructions: [
+                    "Bland havregryn, melk, vann og salt i en kjele.",
+                    "Kok opp under omrøring.",
+                    "La småkoke i 5 minutter.",
+                    "Rør jevnlig så det ikke brenner seg.",
+                    "Server med ønsket topping."
+                ],
+                image: "https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=800&h=600&fit=crop",
+                createdAt: "2024-02-20"
+            },
+            "recipe_7": {
+                id: "recipe_7",
+                title: "Lefsekling",
+                category: "Bakverk",
+                meal: "Snacks",
+                cuisine: "Norsk",
+                servings: "20 stk.",
+                description: "Tradisjonelle norske lefser som er myke, tynne og perfekte med både søtt og salt pålegg. Disse potetbaserte lommebøkene er ideelle for turmat eller som et alternativ til vanlig brød. Oppskriften har gått i arv i generasjoner.",
+                ingredients: [
+                    {
+                        group: "Lefsedeig",
+                        items: [
+                            "1 kg kokte poteter (avkjølte)",
+                            "500 g hvetemel",
+                            "1 ts salt",
+                            "1 dl melk",
+                            "50 g smeltet smør"
+                        ]
+                    },
+                    {
+                        group: "Til steking",
+                        items: [
+                            "Hvetemel til utbaking"
+                        ]
+                    },
+                    {
+                        group: "Til servering",
+                        items: [
+                            "Smør",
+                            "Sukker og kanel",
+                            "Brunost, rømme eller syltetøy"
+                        ]
+                    }
+                ],
+                instructions: [
+                    "Mos potetene godt mens de er varme.",
+                    "Tilsett salt, melk og smør.",
+                    "Bland inn mel til en smidig deig.",
+                    "Del deigen i 20 emner.",
+                    "Kjevle hver klump tynt ut.",
+                    "Stek på varm takke eller stekepanne.",
+                    "Legg ferdig stekte lefser mellom håndklær."
+                ],
+                image: "https://images.unsplash.com/photo-1555813456-94a3dd418cd3?w=800&h=600&fit=crop",
+                createdAt: "2024-03-01"
+            },
+            "recipe_8": {
+                id: "recipe_8",
+                title: "Krumkake",
+                category: "Kjeks",
+                meal: "Dessert",
+                cuisine: "Norsk",
+                servings: "30 stk.",
+                description: "Sprø, tynne og delikate krumkaker med hint av kardemomme. Disse tradisjonelle norske kjeksene formes mens de er varme og blir til perfekte, sprø ruller. Fyll dem med krem eller nyt dem som de er til kaffen.",
+                ingredients: [
+                    {
+                        group: "Krumkakedeig",
+                        items: [
+                            "3 egg",
+                            "150 g sukker",
+                            "125 g smeltet smør (avkjølt)",
+                            "150 g hvetemel",
+                            "1 ts kardemomme",
+                            "1 dl vann"
+                        ]
+                    },
+                    {
+                        group: "Fyll (valgfritt)",
+                        items: [
+                            "3 dl kremfløte",
+                            "2 ss melis",
+                            "Multesyltetøy eller jordbær"
+                        ]
+                    }
+                ],
+                instructions: [
+                    "Pisk egg og sukker lett sammen.",
+                    "Tilsett smeltet smør.",
+                    "Bland inn mel og kardemomme.",
+                    "Tilsett vann til passe konsistens.",
+                    "La røren hvile i 30 minutter.",
+                    "Stek i krumkakejern.",
+                    "Rull raskt rundt krumkakepinne mens varm."
+                ],
+                image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=800&h=600&fit=crop",
+                createdAt: "2024-03-05"
+            },
+            "recipe_9": {
+                id: "recipe_9",
+                title: "Fårikål",
+                category: "Gryte",
+                meal: "Middag",
+                cuisine: "Norsk",
+                servings: "6 porsjoner",
+                description: "Norges nasjonalrett - en enkel, men smakfull kombinasjon av lam og kål som har varmet norske hjerter i århundrer. Den langsomme koketiden gjør kjøttet utrolig mørt og kålen får en mild, søtlig smak. Perfekt høstmat!",
+                ingredients: [
+                    {
+                        group: "Hovedingredienser",
+                        items: [
+                            "1,5 kg fårekjøtt i biter",
+                            "1,5 kg kål (hodekål)",
+                            "4 dl vann"
+                        ]
+                    },
+                    {
+                        group: "Krydder",
+                        items: [
+                            "2 ss salt",
+                            "2 ts hel sort pepper",
+                            "Hvetemel til å drysse mellom lagene"
+                        ]
+                    },
+                    {
+                        group: "Til servering",
+                        items: [
+                            "Kokte poteter",
+                            "Flatbrød (valgfritt)"
+                        ]
+                    }
+                ],
+                instructions: [
+                    "Skjær kålen i store båter.",
+                    "Legg lag med kjøtt og kål i gryte.",
+                    "Krydre hvert lag med salt og pepper.",
+                    "Dryss litt mel mellom lagene.",
+                    "Hell over vannet.",
+                    "Kok opp og la småkoke i 1,5-2 timer.",
+                    "Server med kokte poteter."
+                ],
+                image: "https://images.unsplash.com/photo-1574484284002-952d92456975?w=800&h=600&fit=crop",
+                createdAt: "2024-03-10"
             }
         };
 
-        // User data (personal interactions with recipes)
-        let userData = {
-            "recipe_1": {
-                rating: 4.5,
-                userRating: null,
-                ratingCount: 12,
-                madeCount: 45,
-                lastViewed: null,
-                favorite: false
-            },
-            "recipe_2": {
-                rating: 5,
-                userRating: null,
-                ratingCount: 28,
-                madeCount: 89,
-                lastViewed: "2024-12-20",
-                favorite: false
-            },
-            "recipe_3": {
-                rating: 4.8,
-                userRating: null,
-                ratingCount: 15,
-                madeCount: 32,
-                lastViewed: "2024-11-15",
-                favorite: false
-            }
-        };
+        // User data - automatically saved to localStorage
+        // Tracks: ratings, view counts, made dates, last viewed timestamps
+        // This data powers the smart recommendation system
+        let userData = {};
 
-        // Load data from localStorage
+        // Load user data from localStorage
         function loadData() {
-            const storedRecipes = localStorage.getItem('recipeDatabase');
             const storedUserData = localStorage.getItem('userData');
-            
-            if (storedRecipes) {
-                recipeDatabase = JSON.parse(storedRecipes);
-            }
-            
             if (storedUserData) {
                 userData = JSON.parse(storedUserData);
             }
         }
 
-        // Save data to localStorage
+        // Save user data to localStorage
         function saveData() {
-            localStorage.setItem('recipeDatabase', JSON.stringify(recipeDatabase));
             localStorage.setItem('userData', JSON.stringify(userData));
         }
 
@@ -239,11 +559,10 @@
                 rating: 0,
                 userRating: null,
                 ratingCount: 0,
-                madeCount: 0,
+                madeDates: [],
                 lastViewed: null,
                 favorite: false
             };
-            
             return { ...recipe, ...userInfo };
         }
 
@@ -254,15 +573,309 @@
                     rating: 0,
                     userRating: null,
                     ratingCount: 0,
-                    madeCount: 0,
+                    madeDates: [],
                     lastViewed: null,
+                    viewCount: 0,  // Track total views
                     favorite: false
                 };
             }
         }
 
-        // Initialize
-        loadData();
+        // Get unique categories, meals and cuisines from recipes
+        function getRecipeFilters() {
+            const categories = new Set();
+            const meals = new Set();
+            const cuisines = new Set();
+            
+            Object.values(recipeDatabase).forEach(recipe => {
+                if (recipe.category) categories.add(recipe.category);
+                if (recipe.meal) meals.add(recipe.meal);
+                if (recipe.cuisine) cuisines.add(recipe.cuisine);
+            });
+            
+            return {
+                categories: Array.from(categories).sort(),
+                meals: Array.from(meals).sort(),
+                cuisines: Array.from(cuisines).sort()
+            };
+        }
+
+        // Render filter options in dropdown
+        function renderFilterOptions() {
+            const container = document.getElementById('filterOptions');
+            const filters = getRecipeFilters();
+            
+            container.innerHTML = '';
+            
+            // Category filters (first)
+            if (filters.categories.length > 0) {
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 pt-1 pb-1';
+                categoryHeader.textContent = 'Kategori';
+                container.appendChild(categoryHeader);
+                
+                filters.categories.forEach(category => {
+                    const isSelected = activeFilters.has(`category:${category}`);
+                    const option = document.createElement('label');
+                    option.className = 'flex items-center justify-between p-2 hover:bg-amber-50 rounded cursor-pointer';
+                    option.innerHTML = `
+                        <span class="text-sm text-gray-700">${category}</span>
+                        <input type="checkbox" 
+                               ${isSelected ? 'checked' : ''} 
+                               onchange="toggleFilterType('category:${category}')"
+                               onclick="event.stopPropagation()"
+                               class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer">
+                    `;
+                    container.appendChild(option);
+                });
+            }
+            
+            // Meal filters (second)
+            if (filters.meals.length > 0) {
+                const mealHeader = document.createElement('div');
+                mealHeader.className = 'text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 pt-3 pb-1';
+                mealHeader.textContent = 'Måltid';
+                container.appendChild(mealHeader);
+                
+                filters.meals.forEach(meal => {
+                    const isSelected = activeFilters.has(`meal:${meal}`);
+                    const option = document.createElement('label');
+                    option.className = 'flex items-center justify-between p-2 hover:bg-amber-50 rounded cursor-pointer';
+                    option.innerHTML = `
+                        <span class="text-sm text-gray-700">${meal}</span>
+                        <input type="checkbox" 
+                               ${isSelected ? 'checked' : ''} 
+                               onchange="toggleFilterType('meal:${meal}')"
+                               onclick="event.stopPropagation()"
+                               class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer">
+                    `;
+                    container.appendChild(option);
+                });
+            }
+            
+            // Cuisine filters (third)
+            if (filters.cuisines.length > 0) {
+                const cuisineHeader = document.createElement('div');
+                cuisineHeader.className = 'text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 pt-3 pb-1';
+                cuisineHeader.textContent = 'Kjøkken';
+                container.appendChild(cuisineHeader);
+                
+                filters.cuisines.forEach(cuisine => {
+                    const isSelected = activeFilters.has(`cuisine:${cuisine}`);
+                    const option = document.createElement('label');
+                    option.className = 'flex items-center justify-between p-2 hover:bg-amber-50 rounded cursor-pointer';
+                    option.innerHTML = `
+                        <span class="text-sm text-gray-700">${cuisine}</span>
+                        <input type="checkbox" 
+                               ${isSelected ? 'checked' : ''} 
+                               onchange="toggleFilterType('cuisine:${cuisine}')"
+                               onclick="event.stopPropagation()"
+                               class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer">
+                    `;
+                    container.appendChild(option);
+                });
+            }
+        }
+
+        // Toggle filter type selection
+        function toggleFilterType(type) {
+            if (activeFilters.has(type)) {
+                activeFilters.delete(type);
+            } else {
+                activeFilters.set(type, true);
+            }
+            renderFilterPills();
+            updateFilterButton();
+            applyFilters();
+            renderFilterOptions();
+        }
+
+        // Render filter pills
+        function renderFilterPills() {
+            const container = document.getElementById('filterPillsContainer');
+            const hasFilters = activeFilters.size > 0;
+            
+            container.innerHTML = '';
+            container.style.maxWidth = hasFilters ? '100%' : '0';
+            container.style.opacity = hasFilters ? '1' : '0';
+            
+            activeFilters.forEach((isActive, filterKey) => {
+                const [filterType, filterValue] = filterKey.split(':');
+                const displayName = filterValue || filterKey; // Fallback for old filters
+                
+                const pill = document.createElement('div');
+                pill.className = `flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-all ${
+                    isActive 
+                        ? 'bg-amber-600 text-white' 
+                        : 'bg-gray-200 text-gray-500 opacity-60'
+                }`;
+                pill.innerHTML = `
+                    <span class="cursor-pointer" onclick="togglePillActive('${filterKey}')">${displayName}</span>
+                    <button onclick="removeFilter('${filterKey}')" class="ml-1 hover:opacity-70">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                `;
+                container.appendChild(pill);
+            });
+            
+            // Update clear button visibility
+            const clearBtn = document.getElementById('clearFilters');
+            if (hasFilters) {
+                clearBtn.classList.remove('opacity-0', 'pointer-events-none');
+                clearBtn.classList.add('opacity-100');
+            } else {
+                clearBtn.classList.add('opacity-0', 'pointer-events-none');
+                clearBtn.classList.remove('opacity-100');
+            }
+        }
+
+        // Toggle pill active/inactive state
+        function togglePillActive(type) {
+            if (activeFilters.has(type)) {
+                activeFilters.set(type, !activeFilters.get(type));
+                renderFilterPills();
+                applyFilters();
+            }
+        }
+
+        // Remove filter
+        function removeFilter(type) {
+            activeFilters.delete(type);
+            renderFilterPills();
+            updateFilterButton();
+            applyFilters();
+            renderFilterOptions();
+        }
+
+        // Update filter button state
+        function updateFilterButton() {
+            const btn = document.getElementById('filterToggle');
+            const count = document.getElementById('filterCount');
+            const hasFilters = activeFilters.size > 0;
+            
+            btn.className = 'flex items-center space-x-2 px-3 py-1.5 rounded-lg transition text-sm shrink-0';
+            
+            if (hasFilters) {
+                btn.classList.add('bg-amber-600', 'text-white', 'hover:bg-amber-700');
+                count.textContent = activeFilters.size;
+                count.classList.remove('hidden');
+                count.classList.add('bg-white/20');
+            } else {
+                btn.classList.add('border', 'border-gray-300', 'text-gray-600', 'hover:border-amber-600', 'hover:text-amber-600');
+                count.classList.add('hidden');
+            }
+        }
+
+        // Toggle filter menu
+        function toggleFilterMenu() {
+            const menu = document.querySelector('#filterMenu > div');
+            
+            if (!filterMenuOpen) {
+                renderFilterOptions();
+                menu.classList.remove('hidden');
+                filterMenuOpen = true;
+            } else {
+                menu.classList.add('hidden');
+                filterMenuOpen = false;
+            }
+        }
+
+        // Clear all filters
+        function clearAllFilters() {
+            activeFilters.clear();
+            renderFilterPills();
+            updateFilterButton();
+            applyFilters();
+            renderFilterOptions();
+        }
+
+        // Apply both search and type filters
+        function applyFilters() {
+            let filtered = Object.keys(recipeDatabase);
+            
+            // Apply filters (category, meal and cuisine)
+            const activeCategoryFilters = [];
+            const activeMealFilters = [];
+            const activeCuisineFilters = [];
+            
+            activeFilters.forEach((isActive, filterKey) => {
+                if (!isActive) return;
+                
+                const [filterType, filterValue] = filterKey.split(':');
+                if (filterType === 'category') {
+                    activeCategoryFilters.push(filterValue);
+                } else if (filterType === 'meal') {
+                    activeMealFilters.push(filterValue);
+                } else if (filterType === 'cuisine') {
+                    activeCuisineFilters.push(filterValue);
+                }
+            });
+            
+            // Filter by category
+            if (activeCategoryFilters.length > 0) {
+                filtered = filtered.filter(id => 
+                    activeCategoryFilters.includes(recipeDatabase[id].category)
+                );
+            }
+            
+            // Filter by meal type
+            if (activeMealFilters.length > 0) {
+                filtered = filtered.filter(id => 
+                    activeMealFilters.includes(recipeDatabase[id].meal)
+                );
+            }
+            
+            // Filter by cuisine type
+            if (activeCuisineFilters.length > 0) {
+                filtered = filtered.filter(id => 
+                    activeCuisineFilters.includes(recipeDatabase[id].cuisine)
+                );
+            }
+            
+            // Apply search filter
+            if (searchQuery) {
+                filtered = filtered.filter(id => {
+                    const recipe = recipeDatabase[id];
+                    const titleMatch = recipe.title.toLowerCase().includes(searchQuery);
+                    
+                    // Handle both grouped and non-grouped ingredient formats
+                    let ingredientMatch = false;
+                    if (recipe.ingredients) {
+                        recipe.ingredients.forEach(item => {
+                            if (typeof item === 'string') {
+                                if (item.toLowerCase().includes(searchQuery)) {
+                                    ingredientMatch = true;
+                                }
+                            } else if (item.items) {
+                                item.items.forEach(ing => {
+                                    if (ing.toLowerCase().includes(searchQuery)) {
+                                        ingredientMatch = true;
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    
+                    return titleMatch || ingredientMatch;
+                });
+            }
+            
+            renderRecipes(filtered);
+        }
+
+        // Close filter menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('filterMenu');
+            const toggle = document.getElementById('filterToggle');
+            
+            if (filterMenuOpen && 
+                !menu.contains(e.target) && 
+                !toggle.contains(e.target)) {
+                toggleFilterMenu();
+            }
+        });
 
         // Render recipes
         function renderRecipes(recipesToRender = null) {
@@ -282,6 +895,7 @@
         function createRecipeCard(recipe) {
             const card = document.createElement('div');
             card.className = 'recipe-card bg-white rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl';
+            card.setAttribute('data-recipe-id', recipe.id);
             card.onclick = () => showRecipe(recipe.id);
             
             const imageUrl = recipe.image || `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop`;
@@ -292,24 +906,76 @@
                     `<div class="w-full h-full flex items-center justify-center">
                         <span class="text-6xl opacity-30">🍞</span>
                     </div>`}
+                    ${recipe.category ? `<span class="absolute top-2 right-2 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
                 </div>
                 <div class="p-5">
                     <h3 class="font-display text-xl text-gray-800 mb-2">${recipe.title}</h3>
                     <p class="text-gray-600 text-sm mb-3">${recipe.servings}</p>
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-1">
+                        <div class="recipe-stars flex items-center space-x-1">
                             ${renderStars(recipe.rating)}
                             <span class="text-xs text-gray-500 ml-1">(${recipe.ratingCount || 0})</span>
                         </div>
                         <div class="flex items-center text-sm text-gray-600">
                             <span class="mr-1">👨‍🍳</span>
-                            <span>${recipe.madeCount || 0}</span>
+                            <span class="recipe-counter">${recipe.madeDates ? recipe.madeDates.length : 0}</span>
                         </div>
                     </div>
                 </div>
             `;
             
             return card;
+        }
+
+        // Render ingredients (handles both grouped and non-grouped formats)
+        function renderIngredients(ingredients) {
+            if (!ingredients || ingredients.length === 0) return '';
+            
+            // Check if ingredients are grouped (contains objects) or simple (strings)
+            const hasGroups = ingredients.some(item => typeof item === 'object' && item.group);
+            
+            if (!hasGroups) {
+                // Simple list format (backwards compatible)
+                return `
+                    <ul class="space-y-2">
+                        ${ingredients.map(ing => `
+                            <li class="flex items-start">
+                                <span class="text-amber-600 mr-2">•</span>
+                                <span class="text-gray-700">${ing}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+            } else {
+                // Grouped format
+                return ingredients.map((group, index) => {
+                    // Handle mixed format (some grouped, some not)
+                    if (typeof group === 'string') {
+                        return `
+                            <ul class="space-y-2 ${index > 0 ? 'mt-4' : ''}">
+                                <li class="flex items-start">
+                                    <span class="text-amber-600 mr-2">•</span>
+                                    <span class="text-gray-700">${group}</span>
+                                </li>
+                            </ul>
+                        `;
+                    }
+                    
+                    return `
+                        <div class="${index > 0 ? 'mt-5' : ''}">
+                            <h4 class="font-semibold text-sm text-amber-700 mb-2">${group.group}:</h4>
+                            <ul class="space-y-2">
+                                ${group.items.map(ing => `
+                                    <li class="flex items-start">
+                                        <span class="text-amber-600 mr-2">•</span>
+                                        <span class="text-gray-700">${ing}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }).join('');
+            }
         }
 
         // Render star rating
@@ -332,11 +998,12 @@
             const recipe = getRecipeWithUserData(recipeId);
             if (!recipe) return;
             
-            // Update last viewed
+            // Update view tracking
             if (!userData[recipeId]) {
                 initializeUserData(recipeId);
             }
             userData[recipeId].lastViewed = new Date().toISOString();
+            userData[recipeId].viewCount = (userData[recipeId].viewCount || 0) + 1;
             saveData();
             
             const modal = document.getElementById('recipeModal');
@@ -344,14 +1011,19 @@
             
             const imageUrl = recipe.image || `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop`;
             
+            // Check if recipe was made today
+            const today = new Date().toISOString().split('T')[0];
+            const madeToday = recipe.madeDates && recipe.madeDates.includes(today);
+            const madeCount = recipe.madeDates ? recipe.madeDates.length : 0;
+            
             content.innerHTML = `
-                <div class="relative">
+                <div class="relative flex flex-col h-full">
                     <button onclick="closeRecipe()" class="absolute top-4 right-4 bg-white/90 rounded-full p-2 hover:bg-white z-10">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
-                    <div class="h-64 bg-gradient-to-br from-amber-100 to-orange-100 relative">
+                    <div class="h-64 bg-gradient-to-br from-amber-100 to-orange-100 relative flex-shrink-0">
                         ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
                         `<div class="w-full h-full flex items-center justify-center">
                             <span class="text-8xl opacity-30">🍞</span>
@@ -359,51 +1031,70 @@
                         <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                         <div class="absolute bottom-4 left-6 text-white">
                             <h2 class="font-display text-3xl mb-1">${recipe.title}</h2>
-                            <p class="text-lg opacity-90">${recipe.servings}</p>
+                            <div class="flex items-center flex-wrap gap-2">
+                                <p class="text-lg opacity-90">${recipe.servings}</p>
+                                ${recipe.category ? `<span class="text-sm bg-white/20 backdrop-blur px-2 py-0.5 rounded-full">${recipe.category}</span>` : ''}
+                                ${recipe.meal ? `<span class="text-sm bg-white/20 backdrop-blur px-2 py-0.5 rounded-full">${recipe.meal}</span>` : ''}
+                                ${recipe.cuisine ? `<span class="text-sm bg-white/20 backdrop-blur px-2 py-0.5 rounded-full">${recipe.cuisine}</span>` : ''}
+                            </div>
                         </div>
                     </div>
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="flex items-center space-x-4">
-                                <div class="flex items-center">
-                                    ${renderInteractiveStars(recipe)}
+                    <div class="flex-1 flex flex-col overflow-hidden">
+                        <div class="px-6 pt-6 pb-4 flex-shrink-0">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <div class="flex items-center">
+                                        ${renderInteractiveStars(recipe)}
+                                    </div>
+                                    <span class="text-sm text-gray-600">${recipe.ratingCount ? recipe.ratingCount + (recipe.ratingCount > 1 ? ' vurderinger' : ' vurdering') : '0 vurderinger'}</span>
                                 </div>
-                                <span class="text-sm text-gray-600">${recipe.ratingCount || 0} vurderinger</span>
+                                <button onclick="toggleMadeToday('${recipe.id}', event)" 
+                                        class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg transition text-xs sm:text-sm
+                                               ${madeToday 
+                                                 ? 'bg-amber-600 text-white hover:bg-amber-700' 
+                                                 : 'border border-gray-300 text-gray-600 hover:border-amber-600 hover:text-amber-600'}">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="${madeToday ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span class="font-medium">Laget (${madeCount})</span>
+                                </button>
                             </div>
-                            <button onclick="madeThis('${recipe.id}')" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition">
-                                Jeg lagde dette! (${recipe.madeCount || 0})
-                            </button>
                         </div>
                         
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <h3 class="font-display text-xl text-amber-800 mb-3">Ingredienser</h3>
-                                <ul class="space-y-2">
-                                    ${recipe.ingredients.map(ing => `
-                                        <li class="flex items-start">
-                                            <span class="text-amber-600 mr-2">•</span>
-                                            <span class="text-gray-700">${ing}</span>
-                                        </li>
-                                    `).join('')}
-                                </ul>
+                        ${recipe.description ? `
+                        <div class="px-6 pb-4 flex-shrink-0">
+                            <p class="text-gray-700 leading-relaxed">${recipe.description}</p>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="grid md:grid-cols-2 gap-6 px-6 pb-6 flex-1 overflow-hidden">
+                            <div class="flex flex-col">
+                                <h3 class="font-display text-xl text-amber-800 mb-3 flex-shrink-0">Ingredienser</h3>
+                                <div class="overflow-y-auto pr-2 recipe-scroll" style="max-height: calc(100vh - ${recipe.description ? '600' : '550'}px);">
+                                    ${renderIngredients(recipe.ingredients)}
+                                </div>
                             </div>
                             
-                            <div>
-                                <h3 class="font-display text-xl text-amber-800 mb-3">Fremgangsmåte</h3>
-                                <ol class="space-y-3">
-                                    ${recipe.instructions.map((inst, i) => `
-                                        <li class="flex items-start">
-                                            <span class="font-semibold text-amber-600 mr-3 mt-0.5">${i + 1}.</span>
-                                            <span class="text-gray-700">${inst}</span>
-                                        </li>
-                                    `).join('')}
-                                </ol>
+                            <div class="flex flex-col">
+                                <h3 class="font-display text-xl text-amber-800 mb-3 flex-shrink-0">Fremgangsmåte</h3>
+                                <div class="overflow-y-auto pr-2 recipe-scroll" style="max-height: calc(100vh - ${recipe.description ? '600' : '550'}px);">
+                                    <ol class="space-y-3">
+                                        ${recipe.instructions.map((inst, i) => `
+                                            <li class="flex items-start">
+                                                <span class="font-semibold text-amber-600 mr-3 mt-0.5">${i + 1}.</span>
+                                                <span class="text-gray-700">${inst}</span>
+                                            </li>
+                                        `).join('')}
+                                    </ol>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
             
+            // Lock body scroll
+            document.body.style.overflow = 'hidden';
             modal.classList.remove('hidden');
         }
 
@@ -413,7 +1104,7 @@
             const userRating = recipe.userRating || 0;
             for (let i = 1; i <= 5; i++) {
                 const filled = i <= userRating;
-                stars += `<button onclick="rateRecipe('${recipe.id}', ${i})" class="star text-2xl ${filled ? 'text-amber-400' : 'text-gray-300'} hover:text-amber-500">★</button>`;
+                stars += `<button onclick="rateRecipe('${recipe.id}', ${i}, event)" class="star text-2xl ${filled ? 'text-amber-400' : 'text-gray-300'} hover:text-amber-500">★</button>`;
             }
             return stars;
         }
@@ -421,57 +1112,139 @@
         // Close recipe modal
         function closeRecipe() {
             document.getElementById('recipeModal').classList.add('hidden');
+            // Restore body scroll
+            document.body.style.overflow = '';
         }
 
         // Rate recipe
-        function rateRecipe(recipeId, rating) {
+        function rateRecipe(recipeId, rating, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            
             if (!userData[recipeId]) {
                 initializeUserData(recipeId);
             }
             
             const userInfo = userData[recipeId];
-            const previousUserRating = userInfo.userRating;
-            
-            // If user had already rated, update the average
-            if (previousUserRating) {
-                const totalRating = userInfo.rating * userInfo.ratingCount;
-                const newTotal = totalRating - previousUserRating + rating;
-                userInfo.rating = newTotal / userInfo.ratingCount;
-            } else {
-                // New rating
-                const totalRating = userInfo.rating * userInfo.ratingCount;
-                userInfo.ratingCount++;
-                userInfo.rating = (totalRating + rating) / userInfo.ratingCount;
-            }
-            
             userInfo.userRating = rating;
             
+            // For simplicity, just track the user's rating
+            // Could expand this to track average of multiple ratings if needed
+            userInfo.rating = rating;
+            userInfo.ratingCount = 1;
+            
             saveData();
-            showRecipe(recipeId); // Refresh modal
-            renderRecipes(); // Refresh grid
+            
+            // Update stars without rebuilding modal
+            const button = event ? event.currentTarget : null;
+            if (button && button.parentElement) {
+                const starsContainer = button.parentElement;
+                const stars = starsContainer.querySelectorAll('button');
+                stars.forEach((star, index) => {
+                    if (index < rating) {
+                        star.classList.remove('text-gray-300');
+                        star.classList.add('text-amber-400');
+                    } else {
+                        star.classList.remove('text-amber-400');
+                        star.classList.add('text-gray-300');
+                    }
+                });
+                
+                // Update rating count text
+                const ratingCountEl = starsContainer.parentElement.nextElementSibling;
+                if (ratingCountEl && ratingCountEl.classList.contains('text-sm')) {
+                    ratingCountEl.textContent = `${userInfo.ratingCount} vurdering${userInfo.ratingCount > 1 ? 'er' : ''}`;
+                }
+            }
+            
+            // Update the rating in the grid cards
+            updateRecipeCardRating(recipeId, userInfo.rating, userInfo.ratingCount);
+            
+            // Refresh recommendations after rating
+            setTimeout(() => getRecommendations(), 100);
+        }
+        
+        // Update recipe card rating in the grid
+        function updateRecipeCardRating(recipeId, rating, ratingCount) {
+            const cards = document.querySelectorAll(`[data-recipe-id="${recipeId}"]`);
+            cards.forEach(card => {
+                // Update stars
+                const starsContainer = card.querySelector('.recipe-stars');
+                if (starsContainer) {
+                    starsContainer.innerHTML = renderStars(rating) + `<span class="text-xs text-gray-500 ml-1">(${ratingCount || 0})</span>`;
+                }
+            });
         }
 
-        // Made this recipe
-        function madeThis(recipeId) {
+        // Toggle made today
+        function toggleMadeToday(recipeId, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            
             if (!userData[recipeId]) {
                 initializeUserData(recipeId);
             }
             
-            userData[recipeId].madeCount++;
+            const today = new Date().toISOString().split('T')[0];
+            const madeDates = userData[recipeId].madeDates || [];
+            
+            const todayIndex = madeDates.indexOf(today);
+            if (todayIndex > -1) {
+                madeDates.splice(todayIndex, 1);
+            } else {
+                madeDates.push(today);
+            }
+            
+            userData[recipeId].madeDates = madeDates;
             saveData();
-            showRecipe(recipeId); // Refresh modal
-            renderRecipes(); // Refresh grid
+            
+            // Update button appearance without rebuilding modal
+            const madeToday = madeDates.includes(today);
+            const madeCount = madeDates.length;
+            const button = event ? event.currentTarget : document.querySelector(`button[onclick*="toggleMadeToday('${recipeId}'"]`);
+            
+            if (button) {
+                // Update button classes
+                button.className = `flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg transition text-xs sm:text-sm ${
+                    madeToday 
+                        ? 'bg-amber-600 text-white hover:bg-amber-700' 
+                        : 'border border-gray-300 text-gray-600 hover:border-amber-600 hover:text-amber-600'
+                }`;
+                
+                // Update button content
+                button.innerHTML = `
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="${madeToday ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span class="font-medium">Laget (${madeCount})</span>
+                `;
+            }
+            
+            // Update the cooked counter in the main grid card
+            updateRecipeCardCounter(recipeId, madeCount);
+            
+            // Refresh recommendations after significant interaction
+            setTimeout(() => getRecommendations(), 100);
+        }
+        
+        // Update recipe card counter in the grid
+        function updateRecipeCardCounter(recipeId, count) {
+            // Find all recipe cards with this ID (in both main grid and recommendations)
+            const cards = document.querySelectorAll(`[data-recipe-id="${recipeId}"]`);
+            cards.forEach(card => {
+                const counterElement = card.querySelector('.recipe-counter');
+                if (counterElement) {
+                    counterElement.textContent = count;
+                }
+            });
         }
 
         // Search functionality
         document.getElementById('searchInput').addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            const filtered = Object.keys(recipeDatabase).filter(recipeId => {
-                const recipe = recipeDatabase[recipeId];
-                return recipe.title.toLowerCase().includes(query) ||
-                       recipe.ingredients.some(ing => ing.toLowerCase().includes(query));
-            });
-            renderRecipes(filtered);
+            searchQuery = e.target.value.toLowerCase();
+            applyFilters();
         });
 
         // Get recommendations
@@ -481,7 +1254,6 @@
             let recs = [];
             const recipeIds = Object.keys(recipeDatabase);
             
-            // Sort by various criteria for recommendations
             const threeDaysAgo = new Date();
             threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
             
@@ -528,87 +1300,17 @@
             });
         }
 
-        // Generate unique ID for new recipes
-        function generateRecipeId() {
-            return 'recipe_' + Date.now();
-        }
-
-        // Show add recipe modal
-        function showAddRecipe() {
-            document.getElementById('addRecipeModal').classList.remove('hidden');
-        }
-
-        // Close add recipe modal
-        function closeAddRecipe() {
-            document.getElementById('addRecipeModal').classList.add('hidden');
-            document.getElementById('addRecipeForm').reset();
-        }
-
-        // Add new recipe
-        document.getElementById('addRecipeForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const recipeId = generateRecipeId();
-            
-            // Add to recipe database
-            recipeDatabase[recipeId] = {
-                id: recipeId,
-                title: document.getElementById('newTitle').value,
-                servings: document.getElementById('newServings').value,
-                ingredients: document.getElementById('newIngredients').value.split('\n').filter(i => i.trim()),
-                instructions: document.getElementById('newInstructions').value.split('\n').filter(i => i.trim()),
-                image: document.getElementById('newImage').value || null,
-                createdAt: new Date().toISOString()
-            };
-            
-            // Initialize user data for new recipe
-            initializeUserData(recipeId);
-            
-            saveData();
-            renderRecipes();
-            getRecommendations();
-            closeAddRecipe();
-        });
-
-        // Close modals on outside click
+        // Close modal on outside click
         document.getElementById('recipeModal').addEventListener('click', (e) => {
-            if (e.target.id === 'recipeModal') closeRecipe();
-        });
-        document.getElementById('addRecipeModal').addEventListener('click', (e) => {
-            if (e.target.id === 'addRecipeModal') closeAddRecipe();
-        });
-
-        // Export recipes (for sharing)
-        function exportRecipes() {
-            const dataStr = JSON.stringify(recipeDatabase, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            const exportFileDefaultName = 'recipes.json';
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-        }
-
-        // Import recipes (for sharing)
-        function importRecipes(jsonData) {
-            try {
-                const importedRecipes = JSON.parse(jsonData);
-                Object.keys(importedRecipes).forEach(recipeId => {
-                    recipeDatabase[recipeId] = importedRecipes[recipeId];
-                    if (!userData[recipeId]) {
-                        initializeUserData(recipeId);
-                    }
-                });
-                saveData();
-                renderRecipes();
-                getRecommendations();
-            } catch (e) {
-                console.error('Error importing recipes:', e);
+            const modalContent = document.querySelector('#recipeModal > div > div');
+            if (!modalContent.contains(e.target)) {
+                closeRecipe();
             }
-        }
+        });
 
-        // Initial render
+        // Initialize
+        loadData();
+        updateFilterButton();
         renderRecipes();
         getRecommendations();
     </script>
