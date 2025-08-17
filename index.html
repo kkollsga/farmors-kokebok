@@ -25,9 +25,6 @@
         .star:hover {
             transform: scale(1.2);
         }
-        .gradient-overlay {
-            background: linear-gradient(135deg, rgba(251,207,232,0.1) 0%, rgba(254,249,195,0.1) 100%);
-        }
         button svg {
             transition: transform 0.2s ease;
         }
@@ -86,18 +83,28 @@
             }
         }
         @media (max-width: 640px) {
+            #recipeModal {
+                padding: 0 !important;
+            }
             .modal-content-mobile {
-                max-height: 100vh;
-                max-height: 100dvh;
-                max-height: -webkit-fill-available;
+                height: 100vh;
+                height: 100dvh;
+                height: -webkit-fill-available;
                 width: 100vw !important;
                 max-width: 100vw !important;
                 border-radius: 0 !important;
+                margin: 0 !important;
             }
             .modal-scroll-mobile {
                 overflow-y: auto !important;
                 max-height: none !important;
                 padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 40px);
+            }
+            .modal-close-mobile {
+                position: fixed !important;
+                top: 16px !important;
+                right: 16px !important;
+                z-index: 50 !important;
             }
         }
         /* Modern input focus styles */
@@ -114,6 +121,15 @@
         }
         .safe-top {
             padding-top: env(safe-area-inset-top, 0);
+        }
+        /* Category badge hover effect */
+        .category-badge {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .category-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
     </style>
 </head>
@@ -219,10 +235,10 @@
             "recipe_1": {
                 id: "recipe_1",
                 title: "Rundstykker",
-                provider: "Bestemor",  // Optional: who provided the recipe
-                category: "Brød",          // Product type: Brød, Kake, Bakeverk, etc.
-                meal: "Frokost",           // When to eat: Frokost, Lunsj, Middag, etc.
-                cuisine: "Norsk",          // Origin/style: Norsk, Italiensk, etc.
+                provider: "Bestemor",
+                category: "Brød",
+                meal: "Frokost",
+                cuisine: "Norsk",
                 servings: "ca. 16 stk.",
                 description: "Disse luftige rundstykkene er perfekte til søndagsfrokosten. Med en sprø skorpe og myk innmat, smaker de fantastisk med både søtt og salt pålegg. Oppskriften er enkel å følge og gir konsistente resultater hver gang.",
                 ingredients: [
@@ -594,8 +610,6 @@
         };
 
         // User data - automatically saved to localStorage
-        // Tracks: ratings, made dates, last viewed timestamps
-        // This data powers the smart recommendation system
         let userData = {};
 
         // Load user data from localStorage
@@ -630,7 +644,7 @@
                     userRating: null,
                     madeDates: [],
                     lastViewed: null,
-                    viewCount: 0,  // Track total views
+                    viewCount: 0,
                     favorite: false
                 };
             }
@@ -655,6 +669,31 @@
             };
         }
 
+        // Activate filter by clicking on category/meal/cuisine
+        function activateFilter(filterType, filterValue, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            
+            const filterKey = `${filterType}:${filterValue}`;
+            
+            // Close modal if it's open
+            const modal = document.getElementById('recipeModal');
+            if (!modal.classList.contains('hidden')) {
+                closeRecipe();
+            }
+            
+            // Add filter if not already active
+            if (!activeFilters.has(filterKey)) {
+                activeFilters.set(filterKey, true);
+                renderFilterPills();
+                updateFilterButton();
+                applyFilters();
+                renderFilterOptions();
+                updateRecommendationsVisibility();
+            }
+        }
+
         // Render filter options in dropdown
         function renderFilterOptions() {
             const container = document.getElementById('filterOptions');
@@ -662,7 +701,7 @@
             
             container.innerHTML = '';
             
-            // Category filters (first)
+            // Category filters
             if (filters.categories.length > 0) {
                 const categoryHeader = document.createElement('div');
                 categoryHeader.className = 'text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 pt-1 pb-1';
@@ -685,7 +724,7 @@
                 });
             }
             
-            // Meal filters (second)
+            // Meal filters
             if (filters.meals.length > 0) {
                 const mealHeader = document.createElement('div');
                 mealHeader.className = 'text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 pt-3 pb-1';
@@ -708,7 +747,7 @@
                 });
             }
             
-            // Cuisine filters (third)
+            // Cuisine filters
             if (filters.cuisines.length > 0) {
                 const cuisineHeader = document.createElement('div');
                 cuisineHeader.className = 'text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 pt-3 pb-1';
@@ -772,7 +811,7 @@
             
             activeFilters.forEach((isActive, filterKey) => {
                 const [filterType, filterValue] = filterKey.split(':');
-                const displayName = filterValue || filterKey; // Fallback for old filters
+                const displayName = filterValue || filterKey;
                 
                 const pill = document.createElement('div');
                 pill.className = `flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm ${
@@ -868,7 +907,7 @@
         function applyFilters() {
             let filtered = Object.keys(recipeDatabase);
             
-            // Apply filters (category, meal and cuisine)
+            // Apply filters
             const activeCategoryFilters = [];
             const activeMealFilters = [];
             const activeCuisineFilters = [];
@@ -979,7 +1018,7 @@
                     `<div class="w-full h-full flex items-center justify-center">
                         <span class="text-6xl opacity-30">🍞</span>
                     </div>`}
-                    ${recipe.category ? `<span class="absolute top-2 right-2 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
+                    ${recipe.category ? `<span onclick="activateFilter('category', '${recipe.category}', event)" class="category-badge absolute top-2 right-2 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
                 </div>
                 <div class="p-5">
                     <h3 class="font-display text-xl text-gray-800 ${recipe.provider ? 'mb-0' : 'mb-2'}">${recipe.title}</h3>
@@ -1004,11 +1043,11 @@
         function renderIngredients(ingredients) {
             if (!ingredients || ingredients.length === 0) return '';
             
-            // Check if ingredients are grouped (contains objects) or simple (strings)
+            // Check if ingredients are grouped
             const hasGroups = ingredients.some(item => typeof item === 'object' && item.group);
             
             if (!hasGroups) {
-                // Simple list format (backwards compatible)
+                // Simple list format
                 return `
                     <ul class="space-y-2">
                         ${ingredients.map(ing => `
@@ -1022,7 +1061,6 @@
             } else {
                 // Grouped format
                 return ingredients.map((group, index) => {
-                    // Handle mixed format (some grouped, some not)
                     if (typeof group === 'string') {
                         return `
                             <ul class="space-y-2 ${index > 0 ? 'mt-4' : ''}">
@@ -1096,7 +1134,7 @@
             if (isMobile()) {
                 content.innerHTML = `
                     <div class="relative flex flex-col h-full overflow-y-auto modal-scroll-mobile">
-                        <button onclick="closeRecipe()" class="absolute top-4 right-4 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white z-10 shadow-lg">
+                        <button onclick="closeRecipe()" class="modal-close-mobile bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg">
                             <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
@@ -1106,7 +1144,7 @@
                             `<div class="w-full h-full flex items-center justify-center">
                                 <span class="text-8xl opacity-30">🍞</span>
                             </div>`}
-                            ${recipe.category ? `<span class="absolute top-4 left-4 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
+                            ${recipe.category ? `<span onclick="activateFilter('category', '${recipe.category}', event)" class="category-badge absolute top-4 left-4 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
                         </div>
                         <div class="flex-1 px-4 pb-12 bg-white">
                             <div class="pt-4 pb-3">
@@ -1130,9 +1168,9 @@
                                 </div>
                                 ${recipe.cuisine || recipe.meal ? `
                                 <div class="text-xs text-gray-500">
-                                    ${recipe.cuisine ? `<span>${recipe.cuisine} kjøkken</span>` : ''}
-                                    ${recipe.cuisine && recipe.meal ? ' • ' : ''}
-                                    ${recipe.meal ? `<span>${recipe.meal}</span>` : ''}
+                                    ${recipe.cuisine ? `<span onclick="activateFilter('cuisine', '${recipe.cuisine}', event)" class="category-badge inline-block px-2 py-0.5 bg-gray-100 rounded-full cursor-pointer hover:bg-amber-100">${recipe.cuisine} kjøkken</span>` : ''}
+                                    ${recipe.cuisine && recipe.meal ? ' ' : ''}
+                                    ${recipe.meal ? `<span onclick="activateFilter('meal', '${recipe.meal}', event)" class="category-badge inline-block px-2 py-0.5 bg-gray-100 rounded-full cursor-pointer hover:bg-amber-100">${recipe.meal}</span>` : ''}
                                 </div>
                                 ` : ''}
                             </div>
@@ -1154,7 +1192,7 @@
                                     <ol class="space-y-3">
                                         ${recipe.instructions.map((inst, i) => `
                                             <li class="flex items-start">
-                                                <span class="font-semibold text-amber-600 mr-3 mt-0.5">${i + 1}.</span>
+                                                <span class="font-semibold text-amber-600 mr-3 flex-shrink-0">${i + 1}.</span>
                                                 <span class="text-gray-700 text-sm">${inst}</span>
                                             </li>
                                         `).join('')}
@@ -1165,7 +1203,7 @@
                     </div>
                 `;
             } else {
-                // Desktop layout (improved styling to match cards)
+                // Desktop layout
                 content.innerHTML = `
                     <div class="relative flex flex-col h-full">
                         <button onclick="closeRecipe()" class="absolute top-4 right-4 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white z-10 shadow-lg">
@@ -1178,7 +1216,7 @@
                             `<div class="w-full h-full flex items-center justify-center">
                                 <span class="text-8xl opacity-30">🍞</span>
                             </div>`}
-                            ${recipe.category ? `<span class="absolute top-4 left-6 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
+                            ${recipe.category ? `<span onclick="activateFilter('category', '${recipe.category}', event)" class="category-badge absolute top-4 left-6 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
                         </div>
                         <div class="flex-1 flex flex-col overflow-hidden bg-white">
                             <div class="px-6 pt-5 pb-4 flex-shrink-0 border-b border-gray-100">
@@ -1192,9 +1230,9 @@
                                         </div>
                                         ${recipe.cuisine || recipe.meal ? `
                                         <div class="text-sm text-gray-500">
-                                            ${recipe.cuisine ? `<span>${recipe.cuisine} kjøkken</span>` : ''}
-                                            ${recipe.cuisine && recipe.meal ? ' • ' : ''}
-                                            ${recipe.meal ? `<span>${recipe.meal}</span>` : ''}
+                                            ${recipe.cuisine ? `<span onclick="activateFilter('cuisine', '${recipe.cuisine}', event)" class="category-badge inline-block px-2 py-0.5 bg-gray-100 rounded-full cursor-pointer hover:bg-amber-100">${recipe.cuisine} kjøkken</span>` : ''}
+                                            ${recipe.cuisine && recipe.meal ? ' ' : ''}
+                                            ${recipe.meal ? `<span onclick="activateFilter('meal', '${recipe.meal}', event)" class="category-badge inline-block px-2 py-0.5 bg-gray-100 rounded-full cursor-pointer hover:bg-amber-100">${recipe.meal}</span>` : ''}
                                         </div>
                                         ` : ''}
                                     </div>
@@ -1231,7 +1269,7 @@
                                         <ol class="space-y-3">
                                             ${recipe.instructions.map((inst, i) => `
                                                 <li class="flex items-start">
-                                                    <span class="font-semibold text-amber-600 mr-3 mt-0.5">${i + 1}.</span>
+                                                    <span class="font-semibold text-amber-600 mr-3 flex-shrink-0">${i + 1}.</span>
                                                     <span class="text-gray-700">${inst}</span>
                                                 </li>
                                             `).join('')}
@@ -1244,7 +1282,7 @@
                 `;
             }
             
-            // Lock body scroll - improved implementation
+            // Lock body scroll
             scrollPosition = window.pageYOffset;
             document.body.classList.add('modal-open');
             document.body.style.top = `-${scrollPosition}px`;
@@ -1265,13 +1303,13 @@
         // Close recipe modal
         function closeRecipe() {
             document.getElementById('recipeModal').classList.add('hidden');
-            // Restore body scroll - improved implementation
+            // Restore body scroll
             document.body.classList.remove('modal-open');
             document.body.style.top = '';
             window.scrollTo(0, scrollPosition);
         }
 
-        // Rate recipe (simplified - no rating count)
+        // Rate recipe
         function rateRecipe(recipeId, rating, event) {
             if (event) {
                 event.stopPropagation();
@@ -1281,7 +1319,6 @@
                 initializeUserData(recipeId);
             }
             
-            // Simply set the user's rating
             userData[recipeId].userRating = rating;
             saveData();
             
@@ -1312,7 +1349,6 @@
         function updateRecipeCardRating(recipeId, rating) {
             const cards = document.querySelectorAll(`[data-recipe-id="${recipeId}"]`);
             cards.forEach(card => {
-                // Update stars
                 const starsContainer = card.querySelector('.recipe-stars');
                 if (starsContainer) {
                     starsContainer.innerHTML = renderStars(rating);
@@ -1349,7 +1385,7 @@
             const button = event ? event.currentTarget : document.querySelector(`button[onclick*="toggleMadeToday('${recipeId}'"]`);
             
             if (button) {
-                // Update button classes (mobile vs desktop)
+                // Update button classes
                 if (isMobile()) {
                     button.className = `flex items-center space-x-1 px-3 py-1.5 rounded-lg transition text-xs font-medium ${
                         madeToday 
@@ -1373,16 +1409,15 @@
                 `;
             }
             
-            // Update the cooked counter in the main grid card
+            // Update the cooked counter in the grid
             updateRecipeCardCounter(recipeId, madeCount);
             
-            // Refresh recommendations after significant interaction
+            // Refresh recommendations
             setTimeout(() => getRecommendations(), 100);
         }
         
         // Update recipe card counter in the grid
         function updateRecipeCardCounter(recipeId, count) {
-            // Find all recipe cards with this ID (in both main grid and recommendations)
             const cards = document.querySelectorAll(`[data-recipe-id="${recipeId}"]`);
             cards.forEach(card => {
                 const counterElement = card.querySelector('.recipe-counter');
