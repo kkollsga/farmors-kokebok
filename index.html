@@ -97,7 +97,7 @@
             .modal-scroll-mobile {
                 overflow-y: auto !important;
                 max-height: none !important;
-                padding-bottom: env(safe-area-inset-bottom, 20px);
+                padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 40px);
             }
         }
         /* Modern input focus styles */
@@ -589,7 +589,7 @@
         };
 
         // User data - automatically saved to localStorage
-        // Tracks: ratings, view counts, made dates, last viewed timestamps
+        // Tracks: ratings, made dates, last viewed timestamps
         // This data powers the smart recommendation system
         let userData = {};
 
@@ -610,9 +610,7 @@
         function getRecipeWithUserData(recipeId) {
             const recipe = recipeDatabase[recipeId];
             const userInfo = userData[recipeId] || {
-                rating: 0,
                 userRating: null,
-                ratingCount: 0,
                 madeDates: [],
                 lastViewed: null,
                 favorite: false
@@ -624,9 +622,7 @@
         function initializeUserData(recipeId) {
             if (!userData[recipeId]) {
                 userData[recipeId] = {
-                    rating: 0,
                     userRating: null,
-                    ratingCount: 0,
                     madeDates: [],
                     lastViewed: null,
                     viewCount: 0,  // Track total views
@@ -985,8 +981,7 @@
                     <p class="text-gray-600 text-sm mb-3">${recipe.servings}</p>
                     <div class="flex items-center justify-between">
                         <div class="recipe-stars flex items-center space-x-1">
-                            ${renderStars(recipe.rating)}
-                            <span class="text-xs text-gray-500 ml-1">(${recipe.ratingCount || 0})</span>
+                            ${renderStars(recipe.userRating || 0)}
                         </div>
                         <div class="flex items-center text-sm text-gray-600">
                             <span class="mr-1">👨‍🍳</span>
@@ -1056,8 +1051,6 @@
             for (let i = 1; i <= 5; i++) {
                 if (i <= rating) {
                     stars += '<span class="text-amber-400">★</span>';
-                } else if (i - 0.5 <= rating) {
-                    stars += '<span class="text-amber-400">☆</span>';
                 } else {
                     stars += '<span class="text-gray-300">★</span>';
                 }
@@ -1116,14 +1109,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex-1 px-4 pb-6">
+                        <div class="flex-1 px-4 pb-12">
                             <div class="pt-4 pb-3">
                                 <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="flex items-center">
-                                            ${renderInteractiveStars(recipe)}
-                                        </div>
-                                        <span class="text-xs text-gray-600">${recipe.ratingCount || 0}</span>
+                                    <div class="flex items-center">
+                                        ${renderInteractiveStars(recipe)}
                                     </div>
                                     <button onclick="toggleMadeToday('${recipe.id}', event)" 
                                             class="flex items-center space-x-1 px-2 py-1 rounded-lg transition text-xs
@@ -1198,11 +1188,8 @@
                         <div class="flex-1 flex flex-col overflow-hidden">
                             <div class="px-6 pt-6 pb-4 flex-shrink-0">
                                 <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="flex items-center">
-                                            ${renderInteractiveStars(recipe)}
-                                        </div>
-                                        <span class="text-sm text-gray-600">${recipe.ratingCount ? recipe.ratingCount + (recipe.ratingCount > 1 ? ' vurderinger' : ' vurdering') : '0 vurderinger'}</span>
+                                    <div class="flex items-center">
+                                        ${renderInteractiveStars(recipe)}
                                     </div>
                                     <button onclick="toggleMadeToday('${recipe.id}', event)" 
                                             class="flex items-center space-x-2 px-3 py-1.5 rounded-lg transition text-sm
@@ -1233,14 +1220,14 @@
                             <div class="grid md:grid-cols-2 gap-6 px-6 pb-6 flex-1 overflow-hidden">
                                 <div class="flex flex-col">
                                     <h3 class="font-display text-xl text-amber-800 mb-3 flex-shrink-0">Ingredienser</h3>
-                                    <div class="overflow-y-auto pr-2 recipe-scroll" style="max-height: calc(100vh - ${recipe.description ? '600' : '550'}px);">
+                                    <div class="overflow-y-auto pr-2 pb-8 recipe-scroll" style="max-height: calc(100vh - ${recipe.description ? '600' : '550'}px);">
                                         ${renderIngredients(recipe.ingredients)}
                                     </div>
                                 </div>
                                 
                                 <div class="flex flex-col">
                                     <h3 class="font-display text-xl text-amber-800 mb-3 flex-shrink-0">Fremgangsmåte</h3>
-                                    <div class="overflow-y-auto pr-2 recipe-scroll" style="max-height: calc(100vh - ${recipe.description ? '600' : '550'}px);">
+                                    <div class="overflow-y-auto pr-2 pb-8 recipe-scroll" style="max-height: calc(100vh - ${recipe.description ? '600' : '550'}px);">
                                         <ol class="space-y-3">
                                             ${recipe.instructions.map((inst, i) => `
                                                 <li class="flex items-start">
@@ -1284,7 +1271,7 @@
             window.scrollTo(0, scrollPosition);
         }
 
-        // Rate recipe (removed automatic made count increase)
+        // Rate recipe (simplified - no rating count)
         function rateRecipe(recipeId, rating, event) {
             if (event) {
                 event.stopPropagation();
@@ -1294,14 +1281,8 @@
                 initializeUserData(recipeId);
             }
             
-            const userInfo = userData[recipeId];
-            const previousRating = userInfo.userRating;
-            userInfo.userRating = rating;
-            
-            // Only update rating, don't touch madeDates
-            userInfo.rating = rating;
-            userInfo.ratingCount = previousRating ? userInfo.ratingCount : 1;
-            
+            // Simply set the user's rating
+            userData[recipeId].userRating = rating;
             saveData();
             
             // Update stars without rebuilding modal
@@ -1318,31 +1299,23 @@
                         star.classList.add('text-gray-300');
                     }
                 });
-                
-                // Update rating count text
-                const ratingCountEl = starsContainer.parentElement.nextElementSibling;
-                if (ratingCountEl && ratingCountEl.classList.contains('text-sm')) {
-                    ratingCountEl.textContent = `${userInfo.ratingCount} vurdering${userInfo.ratingCount > 1 ? 'er' : ''}`;
-                } else if (ratingCountEl && ratingCountEl.classList.contains('text-xs')) {
-                    ratingCountEl.textContent = userInfo.ratingCount;
-                }
             }
             
             // Update the rating in the grid cards
-            updateRecipeCardRating(recipeId, userInfo.rating, userInfo.ratingCount);
+            updateRecipeCardRating(recipeId, rating);
             
             // Refresh recommendations after rating
             setTimeout(() => getRecommendations(), 100);
         }
         
         // Update recipe card rating in the grid
-        function updateRecipeCardRating(recipeId, rating, ratingCount) {
+        function updateRecipeCardRating(recipeId, rating) {
             const cards = document.querySelectorAll(`[data-recipe-id="${recipeId}"]`);
             cards.forEach(card => {
                 // Update stars
                 const starsContainer = card.querySelector('.recipe-stars');
                 if (starsContainer) {
-                    starsContainer.innerHTML = renderStars(rating) + `<span class="text-xs text-gray-500 ml-1">(${ratingCount || 0})</span>`;
+                    starsContainer.innerHTML = renderStars(rating);
                 }
             });
         }
@@ -1449,8 +1422,8 @@
             
             // Highly rated
             const highRated = recipeIds
-                .filter(id => userData[id]?.rating > 0)
-                .sort((a, b) => (userData[b]?.rating || 0) - (userData[a]?.rating || 0))
+                .filter(id => (userData[id]?.userRating || 0) > 3)
+                .sort((a, b) => (userData[b]?.userRating || 0) - (userData[a]?.userRating || 0))
                 .slice(0, 2);
             
             // Combine recommendations (unique)
