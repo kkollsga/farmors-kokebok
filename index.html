@@ -34,6 +34,18 @@
         /* Filter animations */
         #filterPillsContainer {
             transition: max-width 0.3s ease-out, opacity 0.3s ease-out;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .filter-pill {
+            max-width: 150px;
+            display: inline-flex !important;
+        }
+        .filter-pill-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 120px;
         }
         #filterToggle {
             transition: all 0.2s ease;
@@ -158,8 +170,8 @@
 
     <!-- Filter Bar -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-        <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg border border-white/50 p-4 flex items-center justify-between">
-            <div class="flex items-center gap-3 flex-1">
+        <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg border border-white/50 p-4">
+            <div class="flex items-center gap-3">
                 <!-- Filter Button -->
                 <button id="filterToggle" onclick="toggleFilterMenu()" 
                         class="flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md">
@@ -171,14 +183,16 @@
                 </button>
                 
                 <!-- Filter Pills Container -->
-                <div id="filterPillsContainer" class="flex flex-wrap gap-2 overflow-hidden transition-all duration-300">
+                <div id="filterPillsContainer" class="flex gap-2 flex-1 overflow-hidden">
                     <!-- Filter pills will be inserted here -->
                 </div>
             </div>
-            
-            <!-- Clear Filters Button -->
+        </div>
+        
+        <!-- Clear Filters Button (moved below) -->
+        <div class="flex justify-end mt-2">
             <button id="clearFilters" onclick="clearAllFilters()" 
-                    class="text-xs text-gray-500 hover:text-amber-600 transition-all opacity-0 pointer-events-none font-medium px-3 py-1 rounded-lg hover:bg-amber-50">
+                    class="text-xs text-gray-500 hover:text-amber-600 transition-all opacity-0 pointer-events-none font-medium px-3 py-1 rounded-lg hover:bg-white/80">
                 Tøm filter
             </button>
         </div>
@@ -195,7 +209,7 @@
     </div>
 
     <!-- Recommendations Section -->
-    <div id="recommendationsSection" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+    <div id="recommendationsSection" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         <div id="recommendations" class="mb-8">
             <h2 class="font-display text-2xl text-amber-800 mb-4">Anbefalte for deg</h2>
             <div id="recommendedRecipes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -806,29 +820,40 @@
             const hasFilters = activeFilters.size > 0;
             
             container.innerHTML = '';
-            container.style.maxWidth = hasFilters ? '100%' : '0';
-            container.style.opacity = hasFilters ? '1' : '0';
             
-            activeFilters.forEach((isActive, filterKey) => {
-                const [filterType, filterValue] = filterKey.split(':');
-                const displayName = filterValue || filterKey;
+            // Hide pills if more than 3 filters
+            if (activeFilters.size > 3) {
+                container.style.maxWidth = '0';
+                container.style.opacity = '0';
+            } else {
+                container.style.maxWidth = hasFilters ? '100%' : '0';
+                container.style.opacity = hasFilters ? '1' : '0';
                 
-                const pill = document.createElement('div');
-                pill.className = `flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm ${
-                    isActive 
-                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white' 
-                        : 'bg-gray-200 text-gray-500 opacity-60'
-                }`;
-                pill.innerHTML = `
-                    <span class="cursor-pointer font-medium" onclick="togglePillActive('${filterKey}')">${displayName}</span>
-                    <button onclick="removeFilter('${filterKey}')" class="ml-1 hover:opacity-70">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                `;
-                container.appendChild(pill);
-            });
+                let pillCount = 0;
+                activeFilters.forEach((isActive, filterKey) => {
+                    if (pillCount >= 3) return; // Max 3 pills
+                    
+                    const [filterType, filterValue] = filterKey.split(':');
+                    const displayName = filterValue || filterKey;
+                    
+                    const pill = document.createElement('div');
+                    pill.className = `filter-pill flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm ${
+                        isActive 
+                            ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white' 
+                            : 'bg-gray-200 text-gray-500 opacity-60'
+                    }`;
+                    pill.innerHTML = `
+                        <span class="filter-pill-text cursor-pointer font-medium" onclick="togglePillActive('${filterKey}')">${displayName}</span>
+                        <button onclick="removeFilter('${filterKey}')" class="ml-1 hover:opacity-70 flex-shrink-0">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    `;
+                    container.appendChild(pill);
+                    pillCount++;
+                });
+            }
             
             // Update clear button visibility
             const clearBtn = document.getElementById('clearFilters');
