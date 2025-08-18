@@ -143,6 +143,22 @@
             transform: scale(1.05);
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
+        /* Tip styling */
+        .recipe-tip {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 3px solid #f59e0b;
+            animation: tipHighlight 0.3s ease-out;
+        }
+        @keyframes tipHighlight {
+            from {
+                transform: translateX(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 min-h-screen">
@@ -257,9 +273,10 @@
             {"id":"recipe_1755525039501_v1gcazw3t","title":"Sjokoladesnitter","servings":"Ca. 30–40 snitter","provider":"Farmor","reference":"Håndskrevet oppskriftsbok, side 9","category":"Julekaker","meal":"Snacks","cuisine":"Skandinavisk","description":"Sjokoladesnitter er enkle, klassiske småkaker der en mørdeig smaksatt med kakao formes til lengder, stekes og skjæres i skrå snitter. Kakene blir sprø i kantene og litt seige i midten – en populær småkake til kaffebordet og i julen.","image":"https://images.unsplash.com/photo-1607082349566-187342175e2f?w=800&h=600&fit=crop","ingredients":["200 g smør","200 g sukker","1 egg","3 ss kakao","250 g hvetemel","2 ts potetmel","2 ts bakepulver","1 ts vaniljesukker"],"instructions":["Visp smør og sukker hvitt og luftig.","Tilsett egget og rør godt inn.","Sikt sammen kakao, hvetemel, potetmel, bakepulver og vaniljesukker.","Rør det tørre inn i smørblandingen og arbeid deigen raskt sammen.","Del deigen i 3–4 deler og rull ut til lengder.","Legg lengdene på bakepapirkledd stekebrett og trykk dem litt flate med en gaffel eller baksiden av en skje.","Stek midt i ovnen ved 175 °C i ca. 12–15 minutter.","Skjær lengdene i skrå snitter mens de fortsatt er varme.","La sjokoladesnittene avkjøles helt på rist og oppbevar i tett kakeboks."],"createdAt":"2025-08-18"},
             {"id":"recipe_1755525313393_x86s8trii","title":"Fru Meyers kaker","servings":"Ca. 40 småkaker","provider":"Farmor","reference":"Håndskrevet oppskriftsbok, side 10","category":"Julekaker","meal":"Snacks","cuisine":"Skandinavisk","description":"Fru Meyers kaker er klassiske småkaker laget med en enkel deig av margarin, sukker, potetmel og hvetemel. Kakene er lette og sprø, med en mild smak av sitron. De formes med teskje som små topper på platen og stekes til de er lys-gule. En tradisjonell småkake som passer godt både til kaffekosen og på julekakefatet.","image":"https://images.unsplash.com/photo-1607082350899-7f7e6fcefbdd?w=800&h=600&fit=crop","ingredients":["125 g margarin","125 g sukker","125 g potetmel","140 g hvetemel","1 egg","3/4 ts hornsalt (hjortetakksalt)","5 dråper sitronessens"],"instructions":["Rør margarin og sukker hvitt.","Pisk egget lett sammen og ha det i.","Sikt på mel og hornsalt og rør godt.","Ha i sitrondråper.","Sett små topper av deigen på platen med en teskje, litt mellomrom imellom.","Stekes lys-gule i svak varme (ca. 160–170 °C) i 8–10 minutter.","Avkjøles på rist og oppbevares i tett kakeboks."],"createdAt":"2025-08-18"},
             {"id":"recipe_1755525787550_591atv6ib","title":"Freia formkake","servings":"8–10 porsjoner","provider":"Farmor","reference":"Håndskrevet oppskriftsbok, side 11","category":"Kake","meal":"Dessert","cuisine":"Skandinavisk","description":"Freia formkake er en klassisk, enkel smørkake laget med både hvetemel og potetmel. Resultatet blir en saftig og lett kake med fin struktur. Den passer godt til kaffekos, og kan gjerne serveres naturell eller med et lett dryss melis. Oppskriften stammer trolig fra Freias bakepulverpakke.","image":"https://images.unsplash.com/photo-1618411640599-34f58f365f26?w=800&h=600&fit=crop","ingredients":["125 g smør","125 g sukker","70 g hvetemel","70 g potetmel","2 egg","1/2 ts bakepulver","1 ts vaniljesukker eller revet skall av 1/2 sitron (valgfritt, for smak)","melis til pynt (valgfritt)"],"instructions":["Rør smør og sukker hvitt.","Tilsett eggene, ett om gangen, og visp godt mellom hver.","Bland hvetemel, potetmel og bakepulver sammen, og sikt det i røren.","Vend forsiktig til alt er godt blandet. Tilsett gjerne vaniljesukker eller revet sitronskall for ekstra smak.","Hell røren i en smurt form (ca. 1 liter).","Stek kaken i middels varm ovn (ca. 175 °C) i omtrent 45 minutter, til den er gjennomstekt og gyllen.","Avkjøl på rist før servering.","Dryss gjerne melis over kaken før servering."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755526142808_1e6hjyujv","title":"Brune snipper","servings":"Ca. 40–50 stk.","provider":"Farmor","category":"Småkaker","meal":"Julekaker","cuisine":"Norsk","description":"Brune snipper er klassiske julekaker laget med sirup, krydder og en klype pepper for ekstra smak. Deigen skal helst hvile til neste dag før utkjevling. Kakene kuttes i diamanter (snipper) og blir sprø og krydrede, perfekt til julens kakefat.","ingredients":["65 g sukker","35 g margarin","125 g sirup","3/4 dl fløte","250 g hvetemel","1/2 ts pepper","1/4 ts ingefær","1/2 ts natron","Ev. halve mandler til pynt"],"instructions":["Ha sukker, sirup og fløte i en kjele og varm opp til margarinen er smeltet. Rør godt sammen.","Avkjøl blandingen litt, og sikt inn alt det tørre (hvetemel, krydder og natron). Elt til en jevn deig.","La deigen hvile til neste dag, gjerne kjølig.","Kjevle ut deigen tynt, ca. 2–3 mm. Skjær ut snipper ved å først skjære lange strimler på skrå (3–4 cm brede), og deretter skjære på skrå den andre veien slik at det dannes små diamanter (ca. 4–5 cm på langsiden).","Legg snippene på smurt plate eller bakepapir. Pynt gjerne med en halv mandel i midten av hver.","Stek kakene i lys gyllen farge ved middels varme (ca. 175 °C) i 8–10 minutter."],"createdAt":"2025-08-18"},
+            {"id":"recipe_1755526142808_1e6hjyujv","title":"Brune snipper","servings":"Ca. 40–50 stk.","provider":"Farmor","category":"Småkaker","meal":"Julekaker","cuisine":"Norsk","description":"Brune snipper er klassiske julekaker laget med sirup, krydder og en klype pepper for ekstra smak. Deigen skal helst hvile til neste dag før utkjevling. Kakene kuttes i diamanter (snipper) og blir sprø og krydrede, perfekt til julens kakefat.","ingredients":["65 g sukker","35 g margarin","125 g sirup","3/4 dl fløte","250 g hvetemel","1/2 ts pepper","1/4 ts ingefær","1/2 ts natron","Ev. halve mandler til pynt"],"instructions":["Ha sukker, sirup og fløte i en kjele og varm opp til margarinen er smeltet. Rør godt sammen.","Avkjøl blandingen litt, og sift inn alt det tørre (hvetemel, krydder og natron). Elt til en jevn deig.","La deigen hvile til neste dag, gjerne kjølig.","Kjevle ut deigen tynt, ca. 2–3 mm. Skjær ut snipper ved å først skjære lange strimler på skrå (3–4 cm brede), og deretter skjære på skrå den andre veien slik at det dannes små diamanter (ca. 4–5 cm på langsiden).","Legg snippene på smurt plate eller bakepapir. Pynt gjerne med en halv mandel i midten av hver.","Stek kakene i lys gyllen farge ved middels varme (ca. 175 °C) i 8–10 minutter."],"createdAt":"2025-08-18"},
             {"id":"recipe_09","title":"Bakepulverstenger","servings":"Ca. 30–40 stk.","provider":"Farmor","reference":"Side 17","category":"Småkaker","meal":"Kaffemat","cuisine":"Norsk","description":"Bakepulverstenger er enkle og luftige småkaker laget uten gjær. De formes som stenger, pensles med egg og strøs med grovt sukker for en gyllen og sprø overflate. Perfekt til kaffekosen.","ingredients":["500 g hvetemel","100 g margarin","100 g sukker","1 egg","2 1/2 dl melk","3 ts bakepulver","1 egg til pensling","Litt grovt sukker til topping"],"instructions":["Bland sammen hvetemel, sukker og bakepulver i en bolle.","Smuldre inn margarinen til det ligner grovt smuler.","Pisk egget lett og rør det inn sammen med melken. Arbeid deigen raskt sammen.","Del deigen i fire emner og trill ut til stenger.","Legg stengene på bakepapirkledd plate, pensle med sammenvispet egg og strø over grovt sukker.","Stek til de er lyse gylne ved ca. 200 °C i 10–12 minutter."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755530008601_5c9sko0oi","title":"Wienerring","servings":"1 stor ring","provider":"Farmor","reference":"Håndskrevet oppskriftsbok, side 18","category":"Gjærbakst","meal":"Kake","cuisine":"Skandinavisk","description":"Wienerring er en klassisk gjærbakst fylt med en mild krem basert på fløte, vanilje og eggeplomme. Deigen rulles med fyll, formes til en ring og klippes opp slik at fyllet blir synlig under steking. Resultatet er en luftig og dekorativ festkake som passer perfekt på kaffebordet.","ingredients":[{"group":"Deig","items":["250 g hvetemel","50 g sukker","ca. 1 ¼ dl melk (lunken)","1 egg","40 g gjær","100 g smør","1 egg til pensling","Litt hakkede mandler til pynt"]},{"group":"Fyll","items":["1 eggeplomme","1 ½ dl fløte","½ ts vaniljesukker","1 ss potetmel","1 ss sukker"]}],"instructions":["Sikt sammen hvetemel og sukker i en bolle.","Løs opp gjæren i lunken melk og pisk inn egget.","Bland væsken i det tørre og elt deigen til den er smidig. Arbeid inn smøret til slutt. La heve til dobbel størrelse.","Lag fyllet: Pisk sammen fløte, eggeplomme, sukker, potetmel og vaniljesukker. Kok forsiktig opp under omrøring til en tykk krem. Avkjøl.","Kjevle deigen ut til et stort rektangel og fordel fyllet jevnt utover.","Rull deigen sammen fra langsiden til en lang pølse og legg den på et stekebrett med bakepapir.","Form pølsen til en stor ring og klem endene godt sammen.","Klipp skrå snitt med ca. 3 cm mellomrom nesten helt igjennom, og vri hvert stykke litt utover så fyllet synes.","Pensle med egg og dryss over hakkede mandler.","Stek ved 180 °C (varmluft) eller 200 °C (over- og undervarme) i ca. 25–30 minutter til den er gyllenbrun."],"createdAt":"2025-08-18"}
+            {"id":"recipe_1755530008601_5c9sko0oi","title":"Wienerring","servings":"1 stor ring","provider":"Farmor","reference":"Håndskrevet oppskriftsbok, side 18","category":"Gjærbakst","meal":"Kake","cuisine":"Skandinavisk","description":"Wienerring er en klassisk gjærbakst fylt med en mild krem basert på fløte, vanilje og eggeplomme. Deigen rulles med fyll, formes til en ring og klippes opp slik at fyllet blir synlig under steking. Resultatet er en luftig og dekorativ festkake som passer perfekt på kaffebordet.","ingredients":[{"group":"Deig","items":["250 g hvetemel","50 g sukker","ca. 1 ¼ dl melk (lunken)","1 egg","40 g gjær","100 g smør","1 egg til pensling","Litt hakkede mandler til pynt"]},{"group":"Fyll","items":["1 eggeplomme","1 ½ dl fløte","½ ts vaniljesukker","1 ss potetmel","1 ss sukker"]}],"instructions":["Sikt sammen hvetemel og sukker i en bolle.","Løs opp gjæren i lunken melk og pisk inn egget.","Bland væsken i det tørre og elt deigen til den er smidig. Arbeid inn smøret til slutt. La heve til dobbel størrelse.","Lag fyllet: Pisk sammen fløte, eggeplomme, sukker, potetmel og vaniljesukker. Kok forsiktig opp under omrøring til en tykk krem. Avkjøl.","Kjevle deigen ut til et stort rektangel og fordel fyllet jevnt utover.","Rull deigen sammen fra langsiden til en lang pølse og legg den på et stekebrett med bakepapir.","Form pølsen til en stor ring og klem endene godt sammen.","Klipp skrå snitt med ca. 3 cm mellomrom nesten helt igjennom, og vri hvert stykke litt utover så fyllet synes.","Pensle med egg og dryss over hakkede mandler.","Stek ved 180 °C (varmluft) eller 200 °C (over- og undervarme) i ca. 25–30 minutter til den er gyllenbrun."],"createdAt":"2025-08-18"},
+            {"id":"recipe_1755558008707_dq4xcdrqf","title":"Havregrynsboller","servings":"20 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":24,"category":"Brød","meal":"Frokost","cuisine":"Norsk","description":"Lette og luftige boller laget med havregryn. Litt søte, men fortsatt egnet som frokost- eller matpakkebrød. Best når de spises nystekte – sprø utenpå og myke inni.","ingredients":["170 g havregryn","3–4 dl melk","300 g hvetemel","½ ts salt","2 ss sukker","50 g smør","6 ts bakepulver"],"instructions":["Kok opp melken og hell den over havregrynene. La blandingen avkjøle.","Sikt hvetemel sammen med bakepulver, og rør inn sukker og salt.","Smuldre inn smøret i melblandingen.","Bland de avkjølte havregrynene med melk inn i det tørre til en smidig, passe fast deig.","Trill ut til små boller og legg dem på stekebrett med bakepapir.","Stek midt i ovnen ved 200 °C i ca. 12–15 minutter, til bollene er gyldne.","TIP: Server bollene samme dag – da er de sprø utenpå og myke inni."],"createdAt":"2025-08-18"}
         ];
 
         // User data - automatically saved to localStorage
@@ -763,6 +780,50 @@
             }
         }
 
+        // Render instructions with tips support
+        function renderInstructions(instructions, isMobile = false) {
+            if (!instructions || instructions.length === 0) return '';
+            
+            let stepNumber = 1;
+            const textSizeClass = isMobile ? 'text-sm' : '';
+            
+            return `
+                <ol class="space-y-3">
+                    ${instructions.map((inst) => {
+                        // Check if this is a tip
+                        if (inst.startsWith('TIP:') || inst.startsWith('TIPS:')) {
+                            const tipText = inst.replace(/^TIPS?:\s*/i, '');
+                            return `
+                                <li class="recipe-tip rounded-lg p-3 ${isMobile ? 'px-3 py-2.5' : 'p-3'}">
+                                    <div class="flex items-start">
+                                        <span class="text-amber-600 mr-2 flex-shrink-0">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </span>
+                                        <div>
+                                            <span class="font-semibold text-amber-700 mr-2 text-sm">Tips:</span>
+                                            <span class="text-gray-700 ${textSizeClass}">${tipText}</span>
+                                        </div>
+                                    </div>
+                                </li>
+                            `;
+                        } else {
+                            // Regular numbered instruction
+                            const currentStep = stepNumber++;
+                            return `
+                                <li class="flex items-start">
+                                    <span class="font-semibold text-amber-600 mr-3 flex-shrink-0">${currentStep}.</span>
+                                    <span class="text-gray-700 ${textSizeClass}">${inst}</span>
+                                </li>
+                            `;
+                        }
+                    }).join('')}
+                </ol>
+            `;
+        }
+
         // Render star rating
         function renderStars(rating) {
             let stars = '';
@@ -863,14 +924,7 @@
                                 
                                 <div>
                                     <h3 class="font-display text-xl text-amber-800 mb-3">Fremgangsmåte</h3>
-                                    <ol class="space-y-3">
-                                        ${recipe.instructions.map((inst, i) => `
-                                            <li class="flex items-start">
-                                                <span class="font-semibold text-amber-600 mr-3 flex-shrink-0">${i + 1}.</span>
-                                                <span class="text-gray-700 text-sm">${inst}</span>
-                                            </li>
-                                        `).join('')}
-                                    </ol>
+                                    ${renderInstructions(recipe.instructions, true)}
                                 </div>
                             </div>
                         </div>
@@ -940,14 +994,7 @@
                                 <div class="flex flex-col">
                                     <h3 class="font-display text-xl text-amber-800 mb-3 flex-shrink-0">Fremgangsmåte</h3>
                                     <div class="overflow-y-auto pr-2 pb-8 recipe-scroll" style="max-height: calc(100vh - ${recipe.description ? '580' : '480'}px);">
-                                        <ol class="space-y-3">
-                                            ${recipe.instructions.map((inst, i) => `
-                                                <li class="flex items-start">
-                                                    <span class="font-semibold text-amber-600 mr-3 flex-shrink-0">${i + 1}.</span>
-                                                    <span class="text-gray-700">${inst}</span>
-                                                </li>
-                                            `).join('')}
-                                        </ol>
+                                        ${renderInstructions(recipe.instructions, false)}
                                     </div>
                                 </div>
                             </div>
