@@ -216,6 +216,17 @@
             border-top-left-radius: 1.5rem;
             border-top-right-radius: 1.5rem;
         }
+
+        .lazy-image {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .lazy-image.loaded {
+            opacity: 1;
+        }
+        .image-placeholder {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 min-h-screen">
@@ -323,7 +334,7 @@
         
         // Recipe database - NOW AS AN ARRAY
         const recipeDatabase = [
-            {"id":"recipe_1755556429373_md0pmu8kg","title":"Amies kake","servings":"12 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":31,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En klassisk norsk sjokoladekake med mild kaffesmak og luftig smørkrem. Passer perfekt til kaffebord, bursdager eller som en hverdagskake. Smørkremen bør brukes samme dag. Tips: For en barnevennlig variant kan kaffen byttes ut med melk.","image":"amieskake.png","ingredients":[{"group":"Kakebunn","items":["2 egg","2 dl sukker","1 dl sterk kaffe","300 g hvetemel","30 g kakao","1 ts bakepulver","200 g smør (smeltet)"]},{"group":"Smørkrem","items":["200 g smør (romtemperert)","125 g melis","1 eggeplomme","noen dråper vaniljeessens"]}],"instructions":["Sett ovnen på 180 °C over- og undervarme og smør eller dekk en liten langpanne (20×30 cm).","Pisk egg og sukker til lys og luftig eggedosis.","Smelt smøret og la det avkjøle litt.","Rør inn kaffen og smøret i eggedosisen.","Sikt sammen hvetemel, kakao og bakepulver og vend det forsiktig inn.","Hell røren i formen og stek midt i ovnen ved 180 °C i ca. 30–35 minutter, til gjennomstekt. Avkjøl kaken.","Pisk smør og melis til hvitt og luftig. Tilsett eggeplommen og vaniljeessens, og pisk til glatt krem.","Smør kremen oppå kaken eller mellom to lag. Server romtemperert.", "TIP: Dette er et tips"],"createdAt":"2025-08-18"},
+            {"id":"recipe_1755485212305_6c4rynvqc","title":"Berlinerkranser","servings":"Ca. 30–40 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":3,"category":"Julekaker","meal":"Snacks","cuisine":"Norsk","description":"Berlinerkranser er en klassisk norsk julekake laget av en smør- og eggeplommerik deig. De formes til små kranser, pensles med eggehvite, dyppes i sukker og stekes til de er lett gylne. De har en sprø, søt overflate og en smørmør kjerne – en fast tradisjon på norske kakefat i julen.","image":"berlinerkranser.png","ingredients":["250 g hvetemel","65 g sukker","145 g margarin eller smør","1 eggeplomme","1 eggehvite (til pensling)","perlesukker eller grovt sukker (til topping)"],"instructions":["Smuldre sammen hvetemel, sukker og margarin til en smuldrete blanding.","Tilsett eggeplommen og kna deigen godt sammen til en smidig deig.","Del deigen i små emner og trill ut til fingertykke pølser.","Form små kranser og legg på et bakepapirkledd stekebrett.","Pensle kransene med lett pisket eggehvite.","Dypp oversiden i perlesukker eller grovt sukker.","Stek ved svak varme, ca. 175 °C, i 8–10 minutter til de er lett gylne.","Avkjøl på rist og oppbevar i tett kakeboks."],"createdAt":"2025-08-18"},
             {"id":"recipe_1755484726501_29ubmpget","title":"Rundstykker","servings":"ca. 16 rundstykker","provider":"Farmor","category":"Brød","meal":"Frokost","cuisine":"Norsk","description":"Klassiske luftige rundstykker som passer perfekt til frokost, lunsj eller kveldsmat. Deigen er enkel å lage, og med både melk og smør får du myke rundstykker med god smak. De er like gode nystekte som oppvarmet, og egner seg også godt til frysing.","image":"rundstykker.png","ingredients":["500 g hvetemel","1 pose tørrgjær (ca. 11 g)","50 g smør (romtemperert eller smeltet)","1 ½ ts salt","2 dl melk (lunken, ca. 37–40 °C)","1 ½ dl vann (lunkent, ca. 37–40 °C)","1 ss sukker"],"instructions":["Bland sammen hvetemel, tørrgjær, salt og sukker i en stor bolle.","Varm melk og vann til ca. 37–40 °C. Ha dette i melblandingen sammen med smøret.","Elt deigen i kjøkkenmaskin i 8–10 minutter (eller 12–15 minutter for hånd) til den er smidig og slipper bollen.","Dekk bollen med plast eller klede og la deigen heve på et lunt sted i ca. 1 time, til den har blitt dobbelt så stor.","Del deigen i ca. 16 emner og trill til runde boller. Legg dem på et stekebrett med bakepapir.","Etterhev rundstykkene i 30–40 minutter under klede.","Forvarm ovnen til 220 °C over-/undervarme. Stek rundstykkene midt i ovnen i 10–12 minutter til de er gylne og gjennomstekte.","Avkjøl på rist før servering."],"createdAt":"2025-08-18"}
         ];
 
@@ -727,6 +738,7 @@
             // Extract IDs from filtered recipes
             const filteredIds = filtered.map(recipe => recipe.id);
             renderRecipes(filteredIds);
+            setupLazyLoading(); // Add lazy loading after filtering
         }
 
         // Close filter menu when clicking outside
@@ -755,6 +767,9 @@
                     grid.appendChild(card);
                 }
             });
+            
+            // Setup lazy loading after cards are rendered
+            setupLazyLoading();
         }
 
         // Create recipe card
@@ -764,15 +779,18 @@
             card.setAttribute('data-recipe-id', recipe.id);
             card.onclick = () => showRecipe(recipe.id);
             
-            const imageUrl = recipe.image ? IMAGE_PATH_LIST + recipe.image : `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop`;
+            const imageUrl = recipe.image ? IMAGE_PATH_LIST + recipe.image : null;
             const sourceInfo = formatSource(recipe);
             
             card.innerHTML = `
-                <div class="h-48 bg-gradient-to-br from-amber-100 to-orange-100 relative overflow-hidden">
-                    ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
-                    `<div class="w-full h-full flex items-center justify-center">
-                        <span class="text-6xl opacity-30">🍞</span>
-                    </div>`}
+                <div class="h-48 bg-gradient-to-br from-amber-100 to-orange-100 relative overflow-hidden image-placeholder">
+                    ${recipe.image ? 
+                        `<img data-src="${imageUrl}" 
+                            alt="${recipe.title}" 
+                            class="lazy-image w-full h-full object-cover">` : 
+                        `<div class="w-full h-full flex items-center justify-center">
+                            <span class="text-6xl opacity-30">🍞</span>
+                        </div>`}
                     ${recipe.category ? `<span onclick="activateFilter('category', '${recipe.category}', event)" class="category-badge absolute top-2 right-2 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
                 </div>
                 <div class="p-5">
@@ -793,6 +811,37 @@
             `;
             
             return card;
+        }
+
+        // Lazy loading implementation
+        function setupLazyLoading() {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        const src = img.getAttribute('data-src');
+                        
+                        if (src) {
+                            // Create new image to preload
+                            const newImg = new Image();
+                            newImg.onload = () => {
+                                img.src = src;
+                                img.classList.add('loaded');
+                                img.removeAttribute('data-src');
+                            };
+                            newImg.src = src;
+                        }
+                        observer.unobserve(img);
+                    }
+                });
+            }, {
+                rootMargin: '50px' // Start loading 50px before image enters viewport
+            });
+
+            // Observe all lazy images
+            document.querySelectorAll('.lazy-image').forEach(img => {
+                imageObserver.observe(img);
+            });
         }
 
         // Render ingredients (handles both grouped and non-grouped formats)
@@ -1337,6 +1386,9 @@
                     recommended.appendChild(card);
                 }
             });
+            
+            // Setup lazy loading for recommendations too
+            setupLazyLoading();
         }
 
         // Close modal on outside click
@@ -1353,6 +1405,7 @@
         renderRecipes();
         getRecommendations();
         updateRecommendationsVisibility();
+        setupLazyLoading(); // Add initial lazy loading setup
     </script>
 </body>
 </html>

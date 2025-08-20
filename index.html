@@ -216,6 +216,17 @@
             border-top-left-radius: 1.5rem;
             border-top-right-radius: 1.5rem;
         }
+
+        .lazy-image {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .lazy-image.loaded {
+            opacity: 1;
+        }
+        .image-placeholder {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 min-h-screen">
@@ -765,6 +776,7 @@
             // Extract IDs from filtered recipes
             const filteredIds = filtered.map(recipe => recipe.id);
             renderRecipes(filteredIds);
+            setupLazyLoading(); // Add lazy loading after filtering
         }
 
         // Close filter menu when clicking outside
@@ -793,6 +805,9 @@
                     grid.appendChild(card);
                 }
             });
+            
+            // Setup lazy loading after cards are rendered
+            setupLazyLoading();
         }
 
         // Create recipe card
@@ -802,15 +817,18 @@
             card.setAttribute('data-recipe-id', recipe.id);
             card.onclick = () => showRecipe(recipe.id);
             
-            const imageUrl = recipe.image ? IMAGE_PATH_LIST + recipe.image : `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop`;
+            const imageUrl = recipe.image ? IMAGE_PATH_LIST + recipe.image : null;
             const sourceInfo = formatSource(recipe);
             
             card.innerHTML = `
-                <div class="h-48 bg-gradient-to-br from-amber-100 to-orange-100 relative overflow-hidden">
-                    ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
-                    `<div class="w-full h-full flex items-center justify-center">
-                        <span class="text-6xl opacity-30">🍞</span>
-                    </div>`}
+                <div class="h-48 bg-gradient-to-br from-amber-100 to-orange-100 relative overflow-hidden image-placeholder">
+                    ${recipe.image ? 
+                        `<img data-src="${imageUrl}" 
+                            alt="${recipe.title}" 
+                            class="lazy-image w-full h-full object-cover">` : 
+                        `<div class="w-full h-full flex items-center justify-center">
+                            <span class="text-6xl opacity-30">🍞</span>
+                        </div>`}
                     ${recipe.category ? `<span onclick="activateFilter('category', '${recipe.category}', event)" class="category-badge absolute top-2 right-2 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
                 </div>
                 <div class="p-5">
@@ -831,6 +849,37 @@
             `;
             
             return card;
+        }
+
+        // Lazy loading implementation
+        function setupLazyLoading() {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        const src = img.getAttribute('data-src');
+                        
+                        if (src) {
+                            // Create new image to preload
+                            const newImg = new Image();
+                            newImg.onload = () => {
+                                img.src = src;
+                                img.classList.add('loaded');
+                                img.removeAttribute('data-src');
+                            };
+                            newImg.src = src;
+                        }
+                        observer.unobserve(img);
+                    }
+                });
+            }, {
+                rootMargin: '50px' // Start loading 50px before image enters viewport
+            });
+
+            // Observe all lazy images
+            document.querySelectorAll('.lazy-image').forEach(img => {
+                imageObserver.observe(img);
+            });
         }
 
         // Render ingredients (handles both grouped and non-grouped formats)
@@ -1375,6 +1424,9 @@
                     recommended.appendChild(card);
                 }
             });
+            
+            // Setup lazy loading for recommendations too
+            setupLazyLoading();
         }
 
         // Close modal on outside click
@@ -1391,6 +1443,7 @@
         renderRecipes();
         getRecommendations();
         updateRecommendationsVisibility();
+        setupLazyLoading(); // Add initial lazy loading setup
     </script>
 </body>
 </html>
