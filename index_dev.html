@@ -94,6 +94,7 @@
                 height: -webkit-fill-available !important;
             }
         }
+        /* Mobile modal specific styles */
         @media (max-width: 640px) {
             #recipeModal {
                 padding: 0 !important;
@@ -106,10 +107,35 @@
                 max-width: 100vw !important;
                 border-radius: 0 !important;
                 margin: 0 !important;
+                position: relative;
+                overflow: hidden;
             }
-            .modal-scroll-mobile {
-                overflow-y: auto !important;
-                max-height: none !important;
+            .modal-image-container {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 224px; /* h-56 = 14rem = 224px */
+                z-index: 1;
+                overflow: hidden;
+            }
+            .modal-content-scrollable {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                z-index: 2;
+            }
+            .modal-content-spacer {
+                height: 224px; /* Same as image container */
+                pointer-events: none;
+            }
+            .modal-content-body {
+                background: white;
+                min-height: calc(100vh - 224px);
                 padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 40px);
             }
             .modal-close-mobile {
@@ -288,6 +314,10 @@
     </div>
 
     <script>
+        // Image path configuration
+        const IMAGE_PATH_LIST = 'images/full/';
+        const IMAGE_PATH_MODAL = 'images/full/';
+        
         // Filter state
         let activeFilters = new Map();
         let filterMenuOpen = false;
@@ -296,8 +326,8 @@
         
         // Recipe database - NOW AS AN ARRAY
         const recipeDatabase = [
-            {"id":"recipe_1755556429373_md0pmu8kg","title":"Amies kake","servings":"12 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":31,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En klassisk norsk sjokoladekake med mild kaffesmak og luftig smørkrem. Passer perfekt til kaffebord, bursdager eller som en hverdagskake. Smørkremen bør brukes samme dag. Tips: For en barnevennlig variant kan kaffen byttes ut med melk.","image":"images/amieskake.png","ingredients":[{"group":"Kakebunn","items":["2 egg","2 dl sukker","1 dl sterk kaffe","300 g hvetemel","30 g kakao","1 ts bakepulver","200 g smør (smeltet)"]},{"group":"Smørkrem","items":["200 g smør (romtemperert)","125 g melis","1 eggeplomme","noen dråper vaniljeessens"]}],"instructions":["Sett ovnen på 180 °C over- og undervarme og smør eller dekk en liten langpanne (20×30 cm).","Pisk egg og sukker til lys og luftig eggedosis.","Smelt smøret og la det avkjøle litt.","Rør inn kaffen og smøret i eggedosisen.","Sikt sammen hvetemel, kakao og bakepulver og vend det forsiktig inn.","Hell røren i formen og stek midt i ovnen ved 180 °C i ca. 30–35 minutter, til gjennomstekt. Avkjøl kaken.","Pisk smør og melis til hvitt og luftig. Tilsett eggeplommen og vaniljeessens, og pisk til glatt krem.","Smør kremen oppå kaken eller mellom to lag. Server romtemperert."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755484726501_29ubmpget","title":"Rundstykker","servings":"ca. 16 rundstykker","provider":"Farmor","category":"Brød","meal":"Frokost","cuisine":"Norsk","description":"Klassiske luftige rundstykker som passer perfekt til frokost, lunsj eller kveldsmat. Deigen er enkel å lage, og med både melk og smør får du myke rundstykker med god smak. De er like gode nystekte som oppvarmet, og egner seg også godt til frysing.","image":"images/rundstykker.png","ingredients":["500 g hvetemel","1 pose tørrgjær (ca. 11 g)","50 g smør (romtemperert eller smeltet)","1 ½ ts salt","2 dl melk (lunken, ca. 37–40 °C)","1 ½ dl vann (lunkent, ca. 37–40 °C)","1 ss sukker"],"instructions":["Bland sammen hvetemel, tørrgjær, salt og sukker i en stor bolle.","Varm melk og vann til ca. 37–40 °C. Ha dette i melblandingen sammen med smøret.","Elt deigen i kjøkkenmaskin i 8–10 minutter (eller 12–15 minutter for hånd) til den er smidig og slipper bollen.","Dekk bollen med plast eller klede og la deigen heve på et lunt sted i ca. 1 time, til den har blitt dobbelt så stor.","Del deigen i ca. 16 emner og trill til runde boller. Legg dem på et stekebrett med bakepapir.","Etterhev rundstykkene i 30–40 minutter under klede.","Forvarm ovnen til 220 °C over-/undervarme. Stek rundstykkene midt i ovnen i 10–12 minutter til de er gylne og gjennomstekte.","Avkjøl på rist før servering."],"createdAt":"2025-08-18"}
+            {"id":"recipe_1755556429373_md0pmu8kg","title":"Amies kake","servings":"12 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":31,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En klassisk norsk sjokoladekake med mild kaffesmak og luftig smørkrem. Passer perfekt til kaffebord, bursdager eller som en hverdagskake. Smørkremen bør brukes samme dag. Tips: For en barnevennlig variant kan kaffen byttes ut med melk.","image":"amieskake.png","ingredients":[{"group":"Kakebunn","items":["2 egg","2 dl sukker","1 dl sterk kaffe","300 g hvetemel","30 g kakao","1 ts bakepulver","200 g smør (smeltet)"]},{"group":"Smørkrem","items":["200 g smør (romtemperert)","125 g melis","1 eggeplomme","noen dråper vaniljeessens"]}],"instructions":["Sett ovnen på 180 °C over- og undervarme og smør eller dekk en liten langpanne (20×30 cm).","Pisk egg og sukker til lys og luftig eggedosis.","Smelt smøret og la det avkjøle litt.","Rør inn kaffen og smøret i eggedosisen.","Sikt sammen hvetemel, kakao og bakepulver og vend det forsiktig inn.","Hell røren i formen og stek midt i ovnen ved 180 °C i ca. 30–35 minutter, til gjennomstekt. Avkjøl kaken.","Pisk smør og melis til hvitt og luftig. Tilsett eggeplommen og vaniljeessens, og pisk til glatt krem.","Smør kremen oppå kaken eller mellom to lag. Server romtemperert."],"createdAt":"2025-08-18"},
+            {"id":"recipe_1755484726501_29ubmpget","title":"Rundstykker","servings":"ca. 16 rundstykker","provider":"Farmor","category":"Brød","meal":"Frokost","cuisine":"Norsk","description":"Klassiske luftige rundstykker som passer perfekt til frokost, lunsj eller kveldsmat. Deigen er enkel å lage, og med både melk og smør får du myke rundstykker med god smak. De er like gode nystekte som oppvarmet, og egner seg også godt til frysing.","image":"rundstykker.png","ingredients":["500 g hvetemel","1 pose tørrgjær (ca. 11 g)","50 g smør (romtemperert eller smeltet)","1 ½ ts salt","2 dl melk (lunken, ca. 37–40 °C)","1 ½ dl vann (lunkent, ca. 37–40 °C)","1 ss sukker"],"instructions":["Bland sammen hvetemel, tørrgjær, salt og sukker i en stor bolle.","Varm melk og vann til ca. 37–40 °C. Ha dette i melblandingen sammen med smøret.","Elt deigen i kjøkkenmaskin i 8–10 minutter (eller 12–15 minutter for hånd) til den er smidig og slipper bollen.","Dekk bollen med plast eller klede og la deigen heve på et lunt sted i ca. 1 time, til den har blitt dobbelt så stor.","Del deigen i ca. 16 emner og trill til runde boller. Legg dem på et stekebrett med bakepapir.","Etterhev rundstykkene i 30–40 minutter under klede.","Forvarm ovnen til 220 °C over-/undervarme. Stek rundstykkene midt i ovnen i 10–12 minutter til de er gylne og gjennomstekte.","Avkjøl på rist før servering."],"createdAt":"2025-08-18"}
         ];
 
         // User data - automatically saved to localStorage
@@ -737,7 +767,7 @@
             card.setAttribute('data-recipe-id', recipe.id);
             card.onclick = () => showRecipe(recipe.id);
             
-            const imageUrl = recipe.image || `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop`;
+            const imageUrl = recipe.image ? IMAGE_PATH_LIST + recipe.image : `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop`;
             const sourceInfo = formatSource(recipe);
             
             card.innerHTML = `
@@ -830,7 +860,7 @@
                     ${instructions.map((inst) => {
                         // Check if this is a tip
                         if (inst.startsWith('TIP:') || inst.startsWith('TIPS:')) {
-                            const tipText = inst.replace(/^TIPS?:\\s*/i, '');
+                            const tipText = inst.replace(/^TIPS?:\\\\s*/i, '');
                             return `
                                 <li class="recipe-tip rounded-lg p-3 ${isMobile ? 'px-3 py-2.5' : 'p-3'}">
                                     <div class="flex items-start">
@@ -928,7 +958,7 @@
             const modal = document.getElementById('recipeModal');
             const content = document.getElementById('modalContent');
             
-            const imageUrl = recipe.image || `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop`;
+            const imageUrl = recipe.image ? IMAGE_PATH_MODAL + recipe.image : `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop`;
             const sourceInfo = formatSource(recipe);
             
             // Check if recipe was made today
@@ -936,75 +966,85 @@
             const madeToday = recipe.madeDates && recipe.madeDates.includes(today);
             const madeCount = recipe.madeDates ? recipe.madeDates.length : 0;
             
-            // Mobile-specific layout
+            // Mobile-specific layout with fixed image
             if (isMobile()) {
                 content.innerHTML = `
-                    <div class="relative flex flex-col h-full overflow-y-auto modal-scroll-mobile">
+                    <div class="relative h-full w-full overflow-hidden">
+                        <!-- Fixed image container -->
+                        <div class="modal-image-container">
+                            <div class="h-full bg-gradient-to-br from-amber-100 to-orange-100 relative">
+                                ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
+                                `<div class="w-full h-full flex items-center justify-center">
+                                    <span class="text-8xl opacity-30">🍞</span>
+                                </div>`}
+                                ${recipe.category ? `<span onclick="activateFilter('category', '${recipe.category}', event)" class="category-badge absolute top-4 left-4 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
+                            </div>
+                        </div>
+                        
+                        <!-- Fixed close button -->
                         <button onclick="closeRecipe()" class="modal-close-mobile bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg">
                             <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
                         </button>
-                        <div class="h-56 bg-gradient-to-br from-amber-100 to-orange-100 relative flex-shrink-0">
-                            ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
-                            `<div class="w-full h-full flex items-center justify-center">
-                                <span class="text-8xl opacity-30">🍞</span>
-                            </div>`}
-                            ${recipe.category ? `<span onclick="activateFilter('category', '${recipe.category}', event)" class="category-badge absolute top-4 left-4 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
-                        </div>
-                        <div class="flex-1 px-4 pb-12 bg-white">
-                            <div class="pt-4 pb-3">
-                                <h2 class="font-display text-2xl text-gray-800 ${sourceInfo ? 'mb-0' : 'mb-1'}">${recipe.title}</h2>
-                                ${sourceInfo ? `<p class="text-xs text-amber-600 mb-2">${sourceInfo}</p>` : ''}
-                                <p class="text-gray-600 text-sm mb-3">${recipe.servings}</p>
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="flex items-center gap-2">
-                                        <button id="eraser-${recipe.id}" 
-                                                onclick="clearRating('${recipe.id}', event)" 
-                                                class="eraser-btn text-gray-400 hover:text-gray-600 transition p-1 ${recipe.userRating ? 'show' : ''}">
-                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M15.14 3c.51 0 1 .2 1.36.58l3.92 3.92c.78.78.78 2.04 0 2.82l-9.19 9.19L4 22l2.49-7.23L15.68 5.6c.36-.38.85-.6 1.36-.6m0 2.12L8 12.26V14h1.75l7.14-7.14L15.14 5.12M3 17.25L6.75 21 2 22l1-4.75z"/>
-                                            </svg>
-                                        </button>
-                                        <div class="flex items-center">
-                                            ${renderInteractiveStars(recipe)}
+                        
+                        <!-- Scrollable content -->
+                        <div class="modal-content-scrollable">
+                            <div class="modal-content-spacer"></div>
+                            <div class="modal-content-body px-4">
+                                <div class="pt-4 pb-3">
+                                    <h2 class="font-display text-2xl text-gray-800 ${sourceInfo ? 'mb-0' : 'mb-1'}">${recipe.title}</h2>
+                                    ${sourceInfo ? `<p class="text-xs text-amber-600 mb-2">${sourceInfo}</p>` : ''}
+                                    <p class="text-gray-600 text-sm mb-3">${recipe.servings}</p>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <button id="eraser-${recipe.id}" 
+                                                    onclick="clearRating('${recipe.id}', event)" 
+                                                    class="eraser-btn text-gray-400 hover:text-gray-600 transition p-1 ${recipe.userRating ? 'show' : ''}">
+                                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M15.14 3c.51 0 1 .2 1.36.58l3.92 3.92c.78.78.78 2.04 0 2.82l-9.19 9.19L4 22l2.49-7.23L15.68 5.6c.36-.38.85-.6 1.36-.6m0 2.12L8 12.26V14h1.75l7.14-7.14L15.14 5.12M3 17.25L6.75 21 2 22l1-4.75z"/>
+                                                </svg>
+                                            </button>
+                                            <div class="flex items-center">
+                                                ${renderInteractiveStars(recipe)}
+                                            </div>
                                         </div>
+                                        <button onclick="toggleMadeToday('${recipe.id}', event)" 
+                                                class="flex items-center space-x-1 px-3 py-1.5 rounded-lg transition text-xs font-medium
+                                                       ${madeToday 
+                                                         ? 'bg-amber-600 text-white' 
+                                                         : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
+                                            <svg class="w-4 h-4" fill="${madeToday ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            <span>Laget (${madeCount})</span>
+                                        </button>
                                     </div>
-                                    <button onclick="toggleMadeToday('${recipe.id}', event)" 
-                                            class="flex items-center space-x-1 px-3 py-1.5 rounded-lg transition text-xs font-medium
-                                                   ${madeToday 
-                                                     ? 'bg-amber-600 text-white' 
-                                                     : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
-                                        <svg class="w-4 h-4" fill="${madeToday ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                        <span>Laget (${madeCount})</span>
-                                    </button>
-                                </div>
-                                ${recipe.cuisine || recipe.meal ? `
-                                <div class="text-xs text-gray-500">
-                                    ${recipe.cuisine ? `<span onclick="activateFilter('cuisine', '${recipe.cuisine}', event)" class="category-badge inline-block px-2 py-0.5 bg-gray-100 rounded-full cursor-pointer hover:bg-amber-100">${recipe.cuisine} kjøkken</span>` : ''}
-                                    ${recipe.cuisine && recipe.meal ? ' ' : ''}
-                                    ${recipe.meal ? `<span onclick="activateFilter('meal', '${recipe.meal}', event)" class="category-badge inline-block px-2 py-0.5 bg-gray-100 rounded-full cursor-pointer hover:bg-amber-100">${recipe.meal}</span>` : ''}
-                                </div>
-                                ` : ''}
-                            </div>
-                            
-                            ${recipe.description ? `
-                            <div class="pb-4">
-                                <p class="text-gray-700 text-sm leading-relaxed">${recipe.description}</p>
-                            </div>
-                            ` : ''}
-                            
-                            <div class="space-y-6 pb-12">
-                                <div>
-                                    <h3 class="font-display text-xl text-amber-800 mb-3">Ingredienser</h3>
-                                    ${renderIngredients(recipe.ingredients)}
+                                    ${recipe.cuisine || recipe.meal ? `
+                                    <div class="text-xs text-gray-500">
+                                        ${recipe.cuisine ? `<span onclick="activateFilter('cuisine', '${recipe.cuisine}', event)" class="category-badge inline-block px-2 py-0.5 bg-gray-100 rounded-full cursor-pointer hover:bg-amber-100">${recipe.cuisine} kjøkken</span>` : ''}
+                                        ${recipe.cuisine && recipe.meal ? ' ' : ''}
+                                        ${recipe.meal ? `<span onclick="activateFilter('meal', '${recipe.meal}', event)" class="category-badge inline-block px-2 py-0.5 bg-gray-100 rounded-full cursor-pointer hover:bg-amber-100">${recipe.meal}</span>` : ''}
+                                    </div>
+                                    ` : ''}
                                 </div>
                                 
-                                <div>
-                                    <h3 class="font-display text-xl text-amber-800 mb-3">Fremgangsmåte</h3>
-                                    ${renderInstructions(recipe.instructions, true)}
+                                ${recipe.description ? `
+                                <div class="pb-4">
+                                    <p class="text-gray-700 text-sm leading-relaxed">${recipe.description}</p>
+                                </div>
+                                ` : ''}
+                                
+                                <div class="space-y-6 pb-12">
+                                    <div>
+                                        <h3 class="font-display text-xl text-amber-800 mb-3">Ingredienser</h3>
+                                        ${renderIngredients(recipe.ingredients)}
+                                    </div>
+                                    
+                                    <div>
+                                        <h3 class="font-display text-xl text-amber-800 mb-3">Fremgangsmåte</h3>
+                                        ${renderInstructions(recipe.instructions, true)}
+                                    </div>
                                 </div>
                             </div>
                         </div>
