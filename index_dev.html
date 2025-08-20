@@ -138,12 +138,6 @@
                 min-height: calc(100vh - 224px);
                 padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 40px);
             }
-            .modal-close-button-fixed {
-                position: fixed !important;
-                top: 16px !important;
-                right: 16px !important;
-                z-index: 100 !important;
-            }
         }
         /* Modern input focus styles */
         .modern-input:focus {
@@ -326,7 +320,7 @@
         
         // Recipe database - NOW AS AN ARRAY
         const recipeDatabase = [
-            {"id":"recipe_1755556429373_md0pmu8kg","title":"Amies kake","servings":"12 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":31,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En klassisk norsk sjokoladekake med mild kaffesmak og luftig smørkrem. Passer perfekt til kaffebord, bursdager eller som en hverdagskake. Smørkremen bør brukes samme dag. Tips: For en barnevennlig variant kan kaffen byttes ut med melk.","image":"amieskake.png","ingredients":[{"group":"Kakebunn","items":["2 egg","2 dl sukker","1 dl sterk kaffe","300 g hvetemel","30 g kakao","1 ts bakepulver","200 g smør (smeltet)"]},{"group":"Smørkrem","items":["200 g smør (romtemperert)","125 g melis","1 eggeplomme","noen dråper vaniljeessens"]}],"instructions":["Sett ovnen på 180 °C over- og undervarme og smør eller dekk en liten langpanne (20×30 cm).","Pisk egg og sukker til lys og luftig eggedosis.","Smelt smøret og la det avkjøle litt.","Rør inn kaffen og smøret i eggedosisen.","Sikt sammen hvetemel, kakao og bakepulver og vend det forsiktig inn.","Hell røren i formen og stek midt i ovnen ved 180 °C i ca. 30–35 minutter, til gjennomstekt. Avkjøl kaken.","Pisk smør og melis til hvitt og luftig. Tilsett eggeplommen og vaniljeessens, og pisk til glatt krem.","Smør kremen oppå kaken eller mellom to lag. Server romtemperert."],"createdAt":"2025-08-18"},
+            {"id":"recipe_1755556429373_md0pmu8kg","title":"Amies kake","servings":"12 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":31,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En klassisk norsk sjokoladekake med mild kaffesmak og luftig smørkrem. Passer perfekt til kaffebord, bursdager eller som en hverdagskake. Smørkremen bør brukes samme dag. Tips: For en barnevennlig variant kan kaffen byttes ut med melk.","image":"amieskake.png","ingredients":[{"group":"Kakebunn","items":["2 egg","2 dl sukker","1 dl sterk kaffe","300 g hvetemel","30 g kakao","1 ts bakepulver","200 g smør (smeltet)"]},{"group":"Smørkrem","items":["200 g smør (romtemperert)","125 g melis","1 eggeplomme","noen dråper vaniljeessens"]}],"instructions":["Sett ovnen på 180 °C over- og undervarme og smør eller dekk en liten langpanne (20×30 cm).","Pisk egg og sukker til lys og luftig eggedosis.","Smelt smøret og la det avkjøle litt.","Rør inn kaffen og smøret i eggedosisen.","Sikt sammen hvetemel, kakao og bakepulver og vend det forsiktig inn.","Hell røren i formen og stek midt i ovnen ved 180 °C i ca. 30–35 minutter, til gjennomstekt. Avkjøl kaken.","Pisk smør og melis til hvitt og luftig. Tilsett eggeplommen og vaniljeessens, og pisk til glatt krem.","Smør kremen oppå kaken eller mellom to lag. Server romtemperert.", "TIP: Dette er et tips"],"createdAt":"2025-08-18"},
             {"id":"recipe_1755484726501_29ubmpget","title":"Rundstykker","servings":"ca. 16 rundstykker","provider":"Farmor","category":"Brød","meal":"Frokost","cuisine":"Norsk","description":"Klassiske luftige rundstykker som passer perfekt til frokost, lunsj eller kveldsmat. Deigen er enkel å lage, og med både melk og smør får du myke rundstykker med god smak. De er like gode nystekte som oppvarmet, og egner seg også godt til frysing.","image":"rundstykker.png","ingredients":["500 g hvetemel","1 pose tørrgjær (ca. 11 g)","50 g smør (romtemperert eller smeltet)","1 ½ ts salt","2 dl melk (lunken, ca. 37–40 °C)","1 ½ dl vann (lunkent, ca. 37–40 °C)","1 ss sukker"],"instructions":["Bland sammen hvetemel, tørrgjær, salt og sukker i en stor bolle.","Varm melk og vann til ca. 37–40 °C. Ha dette i melblandingen sammen med smøret.","Elt deigen i kjøkkenmaskin i 8–10 minutter (eller 12–15 minutter for hånd) til den er smidig og slipper bollen.","Dekk bollen med plast eller klede og la deigen heve på et lunt sted i ca. 1 time, til den har blitt dobbelt så stor.","Del deigen i ca. 16 emner og trill til runde boller. Legg dem på et stekebrett med bakepapir.","Etterhev rundstykkene i 30–40 minutter under klede.","Forvarm ovnen til 220 °C over-/undervarme. Stek rundstykkene midt i ovnen i 10–12 minutter til de er gylne og gjennomstekte.","Avkjøl på rist før servering."],"createdAt":"2025-08-18"}
         ];
 
@@ -860,7 +854,7 @@
                     ${instructions.map((inst) => {
                         // Check if this is a tip
                         if (inst.startsWith('TIP:') || inst.startsWith('TIPS:')) {
-                            const tipText = inst.replace(/^TIPS?:\\s*/i, '');
+                            const tipText = inst.replace(/^TIPS?:\s*/i, '');
                             return `
                                 <li class="recipe-tip rounded-lg p-3 ${isMobile ? 'px-3 py-2.5' : 'p-3'}">
                                     <div class="flex items-start">
@@ -981,7 +975,7 @@
                     </div>
                     
                     <!-- Fixed close button (outside scrollable area) -->
-                    <button onclick="closeRecipe()" class="modal-close-button-fixed bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg">
+                    <button onclick="closeRecipe()" class="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg">
                         <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -1051,12 +1045,14 @@
             } else {
                 // Desktop layout with scroll-over-image effect
                 content.innerHTML = `
+                    <!-- Fixed close button outside scrollable area -->
+                    <button onclick="closeRecipe()" class="fixed top-12 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                    
                     <div class="relative flex flex-col h-full overflow-y-auto">
-                        <button onclick="closeRecipe()" class="absolute top-4 right-4 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white z-20 shadow-lg">
-                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
                         <div class="h-[450px] bg-gradient-to-br from-amber-100 to-orange-100 modal-image-fixed flex-shrink-0">
                             ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
                             `<div class="w-full h-full flex items-center justify-center">
@@ -1093,9 +1089,9 @@
                                     </div>
                                     <button onclick="toggleMadeToday('${recipe.id}', event)" 
                                             class="flex items-center space-x-2 px-3 py-1.5 rounded-lg transition text-sm font-medium
-                                                   ${madeToday 
-                                                     ? 'bg-amber-600 text-white hover:bg-amber-700' 
-                                                     : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
+                                                ${madeToday 
+                                                    ? 'bg-amber-600 text-white hover:bg-amber-700' 
+                                                    : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
                                         <svg class="w-5 h-5" fill="${madeToday ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                         </svg>

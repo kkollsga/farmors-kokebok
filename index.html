@@ -138,12 +138,6 @@
                 min-height: calc(100vh - 224px);
                 padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 40px);
             }
-            .modal-close-button-fixed {
-                position: fixed !important;
-                top: 16px !important;
-                right: 16px !important;
-                z-index: 100 !important;
-            }
         }
         /* Modern input focus styles */
         .modern-input:focus {
@@ -898,7 +892,7 @@
                     ${instructions.map((inst) => {
                         // Check if this is a tip
                         if (inst.startsWith('TIP:') || inst.startsWith('TIPS:')) {
-                            const tipText = inst.replace(/^TIPS?:\\s*/i, '');
+                            const tipText = inst.replace(/^TIPS?:\s*/i, '');
                             return `
                                 <li class="recipe-tip rounded-lg p-3 ${isMobile ? 'px-3 py-2.5' : 'p-3'}">
                                     <div class="flex items-start">
@@ -1019,7 +1013,7 @@
                     </div>
                     
                     <!-- Fixed close button (outside scrollable area) -->
-                    <button onclick="closeRecipe()" class="modal-close-button-fixed bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg">
+                    <button onclick="closeRecipe()" class="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg">
                         <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -1089,12 +1083,14 @@
             } else {
                 // Desktop layout with scroll-over-image effect
                 content.innerHTML = `
+                    <!-- Fixed close button outside scrollable area -->
+                    <button onclick="closeRecipe()" class="fixed top-12 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                    
                     <div class="relative flex flex-col h-full overflow-y-auto">
-                        <button onclick="closeRecipe()" class="absolute top-4 right-4 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white z-20 shadow-lg">
-                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
                         <div class="h-[450px] bg-gradient-to-br from-amber-100 to-orange-100 modal-image-fixed flex-shrink-0">
                             ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
                             `<div class="w-full h-full flex items-center justify-center">
@@ -1131,9 +1127,9 @@
                                     </div>
                                     <button onclick="toggleMadeToday('${recipe.id}', event)" 
                                             class="flex items-center space-x-2 px-3 py-1.5 rounded-lg transition text-sm font-medium
-                                                   ${madeToday 
-                                                     ? 'bg-amber-600 text-white hover:bg-amber-700' 
-                                                     : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
+                                                ${madeToday 
+                                                    ? 'bg-amber-600 text-white hover:bg-amber-700' 
+                                                    : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
                                         <svg class="w-5 h-5" fill="${madeToday ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                         </svg>
