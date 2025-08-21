@@ -7,198 +7,81 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .font-display {
-            font-family: 'Playfair Display', serif;
-        }
-        .recipe-card {
-            transition: all 0.3s ease;
-        }
-        .recipe-card:hover {
-            transform: translateY(-4px);
-        }
-        .star {
-            transition: all 0.2s ease;
-        }
-        .star:hover {
-            transform: scale(1.2);
-        }
-        button svg {
-            transition: transform 0.2s ease;
-        }
-        button:active svg {
-            transform: scale(0.9);
-        }
-        /* Filter animations */
-        #filterPillsContainer {
-            transition: max-width 0.3s ease-out, opacity 0.3s ease-out;
-            white-space: nowrap;
-            overflow: hidden;
-        }
-        .filter-pill {
-            max-width: 150px;
-            display: inline-flex !important;
-        }
-        .filter-pill-text {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 120px;
-        }
-        #filterToggle {
-            transition: all 0.2s ease;
-        }
-        #clearFilters {
-            transition: opacity 0.2s ease;
-        }
-        /* Checkbox styling */
-        input[type="checkbox"] {
-            cursor: pointer;
-        }
-        input[type="checkbox"]:checked {
-            background-color: rgb(217 119 6);
-            border-color: rgb(217 119 6);
-        }
-        /* Custom scrollbar for recipe sections */
-        .recipe-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
-        .recipe-scroll::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
-        }
-        .recipe-scroll::-webkit-scrollbar-thumb {
-            background: #d4d4d4;
-            border-radius: 3px;
-        }
-        .recipe-scroll::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-        /* Body lock when modal is open */
-        body.modal-open {
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
-        }
-        .modal-scroll-container {
-            -webkit-overflow-scrolling: touch;
-            overflow-y: auto;
-            overscroll-behavior: contain;
-        }
-        /* Fixed close button */
-        .modal-close-btn {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 60;
-        }
-
-        @media (max-width: 900px) {
-            .modal-close-btn {
-                top: env(safe-area-inset-top, 1rem);
-                right: env(safe-area-inset-right, 1rem);
-            }
-        }
-        /* Mobile modal styles with Safari support */
-        @supports (height: 100dvh) {
-            .modal-height-mobile {
-                height: 100dvh !important;
-            }
-        }
-        @supports not (height: 100dvh) {
-            .modal-height-mobile {
-                height: 100vh !important;
-                height: -webkit-fill-available !important;
-            }
-        }
-        /* Modern input focus styles */
-        .modern-input:focus {
-            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
-        }
-        /* Filter menu shadow */
-        .filter-menu-shadow {
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        /* Safe area padding for iOS */
-        .safe-bottom {
-            padding-bottom: env(safe-area-inset-bottom, 0);
-        }
-        .safe-top {
-            padding-top: env(safe-area-inset-top, 0);
-        }
-        /* Category badge hover effect */
-        .category-badge {
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        .category-badge:hover {
-            transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        /* Tip styling */
-        .recipe-tip {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-left: 3px solid #f59e0b;
-            animation: tipHighlight 0.3s ease-out;
-        }
-        @keyframes tipHighlight {
-            from {
-                transform: translateX(-10px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        /* Text clamping for description */
-        .description-clamp {
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            line-clamp: 2;
-            -webkit-line-clamp: 2;
-            text-overflow: ellipsis;
-        }
-        /* Eraser button animation */
-        .eraser-btn {
-            transition: all 0.2s ease;
-            opacity: 0;
-            transform: translateX(10px);
-            pointer-events: none;
-        }
-        .eraser-btn.show {
-            opacity: 1;
-            transform: translateX(0);
-            pointer-events: auto;
-        }
-        /* Desktop modal scroll-over-image effect */
-        .modal-image-fixed {
-            position: sticky;
-            top: 0;
-            z-index: 0;
-        }
-        .modal-content-overlay {
-            position: relative;
-            z-index: 1;
-            background: white;
-            margin-top: -20px;
-            border-top-left-radius: 1.5rem;
-            border-top-right-radius: 1.5rem;
-        }
-        .lazy-image {
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-        }
-        .lazy-image.loaded {
-            opacity: 1;
-        }
-        .image-placeholder {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        }
+        /* ===== BASE & TYPOGRAPHY ===== */
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
+        
+        /* ===== LAYOUT & CONTAINERS ===== */
+        .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0); }
+        .safe-top { padding-top: env(safe-area-inset-top, 0); }
+        
+        /* ===== SEARCH INPUT ===== */
+        .modern-input:focus { box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1); }
+        
+        /* ===== FILTER SYSTEM ===== */
+        #filterPillsContainer { transition: max-width 0.3s ease-out, opacity 0.3s ease-out; white-space: nowrap; overflow: hidden; }
+        #filterToggle { transition: all 0.2s ease; }
+        #clearFilters { transition: opacity 0.2s ease; }
+        .filter-pill { max-width: 150px; display: inline-flex !important; }
+        .filter-pill-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px; }
+        .filter-menu-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        input[type="checkbox"] { cursor: pointer; }
+        input[type="checkbox"]:checked { background-color: rgb(217 119 6); border-color: rgb(217 119 6); }
+        
+        /* ===== RECIPE CARDS ===== */
+        .recipe-card { transition: all 0.3s ease; }
+        .recipe-card:hover { transform: translateY(-4px); }
+        .category-badge { transition: all 0.2s ease; cursor: pointer; }
+        .category-badge:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .description-clamp { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; line-clamp: 2; -webkit-line-clamp: 2; text-overflow: ellipsis; }
+        
+        /* ===== STAR RATING ===== */
+        .star { transition: all 0.2s ease; }
+        .star:hover { transform: scale(1.2); }
+        .eraser-btn { transition: all 0.2s ease; opacity: 0; transform: translateX(10px); pointer-events: none; }
+        .eraser-btn.show { opacity: 1; transform: translateX(0); pointer-events: auto; }
+        
+        /* ===== BUTTONS ===== */
+        button svg { transition: transform 0.2s ease; }
+        button:active svg { transform: scale(0.9); }
+        
+        /* ===== RECIPE INSTRUCTIONS ===== */
+        .recipe-tip { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 3px solid #f59e0b; animation: tipHighlight 0.3s ease-out; }
+        
+        /* ===== SCROLLBARS ===== */
+        .recipe-scroll::-webkit-scrollbar { width: 6px; }
+        .recipe-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
+        .recipe-scroll::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 3px; }
+        .recipe-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        
+        /* ===== MODAL - BASE ===== */
+        body.modal-open { overflow: hidden; }
+        .modal-scroll-container { -webkit-overflow-scrolling: touch; overflow-y: auto; overscroll-behavior: contain; }
+        .modal-close-btn { position: fixed; top: 1rem; right: 1rem; z-index: 60; }
+        
+        /* ===== MODAL - DESKTOP LAYOUT ===== */
+        .modal-image-backdrop { position: absolute; top: 0; left: 0; right: 0; height: 450px; z-index: 0; }
+        .modal-content-scroll { position: relative; z-index: 1; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .modal-content-spacer { height: 430px; }
+        .modal-content-overlay { position: relative; z-index: 1; background: white; border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem; min-height: calc(100vh - 430px); }
+        
+        /* ===== IMAGES ===== */
+        .lazy-image { opacity: 0; transition: opacity 0.3s ease-in-out; }
+        .lazy-image.loaded { opacity: 1; }
+        .image-placeholder { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+        
+        /* ===== ANIMATIONS ===== */
+        @keyframes tipHighlight { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        /* ===== IOS SPECIFIC ===== */
+        @supports (-webkit-touch-callout: none) { body.modal-open { position: fixed; width: 100%; height: 100%; } }
+        
+        /* ===== MOBILE RESPONSIVE ===== */
+        @media (max-width: 900px) { .modal-close-btn { top: env(safe-area-inset-top, 1rem); right: env(safe-area-inset-right, 1rem); } }
+        
+        /* ===== MODAL HEIGHT FALLBACKS ===== */
+        @supports (height: 100dvh) { .modal-height-mobile { height: 100dvh !important; } }
+        @supports not (height: 100dvh) { .modal-height-mobile { height: 100vh !important; height: -webkit-fill-available !important; } }
     </style>
 </head>
 <body class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 min-h-screen">
@@ -997,12 +880,12 @@
                 content.className = 'h-full flex flex-col overflow-hidden';
             } else {
                 modalWrapper.className = 'bg-white sm:rounded-2xl max-w-5xl w-full sm:h-[92vh] flex flex-col overflow-hidden relative';
-                content.className = 'h-full flex flex-col overflow-hidden';
+                content.className = 'h-full flex flex-col overflow-hidden relative';
             }
             
             // Generate content based on layout
             if (isSingleColumn) {
-                // Single column layout
+                // Single column layout (mobile) - unchanged
                 content.innerHTML = `
                     <!-- Close button fixed to viewport -->
                     <button onclick="closeRecipe()" class="modal-close-btn bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg">
@@ -1079,7 +962,7 @@
                     </div>
                 `;
             } else {
-                // Two column layout (desktop)
+                // Two column layout (desktop) - UPDATED structure for fixed background
                 content.innerHTML = `
                     <!-- Close button fixed to modal -->
                     <button onclick="closeRecipe()" class="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg">
@@ -1088,15 +971,21 @@
                         </svg>
                     </button>
                     
-                    <!-- Scrollable content container -->
-                    <div class="modal-scroll-container h-full overflow-y-auto">
-                        <div class="h-[450px] bg-gradient-to-br from-amber-100 to-orange-100 modal-image-fixed flex-shrink-0 relative">
-                            ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
-                            `<div class="w-full h-full flex items-center justify-center">
-                                <span class="text-8xl opacity-30">🍞</span>
-                            </div>`}
-                            ${recipe.category ? `<span onclick="activateFilter('category', '${recipe.category}', event)" class="category-badge absolute top-4 left-6 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
-                        </div>
+                    <!-- Fixed background image -->
+                    <div class="modal-image-backdrop bg-gradient-to-br from-amber-100 to-orange-100">
+                        ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
+                        `<div class="w-full h-full flex items-center justify-center">
+                            <span class="text-8xl opacity-30">🍞</span>
+                        </div>`}
+                        ${recipe.category ? `<span onclick="activateFilter('category', '${recipe.category}', event)" class="category-badge absolute top-4 left-6 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
+                    </div>
+                    
+                    <!-- Scrollable content that overlays the image -->
+                    <div class="modal-content-scroll">
+                        <!-- Spacer to push content down -->
+                        <div class="modal-content-spacer"></div>
+                        
+                        <!-- White content area -->
                         <div class="modal-content-overlay">
                             <div class="px-6 pt-5 pb-4 border-b border-gray-100">
                                 <h2 class="font-display text-3xl text-gray-800 ${sourceInfo ? 'mb-0' : 'mb-1'}">${recipe.title}</h2>
@@ -1159,10 +1048,16 @@
                 `;
             }
             
-            // Lock body scroll
+            // Lock body scroll - Updated approach
             scrollPosition = window.pageYOffset;
             document.body.classList.add('modal-open');
-            document.body.style.top = `-${scrollPosition}px`;
+            
+            // Only set position fixed for iOS devices
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS) {
+                document.body.style.top = `-${scrollPosition}px`;
+            }
+            
             modal.classList.remove('hidden');
         }
 
@@ -1180,10 +1075,16 @@
         // Close recipe modal
         function closeRecipe() {
             document.getElementById('recipeModal').classList.add('hidden');
-            // Restore body scroll
+            
+            // Restore body scroll - Updated approach
             document.body.classList.remove('modal-open');
-            document.body.style.top = '';
-            window.scrollTo(0, scrollPosition);
+            
+            // Only restore scroll position if we set it (iOS)
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS) {
+                document.body.style.top = '';
+                window.scrollTo(0, scrollPosition);
+            }
         }
 
         // Rate recipe
