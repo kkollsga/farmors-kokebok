@@ -66,6 +66,19 @@
         LOADING EFFECTS
     ============================================ */
     .card-loading { background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%); background-size: 1000px 100%; animation: shimmer 1.5s infinite; }
+
+    /* ============================================
+    MODAL SCROLLING FIXES
+    ============================================ */
+    #modalContent { -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
+    #modalContent.flex-1 { min-height: 0; }
+    .fixed.inset-0 { position: fixed; top: 0; right: 0; bottom: 0; left: 0; }
+    #recipeModal .fixed.inset-0 > div { height: 100%; }
+
+    /* iOS specific fixes */
+    @supports (-webkit-touch-callout: none) {
+        #modalContent { height: 100vh; height: -webkit-fill-available; }
+    }
 </style>
 </head>
 <body class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 min-h-screen">
@@ -964,6 +977,7 @@ class ModalManager {
         const modal = document.getElementById('recipeModal');
         const content = document.getElementById('modalContent');
         const modalWrapper = modal.querySelector('.flex > div');
+        const flexContainer = modal.querySelector('.flex');
         
         const imageUrl = recipe.image ? CONFIG.IMAGE_PATHS.MODAL + recipe.image : `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop`;
         const sourceInfo = this.uiManager.formatSource(recipe);
@@ -980,9 +994,13 @@ class ModalManager {
         
         // Configure modal wrapper styles
         if (isFullscreen) {
-            modalWrapper.className = 'bg-white w-full h-full flex flex-col overflow-hidden';
-            content.className = 'h-full flex flex-col overflow-y-auto';
+            // Fullscreen mobile modal
+            flexContainer.className = 'fixed inset-0';
+            modalWrapper.className = 'bg-white w-full h-full flex flex-col';
+            content.className = 'flex-1 overflow-y-auto overscroll-behavior-contain -webkit-overflow-scrolling-touch';
         } else {
+            // Desktop modal
+            flexContainer.className = 'flex items-start justify-center min-h-screen sm:pt-8';
             modalWrapper.className = 'bg-white sm:rounded-2xl max-w-5xl w-full sm:h-[92vh] flex flex-col overflow-hidden';
             content.className = 'h-full flex flex-col overflow-y-auto';
         }
@@ -999,6 +1017,17 @@ class ModalManager {
         document.body.classList.add('modal-open');
         document.body.style.top = `-${this.scrollPosition}px`;
         modal.classList.remove('hidden');
+        
+        // Ensure modal content is scrollable on iOS
+        if (isFullscreen) {
+            // Reset scroll position
+            content.scrollTop = 0;
+            
+            // iOS scroll fix
+            setTimeout(() => {
+                content.style.height = `${window.innerHeight}px`;
+            }, 0);
+        }
     }
 
     generateMobileModalContent(recipe, imageUrl, sourceInfo, madeToday, madeCount) {
@@ -1247,7 +1276,18 @@ class ModalManager {
     }
 
     closeRecipe() {
-        document.getElementById('recipeModal').classList.add('hidden');
+        const modal = document.getElementById('recipeModal');
+        const flexContainer = modal.querySelector('.flex');
+        const modalWrapper = modal.querySelector('.flex > div');
+        const content = document.getElementById('modalContent');
+        
+        // Reset classes to default
+        flexContainer.className = 'flex items-start justify-center min-h-screen sm:pt-8';
+        modalWrapper.className = 'bg-white sm:rounded-2xl max-w-5xl w-full sm:h-[92vh] modal-height-mobile flex flex-col overflow-hidden modal-content-mobile';
+        content.className = 'h-full flex flex-col overflow-y-auto';
+        content.style.height = '';
+        
+        modal.classList.add('hidden');
         document.body.classList.remove('modal-open');
         document.body.style.top = '';
         window.scrollTo(0, this.scrollPosition);
