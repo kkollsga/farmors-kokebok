@@ -1019,27 +1019,23 @@ class ModalManager {
         
         // Determine layout
         const windowWidth = window.innerWidth;
-        const windowHeight = window.innerHeight;
         const isFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
         const isSingleColumn = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
-        const isLandscape = windowWidth > windowHeight;
         
         // Configure modal wrapper styles
         if (isFullscreen) {
-            if (isSingleColumn || (isLandscape && windowWidth < 700)) {
-                // Mobile portrait or very small landscape - single column with scrolling over image
-                modal.className = 'fixed inset-0 bg-black z-50';
-                flexContainer.className = 'h-full bg-black';
-                modalWrapper.className = 'h-full relative bg-black';
-                content.className = 'h-full relative bg-black';
+            // Fullscreen mobile modal with black background
+            modal.className = 'fixed inset-0 bg-black z-50';
+            flexContainer.className = 'h-full bg-black';
+            modalWrapper.className = 'h-full relative bg-black';
+            content.className = 'h-full relative bg-black';
+            
+            // Use single column for portrait, desktop format for landscape
+            if (isSingleColumn) {
                 content.innerHTML = this.generateMobileModalContent(recipeWithUserData, imageUrl, sourceInfo, madeToday, madeCount);
             } else {
-                // Landscape mode - fullscreen but 2 columns
-                modal.className = 'fixed inset-0 bg-black z-50';
-                flexContainer.className = 'h-full';
-                modalWrapper.className = 'h-full bg-white overflow-hidden';
-                content.className = 'h-full overflow-y-auto';
-                content.innerHTML = this.generateLandscapeModalContent(recipeWithUserData, imageUrl, sourceInfo, madeToday, madeCount);
+                // Landscape - use desktop content format but in fullscreen modal
+                content.innerHTML = this.generateDesktopModalContent(recipeWithUserData, imageUrl, sourceInfo, madeToday, madeCount);
             }
         } else {
             // Desktop modal  
@@ -1055,93 +1051,6 @@ class ModalManager {
         document.body.classList.add('modal-open');
         document.body.style.top = `-${this.scrollPosition}px`;
         modal.classList.remove('hidden');
-    }
-
-    generateLandscapeModalContent(recipe, imageUrl, sourceInfo, madeToday, madeCount) {
-        return `
-            <div class="relative h-full">
-                <button onclick="recipeApp.modalManager.closeRecipe()" class="absolute top-2 right-2 z-50 bg-white/90 backdrop-blur rounded-full p-1.5 hover:bg-white shadow-lg">
-                    <i class="fas fa-times text-gray-600"></i>
-                </button>
-                
-                <div class="grid grid-cols-2 h-full">
-                    <!-- Left column: Image and basic info -->
-                    <div class="bg-black relative overflow-hidden">
-                        <div class="h-full bg-gradient-to-br from-amber-100 to-orange-100">
-                            ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
-                            `<div class="w-full h-full flex items-center justify-center">
-                                <span class="text-8xl opacity-30">🍞</span>
-                            </div>`}
-                        </div>
-                        ${recipe.category ? `<span onclick="recipeApp.filterManager.activateFilter('category', '${recipe.category}', event)" 
-                            class="absolute top-2 left-2 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700 transition-all duration-200 cursor-pointer hover:scale-105 hover:shadow-lg">${recipe.category}</span>` : ''}
-                        
-                        <!-- Info overlay at bottom -->
-                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-white">
-                            <h2 class="font-display text-2xl mb-1">${recipe.title}</h2>
-                            ${sourceInfo ? `<p class="text-xs text-amber-200 mb-1">${sourceInfo}</p>` : ''}
-                            <p class="text-sm mb-2">${recipe.servings}</p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <button id="eraser-${recipe.id}" 
-                                            onclick="recipeApp.modalManager.clearRating('${recipe.id}', event)" 
-                                            class="text-gray-300 hover:text-white transition-all duration-200 p-1 ${recipe.userRating ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2 pointer-events-none'}">
-                                        <i class="fas fa-eraser"></i>
-                                    </button>
-                                    <div class="flex items-center">
-                                        ${this.renderInteractiveStars(recipe)}
-                                    </div>
-                                </div>
-                                <button onclick="recipeApp.modalManager.toggleMadeToday('${recipe.id}', event)" 
-                                        class="flex items-center space-x-1 px-2 py-1 rounded-lg transition text-xs font-medium
-                                            ${madeToday 
-                                                ? 'bg-amber-600 text-white' 
-                                                : 'border border-gray-300 text-gray-200 hover:bg-white/10'}">
-                                    <i class="fas fa-check"></i>
-                                    <span>Laget (${madeCount})</span>
-                                </button>
-                            </div>
-                            ${recipe.cuisine || recipe.meal ? `
-                            <div class="text-xs text-gray-300 mt-2">
-                                ${recipe.cuisine ? `<span onclick="recipeApp.filterManager.activateFilter('cuisine', '${recipe.cuisine}', event)" 
-                                    class="inline-block px-2 py-0.5 bg-white/20 rounded-full cursor-pointer hover:bg-white/30 transition-all duration-200">${recipe.cuisine} kjøkken</span>` : ''}
-                                ${recipe.cuisine && recipe.meal ? ' ' : ''}
-                                ${recipe.meal ? `<span onclick="recipeApp.filterManager.activateFilter('meal', '${recipe.meal}', event)" 
-                                    class="inline-block px-2 py-0.5 bg-white/20 rounded-full cursor-pointer hover:bg-white/30 transition-all duration-200">${recipe.meal}</span>` : ''}
-                            </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                    
-                    <!-- Right column: Recipe content -->
-                    <div class="bg-white overflow-y-auto">
-                        <div class="p-4">
-                            ${recipe.description ? `
-                            <div class="bg-amber-50/50 rounded-lg p-3 mb-4">
-                                <p class="text-gray-700 text-sm leading-relaxed">${recipe.description}</p>
-                            </div>
-                            ` : ''}
-                            
-                            <div class="space-y-4">
-                                <div>
-                                    <h3 class="font-display text-lg text-amber-800 mb-2">Ingredienser</h3>
-                                    <div class="text-sm">
-                                        ${this.renderIngredients(recipe.ingredients)}
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <h3 class="font-display text-lg text-amber-800 mb-2">Fremgangsmåte</h3>
-                                    <div class="text-sm">
-                                        ${this.renderInstructions(recipe.instructions, true)}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
     }
 
     generateMobileModalContent(recipe, imageUrl, sourceInfo, madeToday, madeCount) {
@@ -1403,8 +1312,7 @@ class ModalManager {
         const modalWrapper = modal.querySelector('.flex > div');
         const content = document.getElementById('modalContent');
         
-        // Reset all classes to default
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 hidden z-50';
+        // Reset classes to default
         flexContainer.className = 'flex items-start justify-center min-h-screen sm:pt-8';
         modalWrapper.className = 'bg-white sm:rounded-2xl max-w-5xl w-full sm:h-[92vh] modal-height-mobile flex flex-col overflow-hidden modal-content-mobile';
         content.className = 'h-full flex flex-col overflow-y-auto';
