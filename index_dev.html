@@ -58,7 +58,7 @@
     /* ============================================
        MODAL SCROLLING
     ============================================ */
-    #recipeModal .absolute.inset-0 { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; background: black; }
+    #recipeModal .absolute.inset-0 { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
     #recipeModal .fixed.top-4.right-4 { transition: transform 0.2s ease-out; }
     #recipeModal .fixed.top-4.right-4:active { transform: scale(0.95); }
     #recipeModal .rounded-t-3xl { box-shadow: 0 -20px 40px rgba(0,0,0,0.3), 0 -10px 20px rgba(0,0,0,0.2); }
@@ -158,7 +158,7 @@
 <!-- Recipe Modal -->
 <div id="recipeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
     <div class="flex items-start justify-center min-h-screen sm:pt-8">
-        <div class="bg-white sm:rounded-2xl max-w-5xl w-full sm:h-[92vh] modal-height-mobile flex flex-col overflow-hidden modal-content-mobile">
+        <div class="bg-red sm:rounded-3xl max-w-5xl w-full sm:h-[92vh] modal-height-mobile flex flex-col overflow-hidden modal-content-mobile">
             <div id="modalContent" class="h-full flex flex-col overflow-y-auto">
                 <!-- Recipe content will be inserted here -->
             </div>
@@ -190,44 +190,6 @@ class RecipeDatabase {
     constructor() {
         this.recipes = [
             {"id":"recipe_1755485212305_6c4rynvqc","title":"Berlinerkranser","servings":"Ca. 30–40 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":3,"category":"Julekaker","meal":"Snacks","cuisine":"Norsk","description":"Berlinerkranser er en klassisk norsk julekake laget av en smør- og eggeplommerik deig. De formes til små kranser, pensles med eggehvite, dyppes i sukker og stekes til de er lett gylne. De har en sprø, søt overflate og en smørmør kjerne – en fast tradisjon på norske kakefat i julen.","image":"berlinerkranser.png","ingredients":["250 g hvetemel","65 g sukker","145 g margarin eller smør","1 eggeplomme","1 eggehvite (til pensling)","perlesukker eller grovt sukker (til topping)"],"instructions":["Smuldre sammen hvetemel, sukker og margarin til en smuldrete blanding.","Tilsett eggeplommen og kna deigen godt sammen til en smidig deig.","Del deigen i små emner og trill ut til fingertykke pølser.","Form små kranser og legg på et bakepapirkledd stekebrett.","Pensle kransene med lett pisket eggehvite.","Dypp oversiden i perlesukker eller grovt sukker.","Stek ved svak varme, ca. 175 °C, i 8–10 minutter til de er lett gylne.","Avkjøl på rist og oppbevar i tett kakeboks."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755540531697_0ukql48af","title":"Smultringer","servings":"Ca. 40–50 smultringer","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":4,"category":"Småkaker","meal":"Snacks","cuisine":"Norsk","description":"Tradisjonelle norske smultringer stekt i smult eller matfett. De har en mild smak av sitron og krydder, med en gyllen, sprø overflate. Klassiske til jul, men også perfekte som kaffekos året rundt.","image":"smultringer.png","ingredients":["2 egg","3 kopper sukker (ca. 6 dl)","4 kopper helmelk (ca. 8 dl)","50 g smør, smeltet","3 ts hornsalt (hjortetakksalt)","1 ts natron","½ ts sitrondråper eller revet sitronskall","Ca. 1–1,2 kg hvetemel (til en fast, men smidig deig)","Smult eller matfett til steking"],"instructions":["Pisk egg og sukker til det er lyst og luftig.","Tilsett melk, smeltet smør og sitrondråper (eller revet skall).","Bland inn siktet hvetemel, hornsalt og natron litt etter litt, til deigen blir fast men smidig.","Kjevle ut deigen til ca. ½ cm tykk leiv.","Stikk ut smultringer med en smultringutstikker eller bruk et glass og en liten kork til midten.","Varm smult eller matfett i en gryte til ca. 170 °C.","Stek smultringene gyllenbrune på begge sider.","La dem renne av på kjøkkenpapir før servering."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755475274682_pg1vg0qjn","title":"Kake med mokkakrem","servings":"10-12 porsjoner","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":5,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En klassisk, luftig sukkerbrødkake fylt og dekket med en silkemyk mokkakrem. Kaken har en balansert smak av kaffe og kakao, og passer perfekt til kaffeselskap, bursdag eller fest. Kan også varieres med syltetøy mellom lagene for ekstra friskhet.","image":"kakemedmokkakrem.png","ingredients":[{"group":"Sukkerbrød","items":["6 egg","180 g sukker (ca. 2 dl)","180 g hvetemel (ca. 3 dl)","1 ts bakepulver (valgfritt, gir ekstra sikkerhet)"]},{"group":"Mokkakrem","items":["150 g smør, romtemperert","100 g melis (ca. 1,5 dl)","3 ss sterk kaffe, avkjølt","2 ss kakao","1 ts vaniljedråper eller 1 ts vaniljesukker"]}],"instructions":["Sett ovnen på 160–170 °C (over- og undervarme). Smør en rundform (24 cm) og legg bakepapir i bunnen.","Visp egg og sukker til lys og luftig eggedosis (5–10 minutter).","Sikt mel og bakepulver over eggedosisen, og vend det forsiktig inn med en slikkepott.","Hell røren i formen og stek på nederste rille i ca. 30–40 minutter, til sukkerbrødet er gyllent og en kakepinne kommer ut ren. Avkjøl helt på rist.","Når sukkerbrødet er avkjølt, del det i to eller tre lag.","Lag mokkakremen: Pisk smør og melis hvitt og luftig (5–7 minutter). Tilsett kaffe, kakao og vanilje litt etter litt. Pisk til en jevn og smørbar krem.","Legg en kakebunn på fat. Smør på et lag mokkakrem, eller ha syltetøy mellom lagene om ønskelig. Fortsett med neste bunn.","Dekk hele kaken med resten av mokkakremen på toppen og langs sidene.","Pynt gjerne med mokkabønner, sjokoladespon eller et lett dryss kakao.","La kaken stå kjølig i minst 1 time før servering for at smakene skal sette seg."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755523615872_c8ydauis7","title":"Sjokoladekake med vaniljeglasur","servings":"10–12 porsjoner","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":6,"category":"Kake","meal":"Dessert","cuisine":"Skandinavisk","description":"En saftig sjokoladekake med en luftig bunn, fylt og dekket med en smørkrem laget på en base av vaniljekrem. Først kokes en enkel vaniljekrem som må avkjøles, deretter blandes den med smør og melis til en silkemyk smørkrem som både kan brukes som fyll mellom lagene og som glasur på toppen og sidene. Kaken pyntes til slutt med sjokolade, enten raspet som dekor eller smeltet og fordelt over glasuren for en blank finish.","image":"sjokoladekakevaniljeglasur.png","ingredients":[{"group":"Kakebunn","items":["5 egg","150 g sukker","100 g hvetemel","50 g potetmel","25 g kakao","2 ts bakepulver (strøkne)","50 g revet sjokolade"]},{"group":"Glasur (smørkrem)","items":["1 1/2 ss hvetemel","1/2 liter melk","60–80 g sukker","1 egg","1–2 ts vaniljesukker","100 g smør","30–40 g melis"]},{"group":"Pynt","items":["100 g sjokolade (revet som spon eller smeltet til glasur)"]}],"instructions":["Pisk eggeplommene godt og tilsett sukkeret litt etter litt under stadig pisking.","Pisk eggehvitene stive og vend forsiktig inn i eggeplommeblandingen.","Bland hvetemel, potetmel, kakao, bakepulver og revet sjokolade. Sikt det tørre inn i røren og vend forsiktig sammen.","Hell røren i en smurt form (24 cm) og stek ved 175 °C i ca. 30–35 minutter, til kaken er gjennomstekt. Avkjøl helt.","Lag vaniljekrem (base til glasuren): Rør sammen hvetemel, melk og sukker i en kjele. Kok opp under omrøring. Tilsett vaniljesukker og egg, og rør til kremen tykner. Avkjøl helt.","Visp smør og melis hvitt. Rør inn den avkjølte vaniljekremen litt etter litt til en glatt smørkrem.","Del kaken i to eller tre lag. Bruk smørkremen både som fyll mellom lagene og som glasur på toppen og sidene.","Pynt kaken med 100 g sjokolade – enten ved å drysse over revet sjokolade eller ved å smelte sjokoladen og fordele den jevnt over glasuren.","La kaken trekke kjølig i minst 1 time før servering for å sette smakene."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755553770811_i0qwsu6dx","title":"Smørkake","servings":"1 form","provider":"Farmors håndskrevne kokebok","reference":"Farmors oppskrifter","pageNumber":7,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En klassisk, luftig smørkake der smør og sukker piskes hvitt for å gi kaken fin konsistens. Passer godt som kaffekake og kan serveres naturell eller med melisdryss.","image":"smorkake.png","ingredients":["3 egg","500 g sukker (ca. 5,5 dl)","65 g smør","1,5 dl melk","4 ts bakepulver","4 ts vaniljesukker"],"instructions":["Pisk smør og sukker hvitt og luftig.","Tilsett eggene ett om gangen og visp godt.","Rør inn melken.","Sikt sammen mel, bakepulver og vaniljesukker og vend det inn til slutt.","Hell røren i en smurt form og stek ved ca. 175 °C i 40–50 minutter til kaken er ferdig."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755524663629_mxj8jiua2","title":"Sjokolade- og mandelkake i langpanne","servings":"Ca. 20–25 ruter","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":9,"category":"Kake","meal":"Dessert","cuisine":"Skandinavisk","description":"En saftig langpannekake laget med sjokolade, sitronskall og hakkede mandler. Smør og sukker piskes hvitt, eggene blandes inn, og til slutt røres sjokolade, mandler og sitronskall inn i røren. Kaken stekes i langpanne og skjæres i firkanter når den er ferdig. Tradisjonelt serveres den uten glasur, men den kan gjerne pyntes med et lett dryss melis for et festligere preg.","image":"sjokoladeogmandelkake.png","ingredients":["250 g smør","250 g sukker","250 g hvetemel","4 egg (plommer og hviter skilles)","100 g mørk sjokolade (smeltet)","revet skall av 1 sitron","50 g hakkede mandler","melis til pynt (valgfritt)"],"instructions":["Visp smør og sukker til det er hvitt og luftig.","Tilsett eggeplommene én etter én under omrøring.","Smelt sjokoladen og rør den inn sammen med revet sitronskall.","Sikt hvetemelet og vend det vekselvis inn med stivpiskede eggehviter.","Vend til slutt inn de hakkede mandlene.","Hell røren i en smurt og bakepapirkledd langpanne.","Stek kaken midt i ovnen ved 175 °C i ca. 30–35 minutter, til den er gjennomstekt.","Avkjøl og skjær i firkanter.","Dryss gjerne melis over kaken før servering."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755525039501_v1gcazw3t","title":"Sjokoladesnitter","servings":"Ca. 30–40 snitter","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":9,"category":"Julekaker","meal":"Snacks","cuisine":"Skandinavisk","description":"Sjokoladesnitter er enkle, klassiske småkaker der en mørdeig smaksatt med kakao formes til lengder, stekes og skjæres i skrå snitter. Kakene blir sprø i kantene og litt seige i midten – en populær småkake til kaffebordet og i julen.","image":"sjokoladesnitter.png","ingredients":["200 g smør","200 g sukker","1 egg","3 ss kakao","250 g hvetemel","2 ts potetmel","2 ts bakepulver","1 ts vaniljesukker"],"instructions":["Visp smør og sukker hvitt og luftig.","Tilsett egget og rør godt inn.","Sikt sammen kakao, hvetemel, potetmel, bakepulver og vaniljesukker.","Rør det tørre inn i smørblandingen og arbeid deigen raskt sammen.","Del deigen i 3–4 deler og rull ut til lengder.","Legg lengdene på bakepapirkledd stekebrett og trykk dem litt flate med en gaffel eller baksiden av en skje.","Stek midt i ovnen ved 175 °C i ca. 12–15 minutter.","Skjær lengdene i skrå snitter mens de fortsatt er varme.","La sjokoladesnittene avkjøles helt på rist og oppbevar i tett kakeboks."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755525313393_x86s8trii","title":"Fru Meyers kaker","servings":"Ca. 40 småkaker","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":10,"category":"Julekaker","meal":"Snacks","cuisine":"Skandinavisk","description":"Fru Meyers kaker er klassiske småkaker laget med en enkel deig av margarin, sukker, potetmel og hvetemel. Kakene er lette og sprø, med en mild smak av sitron. De formes med teskje som små topper på platen og stekes til de er lys-gule. En tradisjonell småkake som passer godt både til kaffekosen og på julekakefatet.","image":"frumeyerskaker.png","ingredients":["125 g margarin","125 g sukker","125 g potetmel","140 g hvetemel","1 egg","3/4 ts hornsalt (hjortetakksalt)","5 dråper sitronessens"],"instructions":["Rør margarin og sukker hvitt.","Pisk egget lett sammen og ha det i.","Sikt på mel og hornsalt og rør godt.","Ha i sitrondråper.","Sett små topper av deigen på platen med en teskje, litt mellomrom imellom.","Stekes lys-gule i svak varme (ca. 160–170 °C) i 8–10 minutter.","Avkjøles på rist og oppbevares i tett kakeboks."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755525787550_591atv6ib","title":"Freia formkake","servings":"8–10 porsjoner","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":11,"category":"Kake","meal":"Dessert","cuisine":"Skandinavisk","description":"Freia formkake er en klassisk, enkel smørkake laget med både hvetemel og potetmel. Resultatet blir en saftig og lett kake med fin struktur. Den passer godt til kaffekos, og kan gjerne serveres naturell eller med et lett dryss melis. Oppskriften stammer trolig fra Freias bakepulverpakke.","image":"freiaformkake.png","ingredients":["125 g smør","125 g sukker","70 g hvetemel","70 g potetmel","2 egg","1/2 ts bakepulver","1 ts vaniljesukker eller revet skall av 1/2 sitron (valgfritt, for smak)","melis til pynt (valgfritt)"],"instructions":["Rør smør og sukker hvitt.","Tilsett eggene, ett om gangen, og visp godt mellom hver.","Bland hvetemel, potetmel og bakepulver sammen, og sikt det i røren.","Vend forsiktig til alt er godt blandet. Tilsett gjerne vaniljesukker eller revet sitronskall for ekstra smak.","Hell røren i en smurt form (ca. 1 liter).","Stek kaken i middels varm ovn (ca. 175 °C) i omtrent 45 minutter, til den er gjennomstekt og gyllen.","Avkjøl på rist før servering.","Dryss gjerne melis over kaken før servering."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755526142808_1e6hjyujv","title":"Brune snipper","servings":"Ca. 40–50 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":12,"category":"Småkaker","meal":"Julekaker","cuisine":"Norsk","description":"Brune snipper er klassiske julekaker laget med sirup, krydder og en klype pepper for ekstra smak. Deigen skal helst hvile til neste dag før utkjevling. Kakene kuttes i diamanter (snipper) og blir sprø og krydrede, perfekt til julens kakefat.","image":"brunesnipper.png","ingredients":["65 g sukker","35 g margarin","125 g sirup","3/4 dl fløte","250 g hvetemel","1/2 ts pepper","1/4 ts ingefær","1/2 ts natron","Ev. halve mandler til pynt"],"instructions":["Ha sukker, sirup og fløte i en kjele og varm opp til margarinen er smeltet. Rør godt sammen.","Avkjøl blandingen litt, og sikt inn alt det tørre (hvetemel, krydder og natron). Elt til en jevn deig.","La deigen hvile til neste dag, gjerne kjølig.","Kjevle ut deigen tynt, ca. 2–3 mm. Skjær ut snipper ved å først skjære lange strimler på skrå (3–4 cm brede), og deretter skjære på skrå den andre veien slik at det dannes små diamanter (ca. 4–5 cm på langsiden).","Legg snippene på smurt plate eller bakepapir. Pynt gjerne med en halv mandel i midten av hver.","Stek kakene i lys gyllen farge ved middels varme (ca. 175 °C) i 8–10 minutter."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755476864587_2erpf8ln7","title":"Wienerbrød","servings":"Ca. 16–20 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":13,"category":"Bakverk","meal":"Dessert","cuisine":"Dansk","description":"Et klassisk dansk wienerbrød laget av en luftig gjærdeig som lamineres med margarin. Kaken kan fylles med forskjellige fyll – mandelmasse, eggekrem eller havregrynsfyll – og toppes med glasur. Resultatet er et luftig og smørfylt bakverk som passer perfekt til kaffebordet.","image":"wienerbrod.png","ingredients":[{"group":"Grunndeig","items":["500 g hvetemel","30 g sukker","50 g margarin (til deigen)","35 g gjær","1/2 ts kardemomme","3 dl melk","1 egg","150 g margarin (til innbaking, lagvis)"]},{"group":"Alternativ 1 – Mandelmassefyll","items":["50 g mandler (malte)","75 g sukker","1/2 eggehvite","3 ss mandeldråper"]},{"group":"Alternativ 2 – Havregrynsfyll","items":["50 g havregryn","75 g sukker","1/2 eggehvite","noen dråper vanilje eller mandelessens"]},{"group":"Alternativ 3 – Eggekremfyll","items":["20 g hvetemel","2 dl melk","1 eggeplomme","20 g sukker"]},{"group":"Melisglasur (valgfritt)","items":["75 g melis","1/2 eggehvite"]}],"instructions":["Lag deigen (Grunndeig): Bland mel og sukker i en bolle. Smuldre inn 50 g margarin.","Rør ut gjæren i lunken melk og tilsett sammen med egg og kardemomme. Elt deigen godt til den er smidig.","La deigen hvile i ca. 15 minutter. Kjevle deretter ut til et rektangel.","Fordel 150 g margarin i tynne skiver/klatter over deigen. Brett sammen og kjevle ut igjen. Gjenta 2–3 ganger for å få lagvis deig. La hvile mellom kjevlingene.","Velg fyll: Forbered ett av alternativene:","Alternativ 1 – Mandelmassefyll: Bland malte mandler, sukker, eggehvite og mandeldråper til en fast masse.","Alternativ 2 – Havregrynsfyll: Bland havregryn, sukker, eggehvite og noen dråper essens til en jevn masse.","Alternativ 3 – Eggekremfyll: Ha mel i en kjele, spe med melk og kok opp under omrøring. Tilsett sukker og eggeplomme. Rør til kremen tykner. Avkjøl.","Montering: Kjevle deigen ut til ca. 0,5 cm tykkelse. Skjær i firkanter, legg litt av valgt fyll i midten og brett hjørnene inn mot midten.","Legg brødene på bakepapirkledd stekebrett, dekk til og etterhev i 30–40 minutter.","Pensle med sammenvispet egg. Stek midt i ovnen ved 200 °C i ca. 10–12 minutter, til de er gyllenbrune.","Avkjøl på rist.","Glasur (Melisglasur, valgfritt): Bland melis og eggehvite til en glatt glasur. Ha den over de avkjølte vinabrødene.","Server nybakte eller oppbevar kjølig. Kan fryses uten glasur."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755477197309_jcux6iyx1","title":"Formkake","servings":"8–10 porsjoner","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":15,"category":"Kake","meal":"Dessert","cuisine":"Skandinavisk","description":"En klassisk formkake med smør, sukker, egg og hvetemel, smaksatt med sitron og fylt med tørket frukt. Kaken blir saftig og aromatisk, perfekt til ettermiddagskaffen eller som en tradisjonell kaffekake. Sukat, som er kandisert sitron- eller appelsinskall, gir kaken en frisk og søt smak. Dersom du ikke finner sukat, kan du bruke kandisert appelsinskall, sitronskall eller erstatte med litt ekstra rosiner.","image":"formkake.png","ingredients":["100 g smør","100 g sukker","2 egg","200 g hvetemel","1 ts bakepulver","50 g korinter","50 g sukat","revet skall av 1/2 sitron eller 5–6 dråper sitronessens"],"instructions":["Visp smør og sukker hvitt og luftig.","Tilsett eggene, ett om gangen, og pisk godt mellom hver.","Sikt inn hvetemel og bakepulver, og vend forsiktig inn i røren.","Tilsett revet sitronskall eller sitrondråper.","Vend inn korinter og sukat til slutt.","Ha røren i en smurt form.","Stek i middels varm ovn (ca. 175–180 °C) i 35–45 minutter, til kaken er gjennomstekt og gyllen. Test med kakepinne.","Avkjøl på rist og server som den er eller med et lett dryss melis."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755483218975_n2vin9hoz","title":"Peppernøtter","servings":"Ca. 40–50 småkaker","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":16,"category":"Julekaker","meal":"Snacks","cuisine":"Skandinavisk","description":"Peppernøtter er små krydrede julekaker som minner om pepperkaker, men de er rundere og litt mykere i konsistensen. De formes til små kuler og stekes til de blir gyllenbrune. Perfekte til adventstiden, julekaffen eller som små munnfuller gjennom hele desember.","image":"peppernotter.png","ingredients":["125 g smør","125 g sukker","ca. 250 g hvetemel","1 dl kremfløte","1 ts kardemomme","1 ts kanel","1/3 ts pepper","1 ts natron","1/2 ts bakepulver"],"instructions":["Visp smør og sukker til det er hvitt og luftig.","Tilsett kremfløten og rør godt sammen.","Sikt hvetemel, kardemomme, kanel, pepper, natron og bakepulver i en bolle.","Vend det tørre inn i smørblandingen og arbeid deigen raskt sammen til en jevn deig.","Trill deigen til små kuler og legg dem på et bakepapirkledd stekebrett.","Stek peppernøttene midt i ovnen ved 175–180 °C i 8–10 minutter, til de er jevnt gyllenbrune.","Avkjøl på rist og oppbevar i en tett kakeboks."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755566518474_3zxd45n9l","title":"Bakepulverstenger","servings":"Ca. 30–40 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":17,"category":"Småkaker","meal":"Kaffemat","cuisine":"Norsk","description":"Bakepulverstenger er enkle og luftige småkaker laget uten gjær. De formes som stenger, pensles med egg og strøs med grovt sukker for en gyllen og sprø overflate. Perfekt til kaffekosen.","image":"bakepulverstenger.png","ingredients":["500 g hvetemel","100 g margarin","100 g sukker","1 egg","2 1/2 dl melk","3 ts bakepulver","1 egg til pensling","Litt grovt sukker til topping"],"instructions":["Bland sammen hvetemel, sukker og bakepulver i en bolle.","Smuldre inn margarinen til det ligner grovt smuler.","Pisk egget lett og rør det inn sammen med melken. Arbeid deigen raskt sammen.","Del deigen i fire emner og trill ut til stenger.","Legg stengene på bakepapirkledd plate, pensle med sammenvispet egg og strø over grovt sukker.","Stek til de er lyse gylne ved ca. 200 °C i 10–12 minutter."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755530008601_5c9sko0oi","title":"Wienerring","servings":"1 stor ring","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":18,"category":"Gjærbakst","meal":"Kake","cuisine":"Skandinavisk","description":"Wienerring er en klassisk gjærbakst fylt med en mild krem basert på fløte, vanilje og eggeplomme. Deigen rulles med fyll, formes til en ring og klippes opp slik at fyllet blir synlig under steking. Resultatet er en luftig og dekorativ festkake som passer perfekt på kaffebordet.","image":"wienerring.png","ingredients":[{"group":"Deig","items":["250 g hvetemel","50 g sukker","ca. 1 ¼ dl melk (lunken)","1 egg","40 g gjær","100 g smør","1 egg til pensling","Litt hakkede mandler til pynt"]},{"group":"Fyll","items":["1 eggeplomme","1 ½ dl fløte","½ ts vaniljesukker","1 ss potetmel","1 ss sukker"]}],"instructions":["Sikt sammen hvetemel og sukker i en bolle.","Løs opp gjæren i lunken melk og pisk inn egget.","Bland væsken i det tørre og elt deigen til den er smidig. Arbeid inn smøret til slutt. La heve til dobbel størrelse.","Lag fyllet: Pisk sammen fløte, eggeplomme, sukker, potetmel og vaniljesukker. Kok forsiktig opp under omrøring til en tykk krem. Avkjøl.","Kjevle deigen ut til et stort rektangel og fordel fyllet jevnt utover.","Rull deigen sammen fra langsiden til en lang pølse og legg den på et stekebrett med bakepapir.","Form pølsen til en stor ring og klem endene godt sammen.","Klipp skrå snitt med ca. 3 cm mellomrom nesten helt igjennom, og vri hvert stykke litt utover så fyllet synes.","Pensle med egg og dryss over hakkede mandler.","Stek ved 180 °C (varmluft) eller 200 °C (over- og undervarme) i ca. 25–30 minutter til den er gyllenbrun."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755554972871_batotnjp9","title":"Kremarhus","servings":"Ca. 12 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":19,"category":"Småkaker","meal":"Dessert","cuisine":"Norsk","description":"Sprø, lette kremarhus laget av eggehviter, smør, sukker og mel. Formes mens de er varme til kjegler og fylles gjerne med krem, bær eller is.","image":"kremarhus.png","ingredients":["120 g smør eller margarin","120 g sukker","120 g hvetemel, siktet","4 eggehviter","½ ts vaniljeekstrakt"],"instructions":["Pisk smør og sukker hvitt og luftig.","Tilsett vanilje og sikt i hvetemelet. Rør forsiktig sammen.","Pisk eggehvitene stive og vend dem forsiktig inn.","Smør røren tynt utover bakepapir eller bruk krumkakejern.","Stek ved 160–170 °C til svakt gylne.","Form straks til kremarhus ved hjelp av kremarhusspiss.","Avkjøl og fyll med krem, bær eller is før servering.","Bør brukes samme dag, eller oppbevares i tett boks for å bevare sprøheten.","Tips: Passer utmerket til dessert med bær og krem."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755556074900_6qxxo2r5w","title":"Gjærkake med rosiner","servings":"1 stor kake (ca. 12–15 snitter)","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":20,"category":"Kake","meal":"Kaffemat","cuisine":"Norsk","description":"En klassisk norsk gjærkake fra 60–80-tallet, med rosiner, et hint av sitron og et deilig sukker- og kanelstrø på toppen. Kaken er myk, luftig og aromatisk, perfekt til kaffebordet eller som helgekos.","image":"gjaerkakemedrosiner.png","ingredients":[{"group":"Deig","items":["500 g hvetemel","100 g sukker","170 g smør eller margarin","½ ts malt kardemomme","1 ts revet sitronskall (eller noen dråper sitronessens)","3,75 dl melk","40 g fersk gjær"]},{"group":"Fyll og topping","items":["80 g rosiner","40 g sukker","1–2 ts malt kanel","2 ss smeltet smør til pensling"]}],"instructions":["Sikt sammen mel, sukker og kardemomme i en stor bakebolle. Smuldre inn smøret.","Varm opp melken til ca. 37 °C og løs gjæren i melken. Hell dette i melblandingen og elt til en smidig deig.","Dekk til og la deigen heve til dobbel størrelse, ca. 45–60 minutter.","Elt inn rosiner (og evt. sukat). Kjevle deigen ut til et rektangel og legg den på et bakepapirkledd stekebrett.","La deigen etterheve i ca. 30 minutter.","Pensle overflaten med smeltet smør. Strø over sukker og kanel i et rutemønster.","Stek midt i ovnen ved 200 °C i 25–30 minutter, til kaken er gyllen og gjennomstekt.","Avkjøl litt, skjær i snitter og server lun eller avkjølt."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755556519322_xc1wy808f","title":"Eplefromasj","servings":"6-8 porsjoner","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":21,"category":"Dessert","meal":"Dessert","cuisine":"Norsk","description":"En klassisk norsk dessert fra 60–80-tallet. Lett, luftig og frisk smak av epler, blandet med krem og gelatin for en stivnet fromasj. Serveres kald, gjerne pyntet med krem og epleskiver. Passer perfekt etter søndagsmiddag, ofte servert med småkaker ved siden av.","image":"eplefromasje.png","ingredients":["1 kg epler (gjerne syrlige)","1 dl vann","200 g sukker (ca. 2 dl)","6 dl kremfløte","6 gelatinplater","0,5 dl kokende vann","Pynt: ekstra pisket krem og skiver av røde epler eller bær"],"instructions":["Skrell og rens eplene. Kok dem møre i vann og sukker, ca. 10–15 minutter.","Mos til glatt eplemos og avkjøl.","Legg gelatinplatene i kaldt vann i 5 minutter.","Smelt gelatinen i 0,5 dl kokende vann og rør til alt er oppløst.","Bland gelatinen inn i den avkjølte eplemosen.","Pisk kremfløten stiv og vend den forsiktig inn i eplemosen.","Fordel i en stor skål eller porsjonsglass og sett kaldt i minst 2–3 timer.","Pynt med ekstra krem og epleskiver eller bær før servering.","Server gjerne med småkaker."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755557799588_dlu14ce9v","title":"Fikenkake","servings":"8 porsjoner","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":22,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En saftig og aromatisk formkake med tørket fiken og hasselnøtter. Kaken har en tett og saftig konsistens, og minner om fruktkake, men er lettere og enklere. Passer godt til kaffe eller som dessert med krem eller vaniljeis.","image":"fikenkake.png","ingredients":["2 egg","100 g sukker","150 g tørkede fiken, finhakket","50 g hasselnøtter, grovhakket","100 g hvetemel","½ ts bakepulver"],"instructions":["Forvarm ovnen til 175 °C (over- og undervarme).","Smør en liten brødform eller springform (ca. 20 cm) og dryss lett med mel eller semulegryn.","Pisk egg og sukker til en lys og luftig eggedosis.","Vend inn finhakkede fiken.","Sikt sammen hvetemel og bakepulver, og vend dette forsiktig inn i røren sammen med hasselnøtter.","Hell røren i den smurte formen.","Stek i ca. 35–40 minutter, til kaken er gyllenbrun og en kakepinne kommer ut ren.","Avkjøl på rist.","TIP: Bløtlegg gjerne fiken i rom eller appelsinjuice for ekstra saftighet."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755557918514_hnluopgqs","title":"Krydderkake","servings":"12 porsjoner","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":23,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En saftig og aromatisk krydderkake med smak av kanel, kardemomme, appelsinskall og mandler. Perfekt til kaffekos eller som hverdagskake. Den holder seg godt noen dager og blir ofte enda bedre dagen etter.","image":"krydderkake.png","ingredients":["2 egg","250 g sukker","160 g smør (smeltet)","1,25 dl syrnet fløte eller lettrømme","1 ts kardemomme","1 ts kanel","1 ss revet eller sukra appelsinskall","20 g hakkede mandler","225 g hvetemel","1 ts bakepulver"],"instructions":["Visp egg og sukker til eggedosis.","Smelt smøret og avkjøl lett.","Rør inn smøret og den syrnede fløten i eggedosisen.","Tilsett kardemomme, kanel, appelsinskall og finhakkede mandler.","Sikt sammen hvetemel og bakepulver, og vend det forsiktig inn i røren.","Smør en brødform (ca. 1,5 liter) og strø med brødrasp eller mel.","Hell røren i formen.","Stek på 175 °C midt i ovnen i ca. 40–50 minutter, til kaken er gyllen og en kakepinne kommer ut ren.","Avkjøl kaken i formen i 10 minutter før den hvelves over på rist.","TIP: Kaken smaker ekstra godt dagen etter, når kryddersmaken har satt seg."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755558008707_dq4xcdrqf","title":"Havregrynsboller","servings":"20 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":24,"category":"Brød","meal":"Frokost","cuisine":"Norsk","description":"Lette og luftige boller laget med havregryn. Litt søte, men fortsatt egnet som frokost- eller matpakkebrød. Best når de spises nystekte – sprø utenpå og myke inni.","image":"havregrynsboller.png","ingredients":["170 g havregryn","3–4 dl melk","300 g hvetemel","½ ts salt","2 ss sukker","50 g smør","6 ts bakepulver"],"instructions":["Kok opp melken og hell den over havregrynene. La blandingen avkjøle.","Sikt hvetemel sammen med bakepulver, og rør inn sukker og salt.","Smuldre inn smøret i melblandingen.","Bland de avkjølte havregrynene med melk inn i det tørre til en smidig, passe fast deig.","Trill ut til små boller og legg dem på stekebrett med bakepapir.","Stek midt i ovnen ved 200 °C i ca. 12–15 minutter, til bollene er gyldne.","TIP: Server bollene samme dag – da er de sprø utenpå og myke inni."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755558421198_xvg1go8ff","title":"Systerkaka","servings":"12-15 porsjoner (2–3 former)","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":25,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En klassisk søt gjærkake med rosiner og sukat, typisk for norske kjøkken på 1960–80-tallet. Mild, saftig og aromatisk med kardemomme. Passer godt som kaffekake eller til søndagskos.","image":"systerkake.png","ingredients":["550 g hvetemel","150 g potetmel","125 g sukker","150 g smør","½ ts kardemomme","ca. 4 dl melk (lunken)","1 egg","50 g gjær (eller 1 pose tørrgjær)","70 g rosiner","50 g sukat"],"instructions":["Sikt sammen hvetemel og potetmel i en bolle og smuldre inn smøret.","Tilsett sukker og kardemomme.","Rør gjæren ut i lunken melk.","Pisk egget lett og bland i sammen med melk og gjær.","Elt deigen godt og la heve ca. 1 time.","Elt inn rosiner og sukat.","Fordel deigen i 2–3 smurte former. Etterhev i ca. 30 min.","Stek ved 180 °C i 35–40 min til kaken er gyllen og gjennomstekt.","TIP: Server gjerne med smør eller brunost. Kan fryses."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755558505336_app0buc45","title":"Havregrynsknas","servings":"Ca. 20–25 ruter","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":26,"category":"Småkaker","meal":"Snacks","cuisine":"Norsk","description":"En enkel og sprø havregrynskake som skjæres i ruter. Perfekt som kaffekos eller småkake, lett å lage og typisk for 60–80-tallets norske kjøkken.","image":"havregrynsknas.png","ingredients":["4 dl havregryn","2 dl sukker","200 g smeltet smør","2 dl hvetemel"],"instructions":["Bland havregryn, sukker, smeltet smør og hvetemel godt sammen til en jevn deig.","Smør deigen utover en bakepapirkledd langpanne, ca. 0,5–1 cm tykk.","Stek midt i ovnen ved 180 °C til lys gyllenbrun, ca. 12–15 minutter.","Skjær opp i ruter mens kaken fremdeles er varm.","Avkjøl helt før servering.","TIP: Tilsett gjerne litt vaniljesukker eller hakkede nøtter for ekstra smak."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755558606095_2e6nu8ykg","title":"Frukt og brødfromasj","servings":"6 porsjoner","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":27,"category":"Dessert","meal":"Dessert","cuisine":"Norsk","description":"En luftig fromasj laget med pisket krem, gelatin og en blanding av knust brød eller kjeks. Tradisjonell norsk dessert fra 60–70-tallet, ofte laget med kavringer og syltetøy av bær. Passer godt som dessert etter middag, pyntet med krem og syltetøy.","image":"fruktogbrodfromasj.png","ingredients":["6 dl kremfløte","1 ss vaniljeekstrakt eller vaniljesukker","3 dl knust brød, kavringer eller kjeks (f.eks. digestive)","50 g sukker","15 g gelatin (ca. 2 plater eller 1 pakke pulver)","0,5 dl kokende vann","3 ss syltetøy (bringebær, bjørnebær eller lignende)"],"instructions":["Pisk kremfløten stiv i en bolle.","Ha i vaniljen og bland inn sukkeret.","Vend inn det knuste brødet eller kjeksen sammen med syltetøyet.","Løs opp gelatinen i kokende vann og rør godt til den er helt oppløst.","Vend den oppløste gelatinen inn i fromasjblandingen.","Ha fromasjen i en glassbolle eller fordel i dessertskåler.","Sett kaldt til fromasjen stivner.","TIP: Pynt med litt ekstra pisket krem og en skje syltetøy ved servering."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755558760110_uwrhndrng","title":"Terteringar","servings":"Ca. 40 småkaker","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":28,"category":"Småkaker","meal":"Snacks","cuisine":"Norsk","description":"Små smørkaker i terte-stil, rullet i eggehvite og sukker for en sprø, lett karamellisert overflate. De får en lys gyllen farge og passer godt til kaffe eller som et lite søtt innslag på kakebordet.","image":"terteringer.png","ingredients":["250 g hvetemel","175 g smør (kaldt eller romtemperert)","1 eggeplomme","5 ss kremfløte","1 eggehvite (til pensling)","3–4 ss perlesukker eller grovt sukker (til rulling)"],"instructions":["Sikt melet og smuldre det sammen med smøret til en smuldrete masse.","Tilsett eggeplommen og fløten. Elt raskt sammen til en jevn deig.","Kjevle deigen ut til ca. 0,5 cm tykkelse.","Stikk ut små runde kaker (bruk et glass eller små former).","Dypp hver kake først i lett vispet eggehvite og deretter i grovt sukker.","Legg kakene på en bakepapirkledd stekeplate.","Stek midt i ovnen ved 180 °C i 8–12 minutter, til de er lys gyldne.","Avkjøl på rist og oppbevar i tett boks.","TIP: Bruk perlesukker for ekstra sprø og dekorative kaker."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755558862621_mmrlec5cm","title":"Rugkjeks","servings":"20–25 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":29,"category":"Kjeks","meal":"Snacks","cuisine":"Norsk","description":"Sprø, smakfulle rugkjeks med karve. Passer perfekt til ost, smør eller som en liten snacks. Rugmelet gir nøtteaktig smak og sprøhet.","image":"rugkjeks.png","ingredients":["125 g fint rugmel","125 g hvetemel","180 g smør (kaldt, i terninger)","½ ts karve","1 ss eddik (7%)","0,75 dl kaldt vann"],"instructions":["Sikt melene i en bolle og smuldre inn smøret til blandingen ligner grovt smuldret deig.","Tilsett karve, eddik og kaldt vann. Elt raskt sammen til en jevn deig.","La deigen hvile i kjøleskap i minst 30 minutter.","Kjevle ut deigen tynt på melet bord og prikk overflaten med en gaffel.","Skjær ut firkanter på ca. 8 × 8 cm og legg på bakepapirkledd stekebrett.","Stek midt i ovnen ved 200 °C i 8–12 minutter, til kjeksene er gylne og sprø.","Avkjøl på rist før servering.","TIP: Oppbevar i tett boks. Passer svært godt til ostefat."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755559016550_78flrd1r7","title":"Fylt kjeks","servings":"Ca. 25–30 fylte kjeks","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":30,"category":"Kjeks","meal":"Snacks","cuisine":"Norsk","description":"Sprø, hjemmelagde småkaker fylt med kremet sjokoladefyll eller friskt bringebærfyll. Klassisk kaffekjeks fra 60–70-tallet som smaker ekstra godt når to kjeks legges sammen med fyll. Passer både til kaffebordet og som en liten hverdagskos.","image":"fyltkjeks.png","ingredients":[{"group":"Kjeksdeig","items":["2 små egg","150 g sukker","250 g hvetemel","150 g smør (romtemperert)","1 ts bakepulver"]},{"group":"Fyll (alternativer)","items":["125 g melis rørt med ca. 75 g delfiafett","eller 125 g melis blandet med litt bringebærsaft","eller 125 g melis rørt med kakao og litt vann til en krem"]}],"instructions":["Visp egg og sukker til en lys og luftig eggedosis.","Tilsett mykt smør og siktet mel blandet med bakepulver. Bland alt godt sammen til en jevn deig.","Kjevle deigen tynt ut på melet bord.","Stikk ut små firkantede eller runde kjeks.","Legg kjeksene på bakepapirkledd stekebrett og stek midt i ovnen på 180 °C i ca. 8–10 minutter, til de er lett gylne.","Avkjøl kjeksene helt på rist.","Lag ønsket fyll: rør sammen melis med enten smeltet delfiafett, bringebærsaft, eller kakao og vann, til en smørbar krem.","Smør fyll på undersiden av en kjeks og legg en annen oppå, slik at det blir små sandwich-kjeks.","TIP: Disse kjeksene er best samme dag de fylles, men kan oppbevares i tett boks i 2–3 dager. De uten fyll holder seg sprø i flere uker."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755556429373_md0pmu8kg","title":"Amies kake","servings":"12 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":31,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En klassisk norsk sjokoladekake med mild kaffesmak og luftig smørkrem. Passer perfekt til kaffebord, bursdager eller som en hverdagskake. Smørkremen bør brukes samme dag. Tips: For en barnevennlig variant kan kaffen byttes ut med melk.","image":"amieskake.png","ingredients":[{"group":"Kakebunn","items":["2 egg","2 dl sukker","1 dl sterk kaffe","300 g hvetemel","30 g kakao","1 ts bakepulver","200 g smør (smeltet)"]},{"group":"Smørkrem","items":["200 g smør (romtemperert)","125 g melis","1 eggeplomme","noen dråper vaniljeessens"]}],"instructions":["Sett ovnen på 180 °C over- og undervarme og smør eller dekk en liten langpanne (20×30 cm).","Pisk egg og sukker til lys og luftig eggedosis.","Smelt smøret og la det avkjøle litt.","Rør inn kaffen og smøret i eggedosisen.","Sikt sammen hvetemel, kakao og bakepulver og vend det forsiktig inn.","Hell røren i formen og stek midt i ovnen ved 180 °C i ca. 30–35 minutter, til gjennomstekt. Avkjøl kaken.","Pisk smør og melis til hvitt og luftig. Tilsett eggeplommen og vaniljeessens, og pisk til glatt krem.","Smør kremen oppå kaken eller mellom to lag. Server romtemperert."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755559275124_oarukiqz6","title":"En God Fruktkake","servings":"1 kake (ca. 10-12 porsjoner)","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":32,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En klassisk norsk fruktkake. Lett og luftig som et sukkerbrød, tilsatt sitron for friskhet. Kan serveres som dessert med krem og frukt eller pyntes til kaffebordet med nøtter og glasur.","image":"fruktkake.png","ingredients":[{"group":"Kakebunn","items":["4 egg","100 g sukker","3 ss kaldt vann","15 g potetmel","95 g hvetemel","1 ½ ts bakepulver","1 ts sitronsaft"]},{"group":"Forslag til fyll","items":["3 dl kremfløte, pisket til krem","2 ss melis (til å søte kremen, valgfritt)","1 ts vaniljesukker (til kremen, valgfritt)","1 boks hermetiske pærer eller fersken i biter","eller 200 g friske bær (jordbær, bringebær eller blåbær)"]}],"instructions":["Pisk egg og sukker til luftig eggedosis.","Tilsett kaldt vann og sitronsaft, rør forsiktig inn.","Sikt sammen hvetemel, potetmel og bakepulver. Vend dette forsiktig inn i røren.","Hell røren i en smurt kakeform (ca. 22–24 cm).","Stek ved 180 °C i ca. 35–40 minutter til kaken er gyllen og gjennomstekt.","Avkjøl på rist.","Del kaken i to lag når den er helt avkjølt.","Fyll med pisket krem og frukt eller bær etter ønske.","Legg på toppen og pynt eventuelt med ekstra krem, bær, glasur, nøtter eller små marengstopper.","TIP: Hermetiske pærer eller fersken gir en klassisk smak fra 60–70-tallet, mens friske bær gjør kaken lettere og friskere."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755559527459_zsk3fc1zv","title":"Syltetøyoppskrifter","servings":"Ca. 4-6 glass per oppskrift","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":33,"category":"Syltetøy","meal":"Frokost","cuisine":"Norsk","description":"En samling av tradisjonelle syltetøyoppskrifter fra 60-80 tallet med solbær, rips, stikkelsbær og plommer. Klassiske bevaringsmetoder der syltetøyene kokes med vann og sukker og tappes på glass.","image":"syltetoy.png","ingredients":[{"group":"Solbærsyltetøy","items":["1 kg solbær","1 liter vann","2 kg sukker"]},{"group":"Ripsbærsyltetøy","items":["2 kg rips","2,5 dl vann","2 kg sukker"]},{"group":"Stikkelsbærsyltetøy","items":["2 kg stikkelsbær","6 dl vann","1,8 kg sukker"]},{"group":"Plommesyltetøy","items":["1 kg plommer","2 dl vann","800 g sukker"]},{"group":"Stikkelsbærsyltetøy (variant)","items":["1 kg stikkelsbær","1 kg sukker","½ liter vann"]}],"instructions":["Solbærsyltetøy: Kok bær og vann i 15 minutter. Tilsett sukker og kok videre i ca. ½ time. Hell på varme glass.","Ripsbærsyltetøy: Kok bær og vann til bærene sprekker. Tilsett sukker og kok videre til passe konsistens. Hell på glass.","Stikkelsbærsyltetøy: Kok bær og vann til de er møre. Tilsett sukker og kok videre til syltetøyet er ferdig. Hell på glass.","Plommesyltetøy: Kok plommer og vann i ½ time. Tilsett sukker og kok videre i ½ time. Ta ut steinene. Hell på glass.","TIP: Til hermetisering brukes 1 kg sukker pr. 16 plommer.","Stikkelsbærsyltetøy (variant): Legg bær og sukker lagvis i en bolle, la stå til neste dag. Kok så med vann i ca. ½ time. Hell på glass."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755559637965_415q43ypc","title":"Sjokoladekake","servings":"1 langpanne (ca. 20–24 stk.)","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":34,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En klassisk, saftig sjokoladekake fra 60–70-tallet med smør, sjokolade og fyldig glasur. Perfekt til kaffebord, bursdager eller som en tradisjonell hverdagskake. Glasuren med kaffe gir en fyldig smak som balanserer sødmen.","image":"sjokoladekake.png","ingredients":[{"group":"Kakebunn","items":["150 g smør","3 dl sukker","2 1/2 dl melk","3 ts bakepulver","1/2 plate kokesjokolade (ca. 50 g)","2 egg","3 1/2 dl hvetemel"]},{"group":"Fyll / Glasur","items":["100 g smør","1/2 plate kokesjokolade (ca. 50 g)","2 ts vaniljesukker","3/4 dl sterk kaffe, varm","400 g melis"]}],"instructions":["Sett stekeovnen på 180 °C over- og undervarme.","Smelt smøret til kakebunnen. Rør smør og sukker hvitt.","Tilsett eggene, ett om gangen, og rør godt mellom hvert.","Smelt sjokoladen forsiktig i vannbad eller mikrobølgeovn og bland den i røren.","Rør inn melk og hvetemel blandet med bakepulver, vekselvis, til du får en jevn røre.","Hell røren i en smurt eller bakepapirkledd langpanne (ca. 20x30 cm).","Stek kaken midt i ovnen i ca. 30–35 minutter, til den er gjennomstekt. Avkjøl kaken helt før glasuren has på.","Til glasuren: Smelt smøret og sjokoladen sammen. Rør inn vaniljesukker.","Tilsett kaffe og siktet melis, og pisk til en glatt og smørbar glasur.","Bre glasuren over den avkjølte kaken og la den sette seg før servering.","TIP: Kaken blir ekstra saftig dagen etter. Oppbevares kjølig og tildekket."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755560023988_dskuqphf0","title":"Figurkrem","servings":"30-40 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":35,"category":"Kaker","meal":"Snacks","cuisine":"Norsk","description":"Figurkrem er sprø småkaker laget med egg, sukker, smør, potetmel og fløte. Deigen kjevles ut og trykkes ut i ulike figurer. Kakene har en mild smak med et hint av kanel og romessens, og passer godt til kaffebord eller som småkaker til høytider.","image":"figurkrem.png","ingredients":[{"group":"Deig","items":["2 egg","100 g sukker","200 g smør, romtemperert","100 g potetmel","40 g hvetemel","1 ½ ts bakepulver","2 ss fløte","50 g hvetemel ekstra til justering","½ ts romessens"]}],"instructions":["Pisk egg og sukker til eggedosis.","Tilsett smøret litt av gangen og rør godt.","Sikt sammen potetmel, hvetemel, bakepulver og kanel. Vend dette inn vekselvis med fløten.","Rør inn romessens og arbeid deigen til den blir jevn og smidig.","Pakk deigen i plast og la den hvile i kjøleskapet i ca. 30 minutter.","Kjevle ut deigen til ca. 3–4 mm tykkelse på et melet bakebord.","Stikk ut figurer med pepperkakeformer eller glass.","Legg figurene på stekebrett kledd med bakepapir.","Stek midt i ovnen ved 180 °C i 8–10 minutter, til de er lett gyllenbrune.","Avkjøl på rist.","TIP: Kakene kan oppbevares i tett boks i flere uker, men er sprøest samme dag de er bakt."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755560963597_u6hujnzsj","title":"Aprikosmos","servings":"4 porsjoner","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":36,"category":"Dessert","meal":"Dessert","cuisine":"Norsk","description":"En frisk og søt aprikosmos laget av tørkede aprikoser, søtet med sukker og blandet med krem. Kan brukes som dessert eller kakefyll. Pyntes gjerne med appelsinskiver.","image":"aprikosmos.png","ingredients":["250 g tørkede aprikoser","½ ts salt","3–4 aprikoskjerner (valgfritt)","1–2 dl kremfløte","125 g sukker"],"instructions":["Skyll aprikosene og legg dem i en kjele.","Kok i lettsaltet vann i 15–20 minutter til møre.","Sil av kokevannet (spar litt til justering).","Mos aprikosene fint, gjerne med stavmikser.","Rør inn sukker mens mosen er varm.","Avkjøl helt.","Vend inn lett pisket krem.","Server i dessertskåler og pynt med appelsinskiver.","TIP: Tilsett litt sitronsaft for friskere smak."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755560893492_1fold3rr2","title":"Franske vafler","servings":"Ca. 20–25 små kaker","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":36,"category":"Vafler","meal":"Snacks","cuisine":"Europeisk","description":"Små, sprø vafler fylt med krem eller smørkrem. Sukkerstrødd og festlige, passer perfekt til kaffeselskap.","image":"franskevafler.png","ingredients":["125 g smør (kaldt, i terninger)","1,25 dl kremfløte","125 g sukker","Grovt sukker til dryss","1½ dl krem eller smørkrem til fyll"],"instructions":["Smuldre smør og mel sammen til en kornete masse.","Tilsett fløten og elt raskt til en jevn deig.","Kjevle deigen tynt ut og stikk ut små runde kaker.","Vend hver kake i sukker på den ene siden.","Legg kakene på stekebrett med sukkersiden opp.","Stek ved 190 °C i 7–10 minutter til gyldne.","Avkjøl på rist.","Legg kakene sammen to og to med krem eller smørkrem som fyll.","TIP: Kakene bør fylles samme dag de skal serveres."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755560809737_iki43pv6d","title":"Sigrunns kake","servings":"1 kake (ca. 10–12 porsjoner)","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":36,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En klassisk, saftig formkake med potetmel som gir lett konsistens. Passer godt som kaffekake eller dessert, gjerne med bær eller krem.","image":"sigrunnskake.png","ingredients":["300 g smør (romtemperert eller smeltet og avkjølt)","300 g sukker","3 egg","150 g potetmel","160 g hvetemel","1 ts bakepulver"],"instructions":["Pisk smør og sukker hvitt og luftig.","Tilsett eggene, ett om gangen, og pisk godt mellom hvert.","Bland potetmel, hvetemel og bakepulver, og sikt det inn i røren. Vend forsiktig sammen.","Hell røren i en smurt kakeform (ca. 24 cm springform).","Stek på 175 °C i ca. 1 time, til kaken er gyllen og gjennomstekt.","Avkjøl i formen noen minutter før den tas ut.","TIP: Server gjerne med bær og krem eller dryss melis over kaken før servering."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755561053234_vrosyv1oq","title":"Havrekjeks","servings":"Ca. 40–50 kjeks","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":37,"category":"Kjeks","meal":"Snacks","cuisine":"Norsk","description":"Sprø og milde havrekjeks som passer godt til kaffe, på tur eller sammen med ost og syltetøy.","image":"havrekjeks.png","ingredients":["500 g havregryn","500 g margarin eller smør","500 g hvetemel","5 dl melk","150–200 g sukker (juster etter smak)","6 ts bakepulver"],"instructions":["Varm opp melken og smelt margarinen i den.","Bland havregryn og sukker i en stor bolle.","Hell melkeblandingen over og la det stå minst 30 minutter.","Bland hvetemelet med bakepulver og rør det inn i deigen.","Kjevle ut deigen til ca. 3–4 mm tykkelse. Stikk ut runde kjeks med et glass eller skjær ut firkanter.","Legg kjeksene på bakepapirkledd stekebrett.","Stek midt i ovnen ved 200 °C i 8–12 minutter, til de er gyldne.","Avkjøl på rist.","TIP: Kjeksene blir best hvis de ikke lages for tykke. Oppbevares i tett kakeboks."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755561481988_fwwrfd8pn","title":"Majas Kokos-sukkerkake","servings":"1 liten langpanne eller 12–14 kakestykker","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":38,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En saftig og søt kake med kokos. Kaken er holdbar og enkel å lage, passer godt til kaffe eller som dessert med friske bær og krem.","image":"kokossukkerkake.png","ingredients":["3 egg","200 g sukker","100 g smør, smeltet","1 dl kremfløte eller fløtemelk","180 g hvetemel","2 dl kokosmasse","1 ts bakepulver"],"instructions":["Pisk egg og sukker til luftig eggedosis.","Vend inn smeltet smør og fløte.","Bland mel og bakepulver, og sikt det inn i røren.","Tilsett kokosmasse og rør forsiktig sammen.","Hell røren i en smurt og strødd form.","Stek midt i ovnen ved 175 °C i 25–30 minutter.","Avkjøl på rist før servering.","TIP: Kaken holder seg saftig lenge og passer godt til kaffe eller med bær og krem."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755561559921_tq2e55vou","title":"Havremuffins","servings":"Ca. 15–20 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":39,"category":"Kake","meal":"Snacks","cuisine":"Norsk","description":"Saftige havremuffins med sjokoladeglasur. Deigen er enkel å røre sammen og gir luftige muffins med nøtteaktig smak fra havregryn. Glasuren tilfører en rik sjokoladesmak som passer perfekt til kaffe eller som kaffemat.","image":"havremuffins.png","ingredients":[{"group":"Muffinsrøre","items":["2 egg","2 dl sukker","150 g smeltet margarin eller smør","90 g havregryn","180 g hvetemel","1 ts bakepulver","2–3 ss hakkede mandler eller rosiner"]},{"group":"Glasur","items":["120 g melis","1 ½ ss kakaopulver","2 ½ ss sterk kaffe","2 ss margarin eller smør"]}],"instructions":["Pisk egg og sukker til eggedosis.","Rør inn smeltet margarin.","Tilsett havregryn, hvetemel og bakepulver, bland godt.","Vend inn hakkede mandler eller rosiner.","Fordel røren i muffinsformer, ca. ¾ fulle.","Stek ved 175 °C i 15–20 minutter til de er gylne.","Lag glasur: Bland melis og kakao, tilsett kaffe og smeltet margarin. Rør til en glatt glasur.","Avkjøl muffinsene før du smører glasuren på.","TIP: Tilsett gjerne litt hakket mørk sjokolade i røren for ekstra smak."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755561648523_d51yw1y7u","title":"Honningkake","servings":"12 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":40,"category":"Kake","meal":"Dessert","cuisine":"Norsk","description":"En klassisk norsk honningkake med krydder og søt glasur. Kaken er saftig, krydret og holder seg godt. Passer til jul eller kaffekos.","image":"honningkake.png","ingredients":[{"group":"Deig","items":["500 g lys sirup (ca. 4 dl)","325 g hvetemel (ca. 5,5 dl)","1 ss smør","50 g sukker (ca. 0,5 dl)","1 ss malt ingefær","1 ts kanel","1 ts kardemomme","1 ts natron","2 egg","1,5 dl kulturmelk eller kefir"]},{"group":"Glasur","items":["200 g margarin","50 g melis (ca. 1 dl)","1 eggehvite","1 ts vaniljesukker eller 1 ss appelsinmarmelade"]}],"instructions":["Varm sirupen i vannbad til den blir flytende.","Rør inn sukker og smør til det smelter. Avkjøl litt.","Bland mel, krydder og natron i en bolle.","Tilsett sirupsblanding og kulturmelk vekselsvis i det tørre.","Visp eggene lett sammen og vend inn i røren.","Hell røren i en smurt form (22–24 cm springform eller liten langpanne).","Stek ved 175 °C i ca. 45–55 minutter, sjekk med kakepinne.","Avkjøl på rist.","Pisk margarin og melis til luftig krem.","Tilsett eggehvite og smak til med vaniljesukker eller appelsinmarmelade.","Bre glasuren over avkjølt kake.","TIP: La kaken hvile til neste dag for best smak. Kan fryses."],"createdAt":"2025-08-19"},
             {"id":"recipe_1755484726501_29ubmpget","title":"Rundstykker","servings":"ca. 16 rundstykker","provider":"Farmor","category":"Brød","meal":"Frokost","cuisine":"Norsk","description":"Klassiske luftige rundstykker som passer perfekt til frokost, lunsj eller kveldsmat. Deigen er enkel å lage, og med både melk og smør får du myke rundstykker med god smak. De er like gode nystekte som oppvarmet, og egner seg også godt til frysing.","image":"rundstykker.png","ingredients":["500 g hvetemel","1 pose tørrgjær (ca. 11 g)","50 g smør (romtemperert eller smeltet)","1 ½ ts salt","2 dl melk (lunken, ca. 37–40 °C)","1 ½ dl vann (lunkent, ca. 37–40 °C)","1 ss sukker"],"instructions":["Bland sammen hvetemel, tørrgjær, salt og sukker i en stor bolle.","Varm melk og vann til ca. 37–40 °C. Ha dette i melblandingen sammen med smøret.","Elt deigen i kjøkkenmaskin i 8–10 minutter (eller 12–15 minutter for hånd) til den er smidig og slipper bollen.","Dekk bollen med plast eller klede og la deigen heve på et lunt sted i ca. 1 time, til den har blitt dobbelt så stor.","Del deigen i ca. 16 emner og trill til runde boller. Legg dem på et stekebrett med bakepapir.","Etterhev rundstykkene i 30–40 minutter under klede.","Forvarm ovnen til 220 °C over-/undervarme. Stek rundstykkene midt i ovnen i 10–12 minutter til de er gylne og gjennomstekte.","Avkjøl på rist før servering."],"createdAt":"2025-08-18"}
         ];
     }
@@ -1045,30 +1007,25 @@ class ModalManager {
     // Separate function to handle modal container layout
     setupModalLayout() {
         const modal = document.getElementById('recipeModal');
-        // Use position-based selectors instead of class-based ones
         const flexContainer = modal.firstElementChild;
         const modalWrapper = flexContainer ? flexContainer.firstElementChild : null;
-        const content = document.getElementById('modalContent');
         
         const windowWidth = window.innerWidth;
         this.isFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
         
         if (this.isFullscreen) {
             // Fullscreen mode - no backdrop, fill entire viewport
-            modal.className = 'fixed inset-0 z-50 bg-white';
+            modal.className = 'fixed inset-0 z-50 bg-gradient-to-br from-amber-100 to-orange-100';  // Add gradient here
             
             // Remove flex container or make it passthrough
             if (flexContainer) {
-                flexContainer.className = '';
+                flexContainer.className = 'h-full';
             }
             
             // Modal wrapper becomes full viewport
             if (modalWrapper) {
-                modalWrapper.className = 'h-screen w-screen bg-white';
+                modalWrapper.className = 'h-full w-full flex flex-col relative';
             }
-            
-            // Content fills the wrapper
-            content.className = 'h-full w-full overflow-hidden';
             
         } else {
             // Desktop modal with backdrop
@@ -1076,16 +1033,14 @@ class ModalManager {
             
             // Flex container for centering
             if (flexContainer) {
-                flexContainer.className = 'flex items-center justify-center h-full p-4';
+                flexContainer.className = 'flex items-center justify-center min-h-screen p-4';
             }
             
-            // Modal wrapper with rounded corners and max dimensions
+            // Modal wrapper - Add a base background color
             if (modalWrapper) {
-                modalWrapper.className = 'bg-white rounded-2xl max-w-5xl w-full max-h-[92vh] overflow-hidden shadow-2xl';
+                modalWrapper.className = 'bg-gradient-to-br from-amber-100 to-orange-100 rounded-3xl max-w-5xl w-full h-[92vh] flex flex-col shadow-2xl relative overflow-hidden';
+                // Added gradient background to the wrapper itself
             }
-            
-            // Content with scroll
-            content.className = 'h-full overflow-hidden';
         }
     }
 
@@ -1096,6 +1051,43 @@ class ModalManager {
         }
     }
 
+    // Generate hero section (shared between mobile and desktop)
+    generateHeroSection(recipe) {
+        const imageUrl = recipe.image ? CONFIG.IMAGE_PATHS.MODAL + recipe.image : null;
+        const isMobile = window.innerWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
+        const heroImageHeight = isMobile ? 'h-56' : 'h-80';
+        const isFullscreen = window.innerWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
+        
+        return `
+            <!-- Full modal background with rounded corners for desktop -->
+            <div class="absolute inset-0 bg-gradient-to-br from-amber-100 to-orange-100 ${!isFullscreen ? 'rounded-2xl' : ''} z-0">
+                <!-- Hero image at the top -->
+                <div class="absolute inset-x-0 top-0 ${heroImageHeight} ${!isFullscreen ? 'rounded-t-2xl overflow-hidden' : ''}">
+                    ${recipe.image ? 
+                        `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
+                        `<div class="w-full h-full flex items-center justify-center">
+                            <span class="text-8xl opacity-30">🍞</span>
+                        </div>`}
+                    ${recipe.category ? 
+                        `<span onclick="recipeApp.filterManager.activateFilter('category', '${recipe.category}', event)" 
+                            class="absolute top-4 left-4 bg-white/90 backdrop-blur text-xs md:text-sm font-medium px-2 py-1 md:px-3 md:py-1.5 rounded-full text-amber-700 transition-all duration-200 cursor-pointer hover:scale-105 hover:shadow-lg">
+                            ${recipe.category}
+                        </span>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    // Generate close button (shared between mobile and desktop)
+    generateCloseButton() {
+        return `
+            <button onclick="recipeApp.modalManager.closeRecipe()" 
+                    class="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2 md:p-2.5 hover:bg-white shadow-lg transition-transform hover:scale-110">
+                <i class="fas fa-times text-gray-600 text-lg md:text-xl"></i>
+            </button>
+        `;
+    }
+
     // Separate function to handle content generation
     updateModalContent() {
         if (!this.currentRecipeId) return;
@@ -1104,26 +1096,36 @@ class ModalManager {
         if (!recipe) return;
         
         const recipeWithUserData = this.userDataManager.getRecipeWithUserData(recipe);
-        const content = document.getElementById('modalContent');
+        const modalWrapper = document.querySelector('#recipeModal > div > div');
+        
+        if (!modalWrapper) return;
         
         // Store current scroll position before updating
-        const scrollContainer = content.querySelector('.overflow-y-auto');
+        const scrollContainer = modalWrapper.querySelector('#scrollableContent');
         const currentScrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
         
         // Determine content layout (mobile vs desktop)
         const windowWidth = window.innerWidth;
         const isMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
+        const heroHeight = isMobileLayout ? '14rem' : '20rem'; // h-56 = 14rem, h-80 = 20rem
+        const contentMarginTop = isMobileLayout ? 'mt-48' : 'mt-72'; // Slightly less than hero height for overlap
         
-        // Generate content based on layout type
-        if (isMobileLayout) {
-            content.innerHTML = this.generateMobileContent(recipeWithUserData);
-        } else {
-            content.innerHTML = this.generateDesktopContent(recipeWithUserData);
-        }
+        // Build the complete modal content structure
+        modalWrapper.innerHTML = `
+            ${this.generateHeroSection(recipeWithUserData)}
+            ${this.generateCloseButton()}
+            <div id="scrollableContent" class="absolute inset-0 overflow-y-auto z-10">
+                <div class="${contentMarginTop} min-h-full bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
+                    ${isMobileLayout ? 
+                        this.generateMobileContent(recipeWithUserData) : 
+                        this.generateDesktopContent(recipeWithUserData)}
+                </div>
+            </div>
+        `;
         
         // Restore scroll position after content update
         requestAnimationFrame(() => {
-            const newScrollContainer = content.querySelector('.overflow-y-auto');
+            const newScrollContainer = modalWrapper.querySelector('#scrollableContent');
             if (newScrollContainer && currentScrollTop > 0) {
                 newScrollContainer.scrollTop = currentScrollTop;
             }
@@ -1132,87 +1134,60 @@ class ModalManager {
 
     // Mobile content layout (single column, optimized for touch)
     generateMobileContent(recipe) {
-        const imageUrl = recipe.image ? CONFIG.IMAGE_PATHS.MODAL + recipe.image : null;
         const sourceInfo = this.uiManager.formatSource(recipe);
         const today = new Date().toISOString().split('T')[0];
         const madeToday = recipe.madeDates && recipe.madeDates.includes(today);
         const madeCount = recipe.madeDates ? recipe.madeDates.length : 0;
         
         return `
-            <div class="relative h-full bg-white">
-                <!-- Close button - always visible -->
-                <button onclick="recipeApp.modalManager.closeRecipe()" 
-                        class="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg">
-                    <i class="fas fa-times text-gray-600 text-lg"></i>
-                </button>
+            <div class="px-4 py-6">
+                <!-- Title and metadata -->
+                <div class="mb-4">
+                    <h2 class="font-display text-2xl text-gray-800 ${sourceInfo ? 'mb-1' : 'mb-2'}">${recipe.title}</h2>
+                    ${sourceInfo ? `<p class="text-xs text-amber-600 mb-2">${sourceInfo}</p>` : ''}
+                    <p class="text-gray-600 text-sm">${recipe.servings}</p>
+                </div>
                 
-                <!-- Scrollable container -->
-                <div class="h-full overflow-y-auto">
-                    <!-- Hero image -->
-                    <div class="relative h-56 bg-gradient-to-br from-amber-100 to-orange-100">
-                        ${recipe.image ? 
-                            `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
-                            `<div class="w-full h-full flex items-center justify-center">
-                                <span class="text-8xl opacity-30">🍞</span>
-                            </div>`}
-                        ${recipe.category ? 
-                            `<span onclick="recipeApp.filterManager.activateFilter('category', '${recipe.category}', event)" 
-                                class="absolute top-4 left-4 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700 transition-all duration-200 cursor-pointer hover:scale-105 hover:shadow-lg">
-                                ${recipe.category}
-                            </span>` : ''}
-                    </div>
-                    
-                    <!-- Content -->
-                    <div class="px-4 py-4">
-                        <!-- Title and metadata -->
-                        <div class="mb-4">
-                            <h2 class="font-display text-2xl text-gray-800 ${sourceInfo ? 'mb-1' : 'mb-2'}">${recipe.title}</h2>
-                            ${sourceInfo ? `<p class="text-xs text-amber-600 mb-2">${sourceInfo}</p>` : ''}
-                            <p class="text-gray-600 text-sm">${recipe.servings}</p>
-                        </div>
-                        
-                        <!-- Actions -->
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-2">
-                                <button id="eraser-${recipe.id}" 
-                                        onclick="recipeApp.modalManager.clearRating('${recipe.id}', event)" 
-                                        class="text-gray-400 hover:text-gray-600 transition-all duration-200 p-1 ${recipe.userRating ? 'opacity-100' : 'opacity-0 pointer-events-none'}">
-                                    <i class="fas fa-eraser text-lg"></i>
-                                </button>
-                                <div class="flex items-center">
-                                    ${this.renderInteractiveStars(recipe)}
-                                </div>
-                            </div>
-                            <button onclick="recipeApp.modalManager.toggleMadeToday('${recipe.id}', event)" 
-                                    class="flex items-center space-x-1 px-3 py-1.5 rounded-lg transition text-xs font-medium
-                                        ${madeToday ? 'bg-amber-600 text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
-                                <i class="fas fa-check"></i>
-                                <span>Laget (${madeCount})</span>
-                            </button>
-                        </div>
-                        
-                        <!-- Tags -->
-                        ${this.renderTags(recipe)}
-                        
-                        <!-- Description -->
-                        ${recipe.description ? `
-                            <div class="bg-amber-50/50 rounded-lg p-3 mb-6">
-                                <p class="text-gray-700 text-sm leading-relaxed">${recipe.description}</p>
-                            </div>
-                        ` : ''}
-                        
-                        <!-- Ingredients -->
-                        <div class="mb-6">
-                            <h3 class="font-display text-xl text-amber-800 mb-3">Ingredienser</h3>
-                            ${this.renderIngredients(recipe.ingredients)}
-                        </div>
-                        
-                        <!-- Instructions -->
-                        <div class="mb-8">
-                            <h3 class="font-display text-xl text-amber-800 mb-3">Fremgangsmåte</h3>
-                            ${this.renderInstructions(recipe.instructions, true)}
+                <!-- Actions -->
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <button id="eraser-${recipe.id}" 
+                                onclick="recipeApp.modalManager.clearRating('${recipe.id}', event)" 
+                                class="text-gray-400 hover:text-gray-600 transition-all duration-200 p-1 ${recipe.userRating ? 'opacity-100' : 'opacity-0 pointer-events-none'}">
+                            <i class="fas fa-eraser text-lg"></i>
+                        </button>
+                        <div class="flex items-center">
+                            ${this.renderInteractiveStars(recipe)}
                         </div>
                     </div>
+                    <button onclick="recipeApp.modalManager.toggleMadeToday('${recipe.id}', event)" 
+                            class="flex items-center space-x-1 px-3 py-1.5 rounded-lg transition text-xs font-medium
+                                ${madeToday ? 'bg-amber-600 text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
+                        <i class="fas fa-check"></i>
+                        <span>Laget (${madeCount})</span>
+                    </button>
+                </div>
+                
+                <!-- Tags -->
+                ${this.renderTags(recipe)}
+                
+                <!-- Description -->
+                ${recipe.description ? `
+                    <div class="bg-amber-50/50 rounded-lg p-3 mb-6">
+                        <p class="text-gray-700 text-sm leading-relaxed">${recipe.description}</p>
+                    </div>
+                ` : ''}
+                
+                <!-- Ingredients -->
+                <div class="mb-6">
+                    <h3 class="font-display text-xl text-amber-800 mb-3">Ingredienser</h3>
+                    ${this.renderIngredients(recipe.ingredients)}
+                </div>
+                
+                <!-- Instructions -->
+                <div class="mb-8">
+                    <h3 class="font-display text-xl text-amber-800 mb-3">Fremgangsmåte</h3>
+                    ${this.renderInstructions(recipe.instructions, true)}
                 </div>
             </div>
         `;
@@ -1220,92 +1195,65 @@ class ModalManager {
 
     // Desktop content layout (two columns, more spacious)
     generateDesktopContent(recipe) {
-        const imageUrl = recipe.image ? CONFIG.IMAGE_PATHS.MODAL + recipe.image : null;
         const sourceInfo = this.uiManager.formatSource(recipe);
         const today = new Date().toISOString().split('T')[0];
         const madeToday = recipe.madeDates && recipe.madeDates.includes(today);
         const madeCount = recipe.madeDates ? recipe.madeDates.length : 0;
         
         return `
-            <div class="relative h-full bg-white">
-                <!-- Close button -->
-                <button onclick="recipeApp.modalManager.closeRecipe()" 
-                        class="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2.5 hover:bg-white shadow-lg transition-transform hover:scale-110">
-                    <i class="fas fa-times text-gray-600 text-xl"></i>
-                </button>
+            <div class="px-8 py-8">
+                <!-- Header section -->
+                <div class="border-b border-gray-100 pb-4 mb-6">
+                    <h2 class="font-display text-3xl text-gray-800 ${sourceInfo ? 'mb-1' : 'mb-2'}">${recipe.title}</h2>
+                    ${sourceInfo ? `<p class="text-sm text-amber-600 mb-2">${sourceInfo}</p>` : ''}
+                    <p class="text-gray-600 mb-4">${recipe.servings}</p>
+                    
+                    <!-- Actions row -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <!-- Rating -->
+                            <div class="flex items-center gap-2">
+                                <button id="eraser-${recipe.id}" 
+                                        onclick="recipeApp.modalManager.clearRating('${recipe.id}', event)" 
+                                        class="text-gray-400 hover:text-gray-600 transition-all duration-200 p-1 ${recipe.userRating ? 'opacity-100' : 'opacity-0 pointer-events-none'}">
+                                    <i class="fas fa-eraser text-xl"></i>
+                                </button>
+                                <div class="flex items-center gap-1">
+                                    ${this.renderInteractiveStars(recipe)}
+                                </div>
+                            </div>
+                            
+                            <!-- Tags -->
+                            ${this.renderTags(recipe)}
+                        </div>
+                        
+                        <!-- Made button -->
+                        <button onclick="recipeApp.modalManager.toggleMadeToday('${recipe.id}', event)" 
+                                class="flex items-center space-x-2 px-4 py-2 rounded-lg transition text-sm font-medium
+                                    ${madeToday ? 'bg-amber-600 text-white hover:bg-amber-700' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
+                            <i class="fas fa-check"></i>
+                            <span>Laget (${madeCount})</span>
+                        </button>
+                    </div>
+                </div>
                 
-                <!-- Scrollable container -->
-                <div class="h-full overflow-y-auto">
-                    <!-- Hero image -->
-                    <div class="relative h-[400px] bg-gradient-to-br from-amber-100 to-orange-100">
-                        ${recipe.image ? 
-                            `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
-                            `<div class="w-full h-full flex items-center justify-center">
-                                <span class="text-9xl opacity-30">🍞</span>
-                            </div>`}
-                        ${recipe.category ? 
-                            `<span onclick="recipeApp.filterManager.activateFilter('category', '${recipe.category}', event)" 
-                                class="absolute top-6 left-6 bg-white/90 backdrop-blur text-sm font-medium px-3 py-1.5 rounded-full text-amber-700 transition-all duration-200 cursor-pointer hover:scale-105 hover:shadow-lg">
-                                ${recipe.category}
-                            </span>` : ''}
+                <!-- Description -->
+                ${recipe.description ? `
+                    <div class="bg-amber-50/50 rounded-xl p-4 mb-6">
+                        <p class="text-gray-700 leading-relaxed">${recipe.description}</p>
+                    </div>
+                ` : ''}
+                
+                <!-- Two column layout for ingredients and instructions -->
+                <div class="grid md:grid-cols-[2fr,3fr] gap-8">
+                    <div>
+                        <h3 class="font-display text-xl text-amber-800 mb-4">Ingredienser</h3>
+                        ${this.renderIngredients(recipe.ingredients)}
                     </div>
                     
-                    <!-- Content -->
-                    <div class="px-8 py-6">
-                        <!-- Header section -->
-                        <div class="border-b border-gray-100 pb-4 mb-6">
-                            <h2 class="font-display text-3xl text-gray-800 ${sourceInfo ? 'mb-1' : 'mb-2'}">${recipe.title}</h2>
-                            ${sourceInfo ? `<p class="text-sm text-amber-600 mb-2">${sourceInfo}</p>` : ''}
-                            <p class="text-gray-600 mb-4">${recipe.servings}</p>
-                            
-                            <!-- Actions row -->
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-4">
-                                    <!-- Rating -->
-                                    <div class="flex items-center gap-2">
-                                        <button id="eraser-${recipe.id}" 
-                                                onclick="recipeApp.modalManager.clearRating('${recipe.id}', event)" 
-                                                class="text-gray-400 hover:text-gray-600 transition-all duration-200 p-1 ${recipe.userRating ? 'opacity-100' : 'opacity-0 pointer-events-none'}">
-                                            <i class="fas fa-eraser text-xl"></i>
-                                        </button>
-                                        <div class="flex items-center gap-1">
-                                            ${this.renderInteractiveStars(recipe)}
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Tags -->
-                                    ${this.renderTags(recipe)}
-                                </div>
-                                
-                                <!-- Made button -->
-                                <button onclick="recipeApp.modalManager.toggleMadeToday('${recipe.id}', event)" 
-                                        class="flex items-center space-x-2 px-4 py-2 rounded-lg transition text-sm font-medium
-                                            ${madeToday ? 'bg-amber-600 text-white hover:bg-amber-700' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
-                                    <i class="fas fa-check"></i>
-                                    <span>Laget (${madeCount})</span>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Description -->
-                        ${recipe.description ? `
-                            <div class="bg-amber-50/50 rounded-xl p-4 mb-6">
-                                <p class="text-gray-700 leading-relaxed">${recipe.description}</p>
-                            </div>
-                        ` : ''}
-                        
-                        <!-- Two column layout for ingredients and instructions -->
-                        <div class="grid md:grid-cols-[2fr,3fr] gap-8">
-                            <div>
-                                <h3 class="font-display text-xl text-amber-800 mb-4">Ingredienser</h3>
-                                ${this.renderIngredients(recipe.ingredients)}
-                            </div>
-                            
-                            <div>
-                                <h3 class="font-display text-xl text-amber-800 mb-4">Fremgangsmåte</h3>
-                                ${this.renderInstructions(recipe.instructions, false)}
-                            </div>
-                        </div>
+                    <div>
+                        <h3 class="font-display text-xl text-amber-800 mb-4">Fremgangsmåte</h3>
+                        ${this.renderInstructions(recipe.instructions, false)}
                     </div>
                 </div>
             </div>
@@ -1317,7 +1265,7 @@ class ModalManager {
         if (!recipe.cuisine && !recipe.meal) return '';
         
         return `
-            <div class="flex gap-2">
+            <div class="flex gap-2 mb-4">
                 ${recipe.cuisine ? 
                     `<span onclick="recipeApp.filterManager.activateFilter('cuisine', '${recipe.cuisine}', event)" 
                         class="inline-block px-2 py-0.5 bg-gray-100 rounded-full text-xs cursor-pointer hover:bg-amber-100 transition-all duration-200 hover:scale-105">
@@ -1453,7 +1401,6 @@ class ModalManager {
         const modal = document.getElementById('recipeModal');
         const flexContainer = modal.firstElementChild;
         const modalWrapper = flexContainer ? flexContainer.firstElementChild : null;
-        const content = document.getElementById('modalContent');
         
         // Reset to default classes
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 hidden z-50';
@@ -1463,11 +1410,10 @@ class ModalManager {
         }
         
         if (modalWrapper) {
-            modalWrapper.className = 'bg-white sm:rounded-2xl max-w-5xl w-full sm:h-[92vh] modal-height-mobile flex flex-col overflow-hidden modal-content-mobile';
+            // Removed bg-white from here too
+            modalWrapper.className = 'sm:rounded-2xl max-w-5xl w-full sm:h-[92vh] modal-height-mobile flex flex-col modal-content-mobile';
+            modalWrapper.innerHTML = '';
         }
-        
-        content.className = 'h-full flex flex-col overflow-y-auto';
-        content.innerHTML = '';
     }
 
     rateRecipe(recipeId, rating, event) {

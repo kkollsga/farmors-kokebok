@@ -58,7 +58,7 @@
     /* ============================================
        MODAL SCROLLING
     ============================================ */
-    #recipeModal .absolute.inset-0 { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; background: black; }
+    #recipeModal .absolute.inset-0 { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
     #recipeModal .fixed.top-4.right-4 { transition: transform 0.2s ease-out; }
     #recipeModal .fixed.top-4.right-4:active { transform: scale(0.95); }
     #recipeModal .rounded-t-3xl { box-shadow: 0 -20px 40px rgba(0,0,0,0.3), 0 -10px 20px rgba(0,0,0,0.2); }
@@ -158,7 +158,7 @@
 <!-- Recipe Modal -->
 <div id="recipeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
     <div class="flex items-start justify-center min-h-screen sm:pt-8">
-        <div class="bg-white sm:rounded-2xl max-w-5xl w-full sm:h-[92vh] modal-height-mobile flex flex-col overflow-hidden modal-content-mobile">
+        <div class="bg-red sm:rounded-3xl max-w-5xl w-full sm:h-[92vh] modal-height-mobile flex flex-col overflow-hidden modal-content-mobile">
             <div id="modalContent" class="h-full flex flex-col overflow-y-auto">
                 <!-- Recipe content will be inserted here -->
             </div>
@@ -1045,30 +1045,25 @@ class ModalManager {
     // Separate function to handle modal container layout
     setupModalLayout() {
         const modal = document.getElementById('recipeModal');
-        // Use position-based selectors instead of class-based ones
         const flexContainer = modal.firstElementChild;
         const modalWrapper = flexContainer ? flexContainer.firstElementChild : null;
-        const content = document.getElementById('modalContent');
         
         const windowWidth = window.innerWidth;
         this.isFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
         
         if (this.isFullscreen) {
             // Fullscreen mode - no backdrop, fill entire viewport
-            modal.className = 'fixed inset-0 z-50 bg-white';
+            modal.className = 'fixed inset-0 z-50 bg-gradient-to-br from-amber-100 to-orange-100';  // Add gradient here
             
             // Remove flex container or make it passthrough
             if (flexContainer) {
-                flexContainer.className = '';
+                flexContainer.className = 'h-full';
             }
             
             // Modal wrapper becomes full viewport
             if (modalWrapper) {
-                modalWrapper.className = 'h-screen w-screen bg-white';
+                modalWrapper.className = 'h-full w-full flex flex-col relative';
             }
-            
-            // Content fills the wrapper
-            content.className = 'h-full w-full overflow-hidden';
             
         } else {
             // Desktop modal with backdrop
@@ -1076,16 +1071,14 @@ class ModalManager {
             
             // Flex container for centering
             if (flexContainer) {
-                flexContainer.className = 'flex items-center justify-center h-full p-4';
+                flexContainer.className = 'flex items-center justify-center min-h-screen p-4';
             }
             
-            // Modal wrapper with rounded corners and max dimensions
+            // Modal wrapper - Add a base background color
             if (modalWrapper) {
-                modalWrapper.className = 'bg-white rounded-2xl max-w-5xl w-full max-h-[92vh] overflow-hidden shadow-2xl';
+                modalWrapper.className = 'bg-gradient-to-br from-amber-100 to-orange-100 rounded-3xl max-w-5xl w-full h-[92vh] flex flex-col shadow-2xl relative overflow-hidden';
+                // Added gradient background to the wrapper itself
             }
-            
-            // Content with scroll
-            content.className = 'h-full overflow-hidden';
         }
     }
 
@@ -1096,6 +1089,43 @@ class ModalManager {
         }
     }
 
+    // Generate hero section (shared between mobile and desktop)
+    generateHeroSection(recipe) {
+        const imageUrl = recipe.image ? CONFIG.IMAGE_PATHS.MODAL + recipe.image : null;
+        const isMobile = window.innerWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
+        const heroImageHeight = isMobile ? 'h-56' : 'h-80';
+        const isFullscreen = window.innerWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
+        
+        return `
+            <!-- Full modal background with rounded corners for desktop -->
+            <div class="absolute inset-0 bg-gradient-to-br from-amber-100 to-orange-100 ${!isFullscreen ? 'rounded-2xl' : ''} z-0">
+                <!-- Hero image at the top -->
+                <div class="absolute inset-x-0 top-0 ${heroImageHeight} ${!isFullscreen ? 'rounded-t-2xl overflow-hidden' : ''}">
+                    ${recipe.image ? 
+                        `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
+                        `<div class="w-full h-full flex items-center justify-center">
+                            <span class="text-8xl opacity-30">🍞</span>
+                        </div>`}
+                    ${recipe.category ? 
+                        `<span onclick="recipeApp.filterManager.activateFilter('category', '${recipe.category}', event)" 
+                            class="absolute top-4 left-4 bg-white/90 backdrop-blur text-xs md:text-sm font-medium px-2 py-1 md:px-3 md:py-1.5 rounded-full text-amber-700 transition-all duration-200 cursor-pointer hover:scale-105 hover:shadow-lg">
+                            ${recipe.category}
+                        </span>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    // Generate close button (shared between mobile and desktop)
+    generateCloseButton() {
+        return `
+            <button onclick="recipeApp.modalManager.closeRecipe()" 
+                    class="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2 md:p-2.5 hover:bg-white shadow-lg transition-transform hover:scale-110">
+                <i class="fas fa-times text-gray-600 text-lg md:text-xl"></i>
+            </button>
+        `;
+    }
+
     // Separate function to handle content generation
     updateModalContent() {
         if (!this.currentRecipeId) return;
@@ -1104,26 +1134,36 @@ class ModalManager {
         if (!recipe) return;
         
         const recipeWithUserData = this.userDataManager.getRecipeWithUserData(recipe);
-        const content = document.getElementById('modalContent');
+        const modalWrapper = document.querySelector('#recipeModal > div > div');
+        
+        if (!modalWrapper) return;
         
         // Store current scroll position before updating
-        const scrollContainer = content.querySelector('.overflow-y-auto');
+        const scrollContainer = modalWrapper.querySelector('#scrollableContent');
         const currentScrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
         
         // Determine content layout (mobile vs desktop)
         const windowWidth = window.innerWidth;
         const isMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
+        const heroHeight = isMobileLayout ? '14rem' : '20rem'; // h-56 = 14rem, h-80 = 20rem
+        const contentMarginTop = isMobileLayout ? 'mt-48' : 'mt-72'; // Slightly less than hero height for overlap
         
-        // Generate content based on layout type
-        if (isMobileLayout) {
-            content.innerHTML = this.generateMobileContent(recipeWithUserData);
-        } else {
-            content.innerHTML = this.generateDesktopContent(recipeWithUserData);
-        }
+        // Build the complete modal content structure
+        modalWrapper.innerHTML = `
+            ${this.generateHeroSection(recipeWithUserData)}
+            ${this.generateCloseButton()}
+            <div id="scrollableContent" class="absolute inset-0 overflow-y-auto z-10">
+                <div class="${contentMarginTop} min-h-full bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
+                    ${isMobileLayout ? 
+                        this.generateMobileContent(recipeWithUserData) : 
+                        this.generateDesktopContent(recipeWithUserData)}
+                </div>
+            </div>
+        `;
         
         // Restore scroll position after content update
         requestAnimationFrame(() => {
-            const newScrollContainer = content.querySelector('.overflow-y-auto');
+            const newScrollContainer = modalWrapper.querySelector('#scrollableContent');
             if (newScrollContainer && currentScrollTop > 0) {
                 newScrollContainer.scrollTop = currentScrollTop;
             }
@@ -1132,87 +1172,60 @@ class ModalManager {
 
     // Mobile content layout (single column, optimized for touch)
     generateMobileContent(recipe) {
-        const imageUrl = recipe.image ? CONFIG.IMAGE_PATHS.MODAL + recipe.image : null;
         const sourceInfo = this.uiManager.formatSource(recipe);
         const today = new Date().toISOString().split('T')[0];
         const madeToday = recipe.madeDates && recipe.madeDates.includes(today);
         const madeCount = recipe.madeDates ? recipe.madeDates.length : 0;
         
         return `
-            <div class="relative h-full bg-white">
-                <!-- Close button - always visible -->
-                <button onclick="recipeApp.modalManager.closeRecipe()" 
-                        class="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg">
-                    <i class="fas fa-times text-gray-600 text-lg"></i>
-                </button>
+            <div class="px-4 py-6">
+                <!-- Title and metadata -->
+                <div class="mb-4">
+                    <h2 class="font-display text-2xl text-gray-800 ${sourceInfo ? 'mb-1' : 'mb-2'}">${recipe.title}</h2>
+                    ${sourceInfo ? `<p class="text-xs text-amber-600 mb-2">${sourceInfo}</p>` : ''}
+                    <p class="text-gray-600 text-sm">${recipe.servings}</p>
+                </div>
                 
-                <!-- Scrollable container -->
-                <div class="h-full overflow-y-auto">
-                    <!-- Hero image -->
-                    <div class="relative h-56 bg-gradient-to-br from-amber-100 to-orange-100">
-                        ${recipe.image ? 
-                            `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
-                            `<div class="w-full h-full flex items-center justify-center">
-                                <span class="text-8xl opacity-30">🍞</span>
-                            </div>`}
-                        ${recipe.category ? 
-                            `<span onclick="recipeApp.filterManager.activateFilter('category', '${recipe.category}', event)" 
-                                class="absolute top-4 left-4 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700 transition-all duration-200 cursor-pointer hover:scale-105 hover:shadow-lg">
-                                ${recipe.category}
-                            </span>` : ''}
-                    </div>
-                    
-                    <!-- Content -->
-                    <div class="px-4 py-4">
-                        <!-- Title and metadata -->
-                        <div class="mb-4">
-                            <h2 class="font-display text-2xl text-gray-800 ${sourceInfo ? 'mb-1' : 'mb-2'}">${recipe.title}</h2>
-                            ${sourceInfo ? `<p class="text-xs text-amber-600 mb-2">${sourceInfo}</p>` : ''}
-                            <p class="text-gray-600 text-sm">${recipe.servings}</p>
-                        </div>
-                        
-                        <!-- Actions -->
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-2">
-                                <button id="eraser-${recipe.id}" 
-                                        onclick="recipeApp.modalManager.clearRating('${recipe.id}', event)" 
-                                        class="text-gray-400 hover:text-gray-600 transition-all duration-200 p-1 ${recipe.userRating ? 'opacity-100' : 'opacity-0 pointer-events-none'}">
-                                    <i class="fas fa-eraser text-lg"></i>
-                                </button>
-                                <div class="flex items-center">
-                                    ${this.renderInteractiveStars(recipe)}
-                                </div>
-                            </div>
-                            <button onclick="recipeApp.modalManager.toggleMadeToday('${recipe.id}', event)" 
-                                    class="flex items-center space-x-1 px-3 py-1.5 rounded-lg transition text-xs font-medium
-                                        ${madeToday ? 'bg-amber-600 text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
-                                <i class="fas fa-check"></i>
-                                <span>Laget (${madeCount})</span>
-                            </button>
-                        </div>
-                        
-                        <!-- Tags -->
-                        ${this.renderTags(recipe)}
-                        
-                        <!-- Description -->
-                        ${recipe.description ? `
-                            <div class="bg-amber-50/50 rounded-lg p-3 mb-6">
-                                <p class="text-gray-700 text-sm leading-relaxed">${recipe.description}</p>
-                            </div>
-                        ` : ''}
-                        
-                        <!-- Ingredients -->
-                        <div class="mb-6">
-                            <h3 class="font-display text-xl text-amber-800 mb-3">Ingredienser</h3>
-                            ${this.renderIngredients(recipe.ingredients)}
-                        </div>
-                        
-                        <!-- Instructions -->
-                        <div class="mb-8">
-                            <h3 class="font-display text-xl text-amber-800 mb-3">Fremgangsmåte</h3>
-                            ${this.renderInstructions(recipe.instructions, true)}
+                <!-- Actions -->
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <button id="eraser-${recipe.id}" 
+                                onclick="recipeApp.modalManager.clearRating('${recipe.id}', event)" 
+                                class="text-gray-400 hover:text-gray-600 transition-all duration-200 p-1 ${recipe.userRating ? 'opacity-100' : 'opacity-0 pointer-events-none'}">
+                            <i class="fas fa-eraser text-lg"></i>
+                        </button>
+                        <div class="flex items-center">
+                            ${this.renderInteractiveStars(recipe)}
                         </div>
                     </div>
+                    <button onclick="recipeApp.modalManager.toggleMadeToday('${recipe.id}', event)" 
+                            class="flex items-center space-x-1 px-3 py-1.5 rounded-lg transition text-xs font-medium
+                                ${madeToday ? 'bg-amber-600 text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
+                        <i class="fas fa-check"></i>
+                        <span>Laget (${madeCount})</span>
+                    </button>
+                </div>
+                
+                <!-- Tags -->
+                ${this.renderTags(recipe)}
+                
+                <!-- Description -->
+                ${recipe.description ? `
+                    <div class="bg-amber-50/50 rounded-lg p-3 mb-6">
+                        <p class="text-gray-700 text-sm leading-relaxed">${recipe.description}</p>
+                    </div>
+                ` : ''}
+                
+                <!-- Ingredients -->
+                <div class="mb-6">
+                    <h3 class="font-display text-xl text-amber-800 mb-3">Ingredienser</h3>
+                    ${this.renderIngredients(recipe.ingredients)}
+                </div>
+                
+                <!-- Instructions -->
+                <div class="mb-8">
+                    <h3 class="font-display text-xl text-amber-800 mb-3">Fremgangsmåte</h3>
+                    ${this.renderInstructions(recipe.instructions, true)}
                 </div>
             </div>
         `;
@@ -1220,92 +1233,65 @@ class ModalManager {
 
     // Desktop content layout (two columns, more spacious)
     generateDesktopContent(recipe) {
-        const imageUrl = recipe.image ? CONFIG.IMAGE_PATHS.MODAL + recipe.image : null;
         const sourceInfo = this.uiManager.formatSource(recipe);
         const today = new Date().toISOString().split('T')[0];
         const madeToday = recipe.madeDates && recipe.madeDates.includes(today);
         const madeCount = recipe.madeDates ? recipe.madeDates.length : 0;
         
         return `
-            <div class="relative h-full bg-white">
-                <!-- Close button -->
-                <button onclick="recipeApp.modalManager.closeRecipe()" 
-                        class="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2.5 hover:bg-white shadow-lg transition-transform hover:scale-110">
-                    <i class="fas fa-times text-gray-600 text-xl"></i>
-                </button>
+            <div class="px-8 py-8">
+                <!-- Header section -->
+                <div class="border-b border-gray-100 pb-4 mb-6">
+                    <h2 class="font-display text-3xl text-gray-800 ${sourceInfo ? 'mb-1' : 'mb-2'}">${recipe.title}</h2>
+                    ${sourceInfo ? `<p class="text-sm text-amber-600 mb-2">${sourceInfo}</p>` : ''}
+                    <p class="text-gray-600 mb-4">${recipe.servings}</p>
+                    
+                    <!-- Actions row -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <!-- Rating -->
+                            <div class="flex items-center gap-2">
+                                <button id="eraser-${recipe.id}" 
+                                        onclick="recipeApp.modalManager.clearRating('${recipe.id}', event)" 
+                                        class="text-gray-400 hover:text-gray-600 transition-all duration-200 p-1 ${recipe.userRating ? 'opacity-100' : 'opacity-0 pointer-events-none'}">
+                                    <i class="fas fa-eraser text-xl"></i>
+                                </button>
+                                <div class="flex items-center gap-1">
+                                    ${this.renderInteractiveStars(recipe)}
+                                </div>
+                            </div>
+                            
+                            <!-- Tags -->
+                            ${this.renderTags(recipe)}
+                        </div>
+                        
+                        <!-- Made button -->
+                        <button onclick="recipeApp.modalManager.toggleMadeToday('${recipe.id}', event)" 
+                                class="flex items-center space-x-2 px-4 py-2 rounded-lg transition text-sm font-medium
+                                    ${madeToday ? 'bg-amber-600 text-white hover:bg-amber-700' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
+                            <i class="fas fa-check"></i>
+                            <span>Laget (${madeCount})</span>
+                        </button>
+                    </div>
+                </div>
                 
-                <!-- Scrollable container -->
-                <div class="h-full overflow-y-auto">
-                    <!-- Hero image -->
-                    <div class="relative h-[400px] bg-gradient-to-br from-amber-100 to-orange-100">
-                        ${recipe.image ? 
-                            `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
-                            `<div class="w-full h-full flex items-center justify-center">
-                                <span class="text-9xl opacity-30">🍞</span>
-                            </div>`}
-                        ${recipe.category ? 
-                            `<span onclick="recipeApp.filterManager.activateFilter('category', '${recipe.category}', event)" 
-                                class="absolute top-6 left-6 bg-white/90 backdrop-blur text-sm font-medium px-3 py-1.5 rounded-full text-amber-700 transition-all duration-200 cursor-pointer hover:scale-105 hover:shadow-lg">
-                                ${recipe.category}
-                            </span>` : ''}
+                <!-- Description -->
+                ${recipe.description ? `
+                    <div class="bg-amber-50/50 rounded-xl p-4 mb-6">
+                        <p class="text-gray-700 leading-relaxed">${recipe.description}</p>
+                    </div>
+                ` : ''}
+                
+                <!-- Two column layout for ingredients and instructions -->
+                <div class="grid md:grid-cols-[2fr,3fr] gap-8">
+                    <div>
+                        <h3 class="font-display text-xl text-amber-800 mb-4">Ingredienser</h3>
+                        ${this.renderIngredients(recipe.ingredients)}
                     </div>
                     
-                    <!-- Content -->
-                    <div class="px-8 py-6">
-                        <!-- Header section -->
-                        <div class="border-b border-gray-100 pb-4 mb-6">
-                            <h2 class="font-display text-3xl text-gray-800 ${sourceInfo ? 'mb-1' : 'mb-2'}">${recipe.title}</h2>
-                            ${sourceInfo ? `<p class="text-sm text-amber-600 mb-2">${sourceInfo}</p>` : ''}
-                            <p class="text-gray-600 mb-4">${recipe.servings}</p>
-                            
-                            <!-- Actions row -->
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-4">
-                                    <!-- Rating -->
-                                    <div class="flex items-center gap-2">
-                                        <button id="eraser-${recipe.id}" 
-                                                onclick="recipeApp.modalManager.clearRating('${recipe.id}', event)" 
-                                                class="text-gray-400 hover:text-gray-600 transition-all duration-200 p-1 ${recipe.userRating ? 'opacity-100' : 'opacity-0 pointer-events-none'}">
-                                            <i class="fas fa-eraser text-xl"></i>
-                                        </button>
-                                        <div class="flex items-center gap-1">
-                                            ${this.renderInteractiveStars(recipe)}
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Tags -->
-                                    ${this.renderTags(recipe)}
-                                </div>
-                                
-                                <!-- Made button -->
-                                <button onclick="recipeApp.modalManager.toggleMadeToday('${recipe.id}', event)" 
-                                        class="flex items-center space-x-2 px-4 py-2 rounded-lg transition text-sm font-medium
-                                            ${madeToday ? 'bg-amber-600 text-white hover:bg-amber-700' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
-                                    <i class="fas fa-check"></i>
-                                    <span>Laget (${madeCount})</span>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Description -->
-                        ${recipe.description ? `
-                            <div class="bg-amber-50/50 rounded-xl p-4 mb-6">
-                                <p class="text-gray-700 leading-relaxed">${recipe.description}</p>
-                            </div>
-                        ` : ''}
-                        
-                        <!-- Two column layout for ingredients and instructions -->
-                        <div class="grid md:grid-cols-[2fr,3fr] gap-8">
-                            <div>
-                                <h3 class="font-display text-xl text-amber-800 mb-4">Ingredienser</h3>
-                                ${this.renderIngredients(recipe.ingredients)}
-                            </div>
-                            
-                            <div>
-                                <h3 class="font-display text-xl text-amber-800 mb-4">Fremgangsmåte</h3>
-                                ${this.renderInstructions(recipe.instructions, false)}
-                            </div>
-                        </div>
+                    <div>
+                        <h3 class="font-display text-xl text-amber-800 mb-4">Fremgangsmåte</h3>
+                        ${this.renderInstructions(recipe.instructions, false)}
                     </div>
                 </div>
             </div>
@@ -1317,7 +1303,7 @@ class ModalManager {
         if (!recipe.cuisine && !recipe.meal) return '';
         
         return `
-            <div class="flex gap-2">
+            <div class="flex gap-2 mb-4">
                 ${recipe.cuisine ? 
                     `<span onclick="recipeApp.filterManager.activateFilter('cuisine', '${recipe.cuisine}', event)" 
                         class="inline-block px-2 py-0.5 bg-gray-100 rounded-full text-xs cursor-pointer hover:bg-amber-100 transition-all duration-200 hover:scale-105">
@@ -1453,7 +1439,6 @@ class ModalManager {
         const modal = document.getElementById('recipeModal');
         const flexContainer = modal.firstElementChild;
         const modalWrapper = flexContainer ? flexContainer.firstElementChild : null;
-        const content = document.getElementById('modalContent');
         
         // Reset to default classes
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 hidden z-50';
@@ -1463,11 +1448,10 @@ class ModalManager {
         }
         
         if (modalWrapper) {
-            modalWrapper.className = 'bg-white sm:rounded-2xl max-w-5xl w-full sm:h-[92vh] modal-height-mobile flex flex-col overflow-hidden modal-content-mobile';
+            // Removed bg-white from here too
+            modalWrapper.className = 'sm:rounded-2xl max-w-5xl w-full sm:h-[92vh] modal-height-mobile flex flex-col modal-content-mobile';
+            modalWrapper.innerHTML = '';
         }
-        
-        content.className = 'h-full flex flex-col overflow-y-auto';
-        content.innerHTML = '';
     }
 
     rateRecipe(recipeId, rating, event) {
