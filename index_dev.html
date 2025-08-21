@@ -94,51 +94,6 @@
                 height: -webkit-fill-available !important;
             }
         }
-        /* Mobile modal specific styles */
-        @media (max-width: 640px) {
-            #recipeModal {
-                padding: 0 !important;
-            }
-            .modal-content-mobile {
-                height: 100vh;
-                height: 100dvh;
-                height: -webkit-fill-available;
-                width: 100vw !important;
-                max-width: 100vw !important;
-                border-radius: 0 !important;
-                margin: 0 !important;
-                position: relative;
-                overflow: hidden;
-            }
-            .modal-image-container-fixed {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 224px; /* h-56 = 14rem = 224px */
-                z-index: 10;
-                overflow: hidden;
-            }
-            .modal-content-scrollable {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-                z-index: 5;
-            }
-            .modal-content-spacer {
-                height: 224px; /* Same as image container */
-                pointer-events: none;
-            }
-            .modal-content-body {
-                background: white;
-                min-height: calc(100vh - 224px);
-                padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 40px);
-            }
-        }
         /* Modern input focus styles */
         .modern-input:focus {
             box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
@@ -182,14 +137,12 @@
         /* Text clamping for description */
         .description-clamp {
             overflow: hidden;
-            display: -webkit-box;        /* required for old WebKit */
+            display: -webkit-box;
             -webkit-box-orient: vertical;
             line-clamp: 2;
             -webkit-line-clamp: 2;
-            text-overflow: ellipsis;     /* optional */
+            text-overflow: ellipsis;
         }
-
-
         /* Eraser button animation */
         .eraser-btn {
             transition: all 0.2s ease;
@@ -216,7 +169,6 @@
             border-top-left-radius: 1.5rem;
             border-top-right-radius: 1.5rem;
         }
-
         .lazy-image {
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
@@ -231,7 +183,7 @@
 </head>
 <body class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 min-h-screen">
     <!-- Header -->
-    <header class="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-40 safe-top">
+    <header class="safe-top">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div class="flex justify-between items-center">
                 <h1 class="font-display text-3xl text-amber-800">Mine Oppskrifter</h1>
@@ -314,7 +266,7 @@
     <div id="recipeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
         <div class="flex items-start justify-center min-h-screen sm:pt-8">
             <div class="bg-white sm:rounded-2xl max-w-5xl w-full sm:h-[92vh] modal-height-mobile flex flex-col overflow-hidden modal-content-mobile">
-                <div id="modalContent" class="h-full flex flex-col">
+                <div id="modalContent" class="h-full flex flex-col overflow-y-auto">
                     <!-- Recipe content will be inserted here -->
                 </div>
             </div>
@@ -322,6 +274,12 @@
     </div>
 
     <script>
+        // Layout breakpoints configuration
+        const BREAKPOINTS = {
+            FULLSCREEN_MODAL: 900,  // Switch to fullscreen modal below this width
+            SINGLE_COLUMN: 600       // Switch to single column layout below this width
+        };
+        
         // Image path configuration
         const IMAGE_PATH_LIST = 'images/full/';
         const IMAGE_PATH_MODAL = 'images/full/';
@@ -983,11 +941,6 @@
             }
         }
 
-        // Check if device is mobile
-        function isMobile() {
-            return window.innerWidth <= 640;
-        }
-
         // Show recipe modal
         function showRecipe(recipeId) {
             const recipe = getRecipeWithUserData(recipeId);
@@ -1003,6 +956,7 @@
             
             const modal = document.getElementById('recipeModal');
             const content = document.getElementById('modalContent');
+            const modalWrapper = modal.querySelector('.flex > div');
             
             const imageUrl = recipe.image ? IMAGE_PATH_MODAL + recipe.image : `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop`;
             const sourceInfo = formatSource(recipe);
@@ -1012,32 +966,41 @@
             const madeToday = recipe.madeDates && recipe.madeDates.includes(today);
             const madeCount = recipe.madeDates ? recipe.madeDates.length : 0;
             
-            // Mobile-specific layout with truly fixed image and close button
-            if (isMobile()) {
+            // Determine layout based on window width
+            const windowWidth = window.innerWidth;
+            const isFullscreen = windowWidth <= BREAKPOINTS.FULLSCREEN_MODAL;
+            const isSingleColumn = windowWidth <= BREAKPOINTS.SINGLE_COLUMN;
+            
+            // Configure modal wrapper styles
+            if (isFullscreen) {
+                modalWrapper.className = 'bg-white w-full h-full flex flex-col overflow-hidden';
+                content.className = 'h-full flex flex-col overflow-y-auto';
+            } else {
+                modalWrapper.className = 'bg-white sm:rounded-2xl max-w-5xl w-full sm:h-[92vh] flex flex-col overflow-hidden';
+                content.className = 'h-full flex flex-col overflow-y-auto';
+            }
+            
+            // Generate content based on layout
+            if (isSingleColumn) {
+                // Single column layout
                 content.innerHTML = `
-                    <!-- Fixed image container (outside scrollable area) -->
-                    <div class="modal-image-container-fixed">
-                        <div class="h-full bg-gradient-to-br from-amber-100 to-orange-100 relative">
+                    <div class="relative h-full">
+                        <!-- Close button absolute to modal container -->
+                        <button onclick="closeRecipe()" class="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg">
+                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                        
+                        <div class="h-56 bg-gradient-to-br from-amber-100 to-orange-100 flex-shrink-0">
                             ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
                             `<div class="w-full h-full flex items-center justify-center">
                                 <span class="text-8xl opacity-30">🍞</span>
                             </div>`}
                             ${recipe.category ? `<span onclick="activateFilter('category', '${recipe.category}', event)" class="category-badge absolute top-4 left-4 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
                         </div>
-                    </div>
-                    
-                    <!-- Fixed close button (outside scrollable area) -->
-                    <button onclick="closeRecipe()" class="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg">
-                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                    
-                    <!-- Scrollable content only -->
-                    <div class="modal-content-scrollable">
-                        <div class="modal-content-spacer"></div>
-                        <div class="modal-content-body px-4">
-                            <div class="pt-4 pb-3">
+                        <div class="modal-content-overlay">
+                            <div class="px-4 pt-4 pb-3">
                                 <h2 class="font-display text-2xl text-gray-800 ${sourceInfo ? 'mb-0' : 'mb-1'}">${recipe.title}</h2>
                                 ${sourceInfo ? `<p class="text-xs text-amber-600 mb-2">${sourceInfo}</p>` : ''}
                                 <p class="text-gray-600 text-sm mb-3">${recipe.servings}</p>
@@ -1075,12 +1038,12 @@
                             </div>
                             
                             ${recipe.description ? `
-                            <div class="pb-4">
+                            <div class="px-4 pb-4 bg-amber-50/30">
                                 <p class="text-gray-700 text-sm leading-relaxed">${recipe.description}</p>
                             </div>
                             ` : ''}
                             
-                            <div class="space-y-6 pb-12">
+                            <div class="space-y-6 px-4 pb-12">
                                 <div>
                                     <h3 class="font-display text-xl text-amber-800 mb-3">Ingredienser</h3>
                                     ${renderIngredients(recipe.ingredients)}
@@ -1095,7 +1058,7 @@
                     </div>
                 `;
             } else {
-                // Desktop layout with scroll-over-image effect
+                // Two column layout (desktop)
                 content.innerHTML = `
                     <div class="relative h-full">
                         <!-- Close button absolute to modal container -->
@@ -1105,70 +1068,68 @@
                             </svg>
                         </button>
                         
-                        <div class="flex flex-col h-full overflow-y-auto">
-                            <div class="h-[450px] bg-gradient-to-br from-amber-100 to-orange-100 modal-image-fixed flex-shrink-0">
-                                ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
-                                `<div class="w-full h-full flex items-center justify-center">
-                                    <span class="text-8xl opacity-30">🍞</span>
-                                </div>`}
-                                ${recipe.category ? `<span onclick="activateFilter('category', '${recipe.category}', event)" class="category-badge absolute top-4 left-6 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
-                            </div>
-                        <div class="modal-content-overlay">
-                            <div class="px-6 pt-5 pb-4 border-b border-gray-100">
-                                <h2 class="font-display text-3xl text-gray-800 ${sourceInfo ? 'mb-0' : 'mb-1'}">${recipe.title}</h2>
-                                ${sourceInfo ? `<p class="text-xs text-amber-600 mb-2">${sourceInfo}</p>` : ''}
-                                <p class="text-gray-600 text-sm mb-3">${recipe.servings}</p>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-4">
-                                        <div class="flex items-center gap-2">
-                                            <button id="eraser-${recipe.id}" 
-                                                    onclick="clearRating('${recipe.id}', event)" 
-                                                    class="eraser-btn text-gray-400 hover:text-gray-600 transition p-1 ${recipe.userRating ? 'show' : ''}">
-                                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M15.14 3c.51 0 1 .2 1.36.58l3.92 3.92c.78.78.78 2.04 0 2.82l-9.19 9.19L4 22l2.49-7.23L15.68 5.6c.36-.38.85-.6 1.36-.6m0 2.12L8 12.26V14h1.75l7.14-7.14L15.14 5.12M3 17.25L6.75 21 2 22l1-4.75z"/>
-                                                </svg>
-                                            </button>
-                                            <div class="flex items-center">
-                                                ${renderInteractiveStars(recipe)}
-                                            </div>
+                        <div class="h-[450px] bg-gradient-to-br from-amber-100 to-orange-100 modal-image-fixed flex-shrink-0">
+                            ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
+                            `<div class="w-full h-full flex items-center justify-center">
+                                <span class="text-8xl opacity-30">🍞</span>
+                            </div>`}
+                            ${recipe.category ? `<span onclick="activateFilter('category', '${recipe.category}', event)" class="category-badge absolute top-4 left-6 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700">${recipe.category}</span>` : ''}
+                        </div>
+                    <div class="modal-content-overlay">
+                        <div class="px-6 pt-5 pb-4 border-b border-gray-100">
+                            <h2 class="font-display text-3xl text-gray-800 ${sourceInfo ? 'mb-0' : 'mb-1'}">${recipe.title}</h2>
+                            ${sourceInfo ? `<p class="text-xs text-amber-600 mb-2">${sourceInfo}</p>` : ''}
+                            <p class="text-gray-600 text-sm mb-3">${recipe.servings}</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-4">
+                                    <div class="flex items-center gap-2">
+                                        <button id="eraser-${recipe.id}" 
+                                                onclick="clearRating('${recipe.id}', event)" 
+                                                class="eraser-btn text-gray-400 hover:text-gray-600 transition p-1 ${recipe.userRating ? 'show' : ''}">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M15.14 3c.51 0 1 .2 1.36.58l3.92 3.92c.78.78.78 2.04 0 2.82l-9.19 9.19L4 22l2.49-7.23L15.68 5.6c.36-.38.85-.6 1.36-.6m0 2.12L8 12.26V14h1.75l7.14-7.14L15.14 5.12M3 17.25L6.75 21 2 22l1-4.75z"/>
+                                            </svg>
+                                        </button>
+                                        <div class="flex items-center">
+                                            ${renderInteractiveStars(recipe)}
                                         </div>
-                                        ${recipe.cuisine || recipe.meal ? `
-                                        <div class="text-sm text-gray-500">
-                                            ${recipe.cuisine ? `<span onclick="activateFilter('cuisine', '${recipe.cuisine}', event)" class="category-badge inline-block px-2 py-0.5 bg-gray-100 rounded-full cursor-pointer hover:bg-amber-100">${recipe.cuisine} kjøkken</span>` : ''}
-                                            ${recipe.cuisine && recipe.meal ? ' ' : ''}
-                                            ${recipe.meal ? `<span onclick="activateFilter('meal', '${recipe.meal}', event)" class="category-badge inline-block px-2 py-0.5 bg-gray-100 rounded-full cursor-pointer hover:bg-amber-100">${recipe.meal}</span>` : ''}
-                                        </div>
-                                        ` : ''}
                                     </div>
-                                    <button onclick="toggleMadeToday('${recipe.id}', event)" 
-                                            class="flex items-center space-x-2 px-3 py-1.5 rounded-lg transition text-sm font-medium
-                                                ${madeToday 
-                                                    ? 'bg-amber-600 text-white hover:bg-amber-700' 
-                                                    : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
-                                        <svg class="w-5 h-5" fill="${madeToday ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                        <span>Laget (${madeCount})</span>
-                                    </button>
+                                    ${recipe.cuisine || recipe.meal ? `
+                                    <div class="text-sm text-gray-500">
+                                        ${recipe.cuisine ? `<span onclick="activateFilter('cuisine', '${recipe.cuisine}', event)" class="category-badge inline-block px-2 py-0.5 bg-gray-100 rounded-full cursor-pointer hover:bg-amber-100">${recipe.cuisine} kjøkken</span>` : ''}
+                                        ${recipe.cuisine && recipe.meal ? ' ' : ''}
+                                        ${recipe.meal ? `<span onclick="activateFilter('meal', '${recipe.meal}', event)" class="category-badge inline-block px-2 py-0.5 bg-gray-100 rounded-full cursor-pointer hover:bg-amber-100">${recipe.meal}</span>` : ''}
+                                    </div>
+                                    ` : ''}
                                 </div>
+                                <button onclick="toggleMadeToday('${recipe.id}', event)" 
+                                        class="flex items-center space-x-2 px-3 py-1.5 rounded-lg transition text-sm font-medium
+                                            ${madeToday 
+                                                ? 'bg-amber-600 text-white hover:bg-amber-700' 
+                                                : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
+                                    <svg class="w-5 h-5" fill="${madeToday ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span>Laget (${madeCount})</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        ${recipe.description ? `
+                        <div class="px-6 py-4 bg-amber-50/30">
+                            <p class="text-gray-700 leading-relaxed">${recipe.description}</p>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="grid md:grid-cols-[2fr,3fr] gap-8 px-8 py-8 pb-16">
+                            <div>
+                                <h3 class="font-display text-xl text-amber-800 mb-3">Ingredienser</h3>
+                                ${renderIngredients(recipe.ingredients)}
                             </div>
                             
-                            ${recipe.description ? `
-                            <div class="px-6 py-4 bg-amber-50/30">
-                                <p class="text-gray-700 leading-relaxed">${recipe.description}</p>
-                            </div>
-                            ` : ''}
-                            
-                            <div class="grid md:grid-cols-[2fr,3fr] gap-8 px-8 py-8 pb-16">
-                                <div>
-                                    <h3 class="font-display text-xl text-amber-800 mb-3">Ingredienser</h3>
-                                    ${renderIngredients(recipe.ingredients)}
-                                </div>
-                                
-                                <div>
-                                    <h3 class="font-display text-xl text-amber-800 mb-3">Fremgangsmåte</h3>
-                                    ${renderInstructions(recipe.instructions, false)}
-                                </div>
+                            <div>
+                                <h3 class="font-display text-xl text-amber-800 mb-3">Fremgangsmåte</h3>
+                                ${renderInstructions(recipe.instructions, false)}
                             </div>
                         </div>
                     </div>
@@ -1284,24 +1245,19 @@
             const button = event ? event.currentTarget : document.querySelector(`button[onclick*="toggleMadeToday('${recipeId}'"]`);
             
             if (button) {
+                // Determine layout
+                const isSingleColumn = window.innerWidth <= BREAKPOINTS.SINGLE_COLUMN;
+                
                 // Update button classes
-                if (isMobile()) {
-                    button.className = `flex items-center space-x-1 px-3 py-1.5 rounded-lg transition text-xs font-medium ${
-                        madeToday 
-                            ? 'bg-amber-600 text-white' 
-                            : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
-                    }`;
-                } else {
-                    button.className = `flex items-center space-x-2 px-3 py-1.5 rounded-lg transition text-sm font-medium ${
-                        madeToday 
-                            ? 'bg-amber-600 text-white hover:bg-amber-700' 
-                            : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
-                    }`;
-                }
+                button.className = `flex items-center ${isSingleColumn ? 'space-x-1' : 'space-x-2'} px-3 py-1.5 rounded-lg transition ${isSingleColumn ? 'text-xs' : 'text-sm'} font-medium ${
+                    madeToday 
+                        ? 'bg-amber-600 text-white' + (isSingleColumn ? '' : ' hover:bg-amber-700')
+                        : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+                }`;
                 
                 // Update button content
                 button.innerHTML = `
-                    <svg class="${isMobile() ? 'w-4 h-4' : 'w-5 h-5'}" fill="${madeToday ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="${isSingleColumn ? 'w-4 h-4' : 'w-5 h-5'}" fill="${madeToday ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
                     <span>Laget (${madeCount})</span>
