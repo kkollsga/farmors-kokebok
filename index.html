@@ -1047,11 +1047,11 @@ class ModalManager {
         
         // Configure modal wrapper styles
         if (isFullscreen) {
-            // Fullscreen mobile modal
-            modal.className = 'fixed inset-0 bg-white z-50';
-            flexContainer.className = 'h-full';
-            modalWrapper.className = 'h-full relative';
-            content.className = 'h-full relative';
+            // Fullscreen mobile modal with black background
+            modal.className = 'fixed inset-0 bg-black z-50';
+            flexContainer.className = 'h-full bg-black';
+            modalWrapper.className = 'h-full relative bg-black';
+            content.className = 'h-full relative bg-black';
         } else {
             // Desktop modal  
             modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50';
