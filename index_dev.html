@@ -970,6 +970,7 @@ class ModalManager {
         this.scrollPosition = 0;
         this.isFullscreen = false;
         this.currentRecipeId = null;
+        this.completedSteps = new Map();
         this.setupEventListeners();
     }
 
@@ -1003,6 +1004,13 @@ class ModalManager {
         if (!recipe) return;
         
         this.currentRecipeId = recipeId;
+        
+        // Clear completed steps for this recipe when opening
+        Array.from(this.completedSteps.keys()).forEach(key => {
+            if (key.startsWith(recipeId + '-')) {
+                this.completedSteps.delete(key);
+            }
+        });
         
         // Track view
         this.userDataManager.trackView(recipeId);
@@ -1339,7 +1347,7 @@ class ModalManager {
                                     <span class="text-amber-600 mr-2">•</span>
                                     <span class="text-gray-700">${ing}</span>
                                 </li>
-                            `).join('')}
+                            `).join('')}wRecipe(recipeId) {
                         </ul>
                     </div>
                 `;
@@ -1347,15 +1355,34 @@ class ModalManager {
         }
     }
 
+    toggleInstructionStep(recipeId, stepIndex) {
+        const key = `${recipeId}-${stepIndex}`;
+        const isCompleted = this.completedSteps.get(key) || false;
+        this.completedSteps.set(key, !isCompleted);
+        
+        // Toggle the visual state
+        const stepElement = document.querySelector(`[data-step="${key}"]`);
+        if (stepElement) {
+            if (!isCompleted) {
+                stepElement.classList.add('line-through', 'text-gray-400');
+                stepElement.classList.remove('text-gray-700');
+            } else {
+                stepElement.classList.remove('line-through', 'text-gray-400');
+                stepElement.classList.add('text-gray-700');
+            }
+        }
+    }
+
     renderInstructions(instructions, isMobile = false) {
         if (!instructions || instructions.length === 0) return '';
         
+        const recipeId = this.currentRecipeId;
         let stepNumber = 1;
         const textSizeClass = isMobile ? 'text-sm' : '';
         
         return `
             <ol class="space-y-3">
-                ${instructions.map((inst) => {
+                ${instructions.map((inst, index) => {
                     if (inst.startsWith('TIP:') || inst.startsWith('TIPS:')) {
                         const tipText = inst.replace(/^TIPS?:\s*/i, '');
                         return `
@@ -1373,10 +1400,16 @@ class ModalManager {
                         `;
                     } else {
                         const currentStep = stepNumber++;
+                        const stepKey = `${recipeId}-${index}`;
+                        const isCompleted = this.completedSteps.get(stepKey) || false;
                         return `
-                            <li class="flex items-start">
+                            <li class="flex items-start cursor-pointer select-none transition-all duration-200 hover:bg-amber-50 rounded-lg p-2 -m-2"
+                                onclick="recipeApp.modalManager.toggleInstructionStep('${recipeId}', ${index})">
                                 <span class="font-semibold text-amber-600 mr-3 flex-shrink-0">${currentStep}.</span>
-                                <span class="text-gray-700 ${textSizeClass}">${inst}</span>
+                                <span data-step="${stepKey}" 
+                                    class="${textSizeClass} ${isCompleted ? 'line-through text-gray-400' : 'text-gray-700'} transition-all duration-200">
+                                    ${inst}
+                                </span>
                             </li>
                         `;
                     }
