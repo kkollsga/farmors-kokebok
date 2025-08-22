@@ -1009,6 +1009,7 @@ class ModalManager {
         this.isFullscreen = false;
         this.currentRecipeId = null;
         this.completedSteps = new Map();
+        this.activeStep = null;
         this.setupEventListeners();
     }
 
@@ -1043,12 +1044,15 @@ class ModalManager {
         
         this.currentRecipeId = recipeId;
         
-        // Clear completed steps for this recipe when opening
+        // Clear completed steps and active step for this recipe when opening
         Array.from(this.completedSteps.keys()).forEach(key => {
             if (key.startsWith(recipeId + '-')) {
                 this.completedSteps.delete(key);
             }
         });
+        if (this.activeStep && this.activeStep.startsWith(recipeId + '-')) {
+            this.activeStep = null;
+        }
         
         // Track view
         this.userDataManager.trackView(recipeId);
@@ -1396,18 +1400,40 @@ class ModalManager {
     toggleInstructionStep(recipeId, stepIndex) {
         const key = `${recipeId}-${stepIndex}`;
         const isCompleted = this.completedSteps.get(key) || false;
-        this.completedSteps.set(key, !isCompleted);
+        const isActive = this.activeStep === key;
         
-        // Toggle the visual state
         const stepElement = document.querySelector(`[data-step="${key}"]`);
-        if (stepElement) {
-            if (!isCompleted) {
-                stepElement.classList.add('line-through', 'text-gray-400');
-                stepElement.classList.remove('text-gray-700');
-            } else {
-                stepElement.classList.remove('line-through', 'text-gray-400');
-                stepElement.classList.add('text-gray-700');
+        if (!stepElement) return;
+        
+        // Clear previous active step visually if switching to a new step
+        if (this.activeStep && this.activeStep !== key) {
+            const prevElement = document.querySelector(`[data-step="${this.activeStep}"]`);
+            if (prevElement && !this.completedSteps.get(this.activeStep)) {
+                prevElement.parentElement.classList.remove('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4');
             }
+        }
+        
+        if (!isActive && !isCompleted) {
+            // Default → Active
+            this.activeStep = key;
+            this.completedSteps.delete(key);
+            stepElement.classList.remove('line-through', 'text-gray-400');
+            stepElement.classList.add('text-gray-700');
+            stepElement.parentElement.classList.add('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4');
+        } else if (isActive && !isCompleted) {
+            // Active → Completed
+            this.completedSteps.set(key, true);
+            this.activeStep = null;
+            stepElement.classList.add('line-through', 'text-gray-400');
+            stepElement.classList.remove('text-gray-700');
+            stepElement.parentElement.classList.remove('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4');
+        } else if (isCompleted) {
+            // Completed → Active
+            this.completedSteps.delete(key);
+            this.activeStep = key;
+            stepElement.classList.remove('line-through', 'text-gray-400');
+            stepElement.classList.add('text-gray-700');
+            stepElement.parentElement.classList.add('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4');
         }
     }
 
@@ -1440,8 +1466,11 @@ class ModalManager {
                         const currentStep = stepNumber++;
                         const stepKey = `${recipeId}-${index}`;
                         const isCompleted = this.completedSteps.get(stepKey) || false;
+                        const isActive = this.activeStep === stepKey;
+                        
                         return `
-                            <li class="flex items-start cursor-pointer select-none transition-all duration-200 hover:bg-amber-50 rounded-lg p-2 -m-2"
+                            <li class="flex items-start cursor-pointer select-none transition-all duration-200 hover:opacity-80 rounded-lg p-2 -m-2 
+                                ${isActive ? 'bg-amber-50 border-l-4 border-amber-500 pl-4' : ''}"
                                 onclick="recipeApp.modalManager.toggleInstructionStep('${recipeId}', ${index})">
                                 <span class="font-semibold text-amber-600 mr-3 flex-shrink-0">${currentStep}.</span>
                                 <span data-step="${stepKey}" 
