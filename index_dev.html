@@ -1195,7 +1195,7 @@ class ModalManager {
                 ` : ''}
                 
                 <!-- Ingredients -->
-                <div class="mb-6">
+                <div class="mb-6 pb-6 border-b border-amber-600">
                     <h3 class="font-display text-xl text-amber-800 mb-3">Ingredienser</h3>
                     ${this.renderIngredients(recipe.ingredients)}
                     <div class="mt-4 flex items-center gap-2 text-amber-600 rounded-lg px-3 py-2 inline-flex">
@@ -1263,7 +1263,7 @@ class ModalManager {
                 
                 <!-- Two column layout for ingredients and instructions -->
                 <div class="grid md:grid-cols-[2fr,3fr] gap-8">
-                    <div>
+                    <div class="pr-8 border-r border-amber-600">
                         <h3 class="font-display text-xl text-amber-800 mb-4">Ingredienser</h3>
                         ${this.renderIngredients(recipe.ingredients)}
                         <div class="mt-4 flex items-center gap-2 text-amber-600 rounded-lg px-3 py-2 inline-flex">
