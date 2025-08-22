@@ -1410,6 +1410,8 @@ class ModalManager {
             const prevElement = document.querySelector(`[data-step="${this.activeStep}"]`);
             if (prevElement && !this.completedSteps.get(this.activeStep)) {
                 prevElement.parentElement.classList.remove('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4');
+                prevElement.classList.remove('text-black');
+                prevElement.classList.add('text-gray-700');
             }
         }
         
@@ -1418,21 +1420,22 @@ class ModalManager {
             this.activeStep = key;
             this.completedSteps.delete(key);
             stepElement.classList.remove('line-through', 'text-gray-400');
-            stepElement.classList.add('text-gray-700');
+            stepElement.classList.remove('text-gray-700');
+            stepElement.classList.add('text-black');
             stepElement.parentElement.classList.add('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4');
         } else if (isActive && !isCompleted) {
             // Active → Completed
             this.completedSteps.set(key, true);
             this.activeStep = null;
             stepElement.classList.add('line-through', 'text-gray-400');
-            stepElement.classList.remove('text-gray-700');
+            stepElement.classList.remove('text-black');
             stepElement.parentElement.classList.remove('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4');
         } else if (isCompleted) {
             // Completed → Active
             this.completedSteps.delete(key);
             this.activeStep = key;
             stepElement.classList.remove('line-through', 'text-gray-400');
-            stepElement.classList.add('text-gray-700');
+            stepElement.classList.add('text-black');
             stepElement.parentElement.classList.add('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4');
         }
     }
@@ -1474,7 +1477,7 @@ class ModalManager {
                                 onclick="recipeApp.modalManager.toggleInstructionStep('${recipeId}', ${index})">
                                 <span class="font-semibold text-amber-600 mr-3 flex-shrink-0">${currentStep}.</span>
                                 <span data-step="${stepKey}" 
-                                    class="${textSizeClass} ${isCompleted ? 'line-through text-gray-400' : 'text-gray-700'} transition-all duration-200">
+                                    class="${textSizeClass} ${isCompleted ? 'line-through text-gray-400' : (isActive ? 'text-black' : 'text-gray-700')} transition-all duration-200">
                                     ${inst}
                                 </span>
                             </li>
