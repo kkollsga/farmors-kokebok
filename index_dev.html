@@ -181,7 +181,7 @@
 
 const CONFIG = {
     BREAKPOINTS: {
-        FULLSCREEN_MODAL: 900,
+        FULLSCREEN_MODAL: 1000,
         SINGLE_COLUMN: 600
     },
     IMAGE_PATHS: {
@@ -1371,8 +1371,8 @@ class ModalManager {
         if (this.activeStep && this.activeStep !== key) {
             const prevElement = document.querySelector(`[data-step="${this.activeStep}"]`);
             if (prevElement && !this.completedSteps.get(this.activeStep)) {
-                prevElement.parentElement.classList.remove('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4', 'pr-2');
-                prevElement.parentElement.classList.add('pr-3');
+                prevElement.parentElement.classList.remove('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4', 'pr-0');
+                prevElement.parentElement.classList.add('pr-2');
                 prevElement.classList.remove('text-black');
                 prevElement.classList.add('text-gray-700');
             }
@@ -1385,24 +1385,24 @@ class ModalManager {
             stepElement.classList.remove('line-through', 'text-gray-400');
             stepElement.classList.remove('text-gray-700');
             stepElement.classList.add('text-black');
-            stepElement.parentElement.classList.add('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4', 'pr-2');
-            stepElement.parentElement.classList.remove('pr-3');
+            stepElement.parentElement.classList.add('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4', 'pr-0');
+            stepElement.parentElement.classList.remove('pr-2');
         } else if (isActive && !isCompleted) {
             // Active → Completed
             this.completedSteps.set(key, true);
             this.activeStep = null;
             stepElement.classList.add('line-through', 'text-gray-400');
             stepElement.classList.remove('text-black');
-            stepElement.parentElement.classList.remove('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4', 'pr-2');
-            stepElement.parentElement.classList.add('pr-3');
+            stepElement.parentElement.classList.remove('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4', 'pr-0');
+            stepElement.parentElement.classList.add('pr-2');
         } else if (isCompleted) {
             // Completed → Active
             this.completedSteps.delete(key);
             this.activeStep = key;
             stepElement.classList.remove('line-through', 'text-gray-400');
             stepElement.classList.add('text-black');
-            stepElement.parentElement.classList.add('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4', 'pr-2');
-            stepElement.parentElement.classList.remove('pr-3');
+            stepElement.parentElement.classList.add('bg-amber-50', 'border-l-4', 'border-amber-500', 'pl-4', 'pr-0');
+            stepElement.parentElement.classList.remove('pr-2');
         }
     }
 
@@ -1438,7 +1438,7 @@ class ModalManager {
                         const isActive = this.activeStep === stepKey;
                         
                         return `
-                            <li class="flex items-start cursor-pointer select-none transition-all duration-200 hover:opacity-80 rounded-lg py-2 pl-2 ${isActive ? 'pr-2' : 'pr-3'} -m-2 
+                            <li class="flex items-start cursor-pointer select-none transition-all duration-200 hover:opacity-80 rounded-lg py-2 pl-2 ${isActive ? 'pr-0' : 'pr-2'} -m-2 
                                 ${isActive ? 'bg-amber-50 border-l-4 border-amber-500 pl-4' : ''}"
                                 onclick="recipeApp.modalManager.toggleInstructionStep('${recipeId}', ${index})">
                                 <span class="font-semibold text-amber-600 mr-3 flex-shrink-0">${currentStep}.</span>
