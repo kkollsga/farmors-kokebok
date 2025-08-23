@@ -21,7 +21,7 @@
        BASE STYLES
     ============================================ */
     body { font-family: 'Inter', sans-serif; }
-    body.modal-open { overflow: hidden; position: fixed; width: 100%; }
+    body.modal-open { overflow: hidden; position: relative; touch-action: none; }
     .font-display { font-family: 'Playfair Display', serif; }
     
     /* ============================================
@@ -1035,6 +1035,26 @@ class ModalManager {
                 this.updateModalContent();
             }
         });
+        
+        // Prevent zoom on iOS rotation
+        window.addEventListener('orientationchange', (e) => {
+            if (this.currentRecipeId) {
+                // Prevent default zoom behavior
+                e.preventDefault();
+                
+                // Force viewport reset
+                const viewport = document.querySelector('meta[name="viewport"]');
+                viewport.setAttribute('content', 
+                    'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'
+                );
+                
+                // Small delay to ensure proper layout update
+                setTimeout(() => {
+                    this.updateModalLayout();
+                    this.updateModalContent();
+                }, 100);
+            }
+        });
     }
 
     // Main entry point for showing a recipe
@@ -1057,10 +1077,14 @@ class ModalManager {
         // Track view
         this.userDataManager.trackView(recipeId);
         
-        // Lock body scroll
+        // Lock body scroll - UPDATED APPROACH
         this.scrollPosition = window.pageYOffset;
         document.body.classList.add('modal-open');
-        document.body.style.top = `-${this.scrollPosition}px`;
+        
+        // For iOS, prevent scroll on the body
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'relative';
+        document.documentElement.style.overflow = 'hidden'; // Also lock html element
         
         // Setup modal layout (fullscreen vs windowed)
         this.setupModalLayout();
@@ -1515,9 +1539,13 @@ class ModalManager {
         // Hide modal
         modal.classList.add('hidden');
         
-        // Restore body scroll
+        // Restore body scroll - UPDATED APPROACH
         document.body.classList.remove('modal-open');
-        document.body.style.top = '';
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.documentElement.style.overflow = ''; // Restore html element
+        // Remove the line that resets body.style.top
+        // document.body.style.top = ''; // REMOVE THIS
         window.scrollTo(0, this.scrollPosition);
         
         // Reset modal classes to default state
