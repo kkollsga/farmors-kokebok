@@ -204,6 +204,12 @@ const CONFIG = {
     IMAGE_PATHS: {
         LIST: 'images/low/',
         MODAL: 'images/hi/'
+    },
+    STYLES: {
+        TAGGED_SHADOW: 'shadow-[0_4px_6px_-1px_rgba(180,83,9,0.5),0_2px_4px_-1px_rgba(217,119,6,0.35)]',
+        TAGGED_HOVER_SHADOW: 'hover:shadow-[0_10px_15px_-3px_rgba(180,83,9,0.5),0_4px_6px_-2px_rgba(217,119,6,0.35)]',
+        DEFAULT_SHADOW: 'shadow-md',
+        DEFAULT_HOVER_SHADOW: 'hover:shadow-xl'
     }
 };
 
@@ -278,7 +284,9 @@ class UserDataManager {
                 madeDates: [],
                 lastViewed: null,
                 viewCount: 0,
-                favorite: false
+                favorite: false,
+                tagged: false,
+                taggedAt: null
             };
         }
     }
@@ -289,7 +297,9 @@ class UserDataManager {
             madeDates: [],
             lastViewed: null,
             viewCount: 0,
-            favorite: false
+            favorite: false,
+            tagged: false,
+            taggedAt: null
         };
     }
 
@@ -304,6 +314,15 @@ class UserDataManager {
             this.userData[recipeId].userRating = null;
             this.save();
         }
+    }
+
+    toggleTag(recipeId) {
+        this.initializeRecipe(recipeId);
+        const isTagged = !this.userData[recipeId].tagged;
+        this.userData[recipeId].tagged = isTagged;
+        this.userData[recipeId].taggedAt = isTagged ? new Date().toISOString() : null;
+        this.save();
+        return isTagged;
     }
 
     toggleMadeToday(recipeId) {
@@ -821,24 +840,43 @@ class FilterManager {
             });
         }
         
-        // Apply sorting based on current sort order
+        // Separate tagged and untagged recipes
+        const taggedRecipes = [];
+        const untaggedRecipes = [];
+        
+        filtered.forEach(recipe => {
+            const userData = this.userDataManager.getRecipeData(recipe.id);
+            if (userData.tagged) {
+                taggedRecipes.push({
+                    recipe,
+                    taggedAt: userData.taggedAt
+                });
+            } else {
+                untaggedRecipes.push(recipe);
+            }
+        });
+        
+        // Sort tagged recipes by taggedAt (newest first)
+        taggedRecipes.sort((a, b) => {
+            const dateA = new Date(a.taggedAt || 0);
+            const dateB = new Date(b.taggedAt || 0);
+            return dateB - dateA;
+        });
+        
+        // Apply sorting to untagged recipes based on current sort order
         switch(this.sortOrder) {
             case 'recommendation':
-                // Get detailed scores for logging
-                const scoredRecipes = filtered.map(recipe => {
+                const scoredRecipes = untaggedRecipes.map(recipe => {
                     const score = this.recommendationEngine.getRecipeScore(recipe.id);
                     return { recipe, score };
                 });
-                
-                // Sort by score
                 scoredRecipes.sort((a, b) => b.score - a.score);
-                
-                // Extract sorted recipes
-                filtered = scoredRecipes.map(item => item.recipe);
+                untaggedRecipes.length = 0;
+                untaggedRecipes.push(...scoredRecipes.map(item => item.recipe));
                 break;
             
             case 'recipebook':
-                filtered.sort((a, b) => {
+                untaggedRecipes.sort((a, b) => {
                     if (a.pageNumber && b.pageNumber) {
                         return a.pageNumber - b.pageNumber;
                     }
@@ -847,16 +885,14 @@ class FilterManager {
                 break;
             
             case 'madecount':
-                filtered.sort((a, b) => {
+                untaggedRecipes.sort((a, b) => {
                     const countA = this.userDataManager.getRecipeData(a.id).madeDates?.length || 0;
                     const countB = this.userDataManager.getRecipeData(b.id).madeDates?.length || 0;
                     
-                    // Primary sort by made count
                     if (countA !== countB) {
                         return countB - countA;
                     }
                     
-                    // Secondary sort by recommendation score for ties
                     const scoreA = this.recommendationEngine.getRecipeScore(a.id);
                     const scoreB = this.recommendationEngine.getRecipeScore(b.id);
                     return scoreB - scoreA;
@@ -864,16 +900,14 @@ class FilterManager {
                 break;
             
             case 'rating':
-                filtered.sort((a, b) => {
+                untaggedRecipes.sort((a, b) => {
                     const ratingA = this.userDataManager.getRecipeData(a.id).userRating || 0;
                     const ratingB = this.userDataManager.getRecipeData(b.id).userRating || 0;
                     
-                    // Primary sort by rating
                     if (ratingA !== ratingB) {
                         return ratingB - ratingA;
                     }
                     
-                    // Secondary sort by recommendation score for ties
                     const scoreA = this.recommendationEngine.getRecipeScore(a.id);
                     const scoreB = this.recommendationEngine.getRecipeScore(b.id);
                     return scoreB - scoreA;
@@ -881,7 +915,13 @@ class FilterManager {
                 break;
         }
         
-        const filteredIds = filtered.map(recipe => recipe.id);
+        // Combine tagged (at top) with untagged
+        const finalFiltered = [
+            ...taggedRecipes.map(item => item.recipe),
+            ...untaggedRecipes
+        ];
+        
+        const filteredIds = finalFiltered.map(recipe => recipe.id);
         this.uiManager.renderRecipes(filteredIds, false);
     }
 }
@@ -955,9 +995,46 @@ class UIManager {
         });
     }
 
+    updateRecipeCardTag(recipeId, isTagged) {
+        const cards = document.querySelectorAll(`[data-recipe-id="${recipeId}"]`);
+        cards.forEach(card => {
+            if (isTagged) {
+                // Add amber shadow with same size as default
+                card.classList.remove(CONFIG.STYLES.DEFAULT_SHADOW, CONFIG.STYLES.DEFAULT_HOVER_SHADOW);
+                card.classList.add(...CONFIG.STYLES.TAGGED_SHADOW.split(' '), ...CONFIG.STYLES.TAGGED_HOVER_SHADOW.split(' '));
+                
+                // Add tag indicator if not present
+                const imageContainer = card.querySelector('.h-48');
+                if (imageContainer && !imageContainer.querySelector('.fa-tag')) {
+                    const tagBadge = document.createElement('span');
+                    tagBadge.className = 'absolute top-2 left-2 bg-yellow-600 text-white text-xs font-bold px-2 py-1 rounded-full';
+                    tagBadge.innerHTML = '<i class="fas fa-tag"></i>';
+                    imageContainer.appendChild(tagBadge);
+                }
+            } else {
+                // Remove amber shadow
+                card.classList.remove(...CONFIG.STYLES.TAGGED_SHADOW.split(' '), ...CONFIG.STYLES.TAGGED_HOVER_SHADOW.split(' '));
+                card.classList.add(CONFIG.STYLES.DEFAULT_SHADOW, CONFIG.STYLES.DEFAULT_HOVER_SHADOW);
+                
+                // Remove tag indicator
+                const tagBadge = card.querySelector('.fa-tag')?.parentElement;
+                if (tagBadge && tagBadge.classList.contains('absolute')) {
+                    tagBadge.remove();
+                }
+            }
+        });
+    }
+
     createRecipeCard(recipe) {
         const card = document.createElement('div');
-        card.className = 'bg-white rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1';
+        const isTagged = recipe.tagged || false;
+        
+        // Darker, more subtle glowing shadow effect (using darker amber/brown tones)
+        const shadowClass = isTagged 
+            ? `${CONFIG.STYLES.TAGGED_SHADOW} ${CONFIG.STYLES.TAGGED_HOVER_SHADOW}` 
+            : `${CONFIG.STYLES.DEFAULT_SHADOW} ${CONFIG.STYLES.DEFAULT_HOVER_SHADOW}`;
+
+        card.className = `bg-white rounded-xl ${shadowClass} overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1`;
         card.setAttribute('data-recipe-id', recipe.id);
         
         // Use data attribute instead of direct onclick
@@ -975,6 +1052,9 @@ class UIManager {
                     `<div class="w-full h-full flex items-center justify-center">
                         <span class="text-6xl opacity-30">🍞</span>
                     </div>`}
+                ${isTagged ? `<span class="absolute top-2 left-2 bg-yellow-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    <i class="fas fa-tag"></i>
+                </span>` : ''}
                 ${recipe.category ? `<span onclick="recipeApp.filterManager.activateFilter('category', '${recipe.category}', event)" 
                     class="absolute top-2 right-2 bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded-full text-amber-700 transition-all duration-200 cursor-pointer hover:scale-105 hover:shadow-lg">
                     ${recipe.category}
@@ -1266,6 +1346,39 @@ class ModalManager {
         modal.classList.remove('hidden');
     }
 
+    toggleTag(recipeId, event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        
+        const isTagged = this.userDataManager.toggleTag(recipeId);
+        
+        // Update button in modal
+        const button = event ? event.currentTarget : document.querySelector(`button[onclick*="toggleTag('${recipeId}'"]`);
+        
+        if (button) {
+            const isMobileLayout = window.innerWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
+            
+            button.className = `flex items-center ${isMobileLayout ? 'space-x-1' : 'space-x-2'} px-3 py-1.5 rounded-lg transition ${isMobileLayout ? 'text-xs' : 'text-sm'} font-medium ${
+                isTagged 
+                    ? 'bg-yellow-600 text-white' + (!isMobileLayout ? ' hover:bg-yellow-700' : '')
+                    : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+            }`;
+            
+            button.innerHTML = `
+                <i class="fas fa-tag"></i>
+                ${!isMobileLayout ? '<span>Merk</span>' : ''}
+            `;
+        }
+        
+        // Update the card appearance immediately
+        this.uiManager.updateRecipeCardTag(recipeId, isTagged);
+        
+        // Re-apply filters to reorder cards
+        const filterManager = recipeApp.filterManager;
+        filterManager.applyFilters();
+    }
+
     // Separate function to handle modal container layout
     setupModalLayout() {
         const modal = document.getElementById('recipeModal');
@@ -1422,12 +1535,19 @@ class ModalManager {
                             ${this.renderInteractiveStars(recipe)}
                         </div>
                     </div>
-                    <button onclick="recipeApp.modalManager.toggleMadeToday('${recipe.id}', event)" 
-                            class="flex items-center space-x-1 px-3 py-1.5 rounded-lg transition text-xs font-medium
-                                ${madeToday ? 'bg-amber-600 text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
-                        <i class="fas fa-check"></i>
-                        <span>Laget (${madeCount})</span>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="recipeApp.modalManager.toggleTag('${recipe.id}', event)" 
+                                class="flex items-center space-x-1 px-3 py-1.5 rounded-lg transition text-xs font-medium
+                                    ${recipe.tagged ? 'bg-yellow-600 text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
+                            <i class="fas fa-tag"></i>
+                        </button>
+                        <button onclick="recipeApp.modalManager.toggleMadeToday('${recipe.id}', event)" 
+                                class="flex items-center space-x-1 px-3 py-1.5 rounded-lg transition text-xs font-medium
+                                    ${madeToday ? 'bg-amber-600 text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
+                            <i class="fas fa-check"></i>
+                            <span>Laget (${madeCount})</span>
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Description -->
@@ -1487,13 +1607,23 @@ class ModalManager {
                             </div>
                         </div>
                         
-                        <!-- Made button -->
-                        <button onclick="recipeApp.modalManager.toggleMadeToday('${recipe.id}', event)" 
-                                class="flex items-center space-x-2 px-4 py-2 rounded-lg transition text-sm font-medium
-                                    ${madeToday ? 'bg-amber-600 text-white hover:bg-amber-700' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
-                            <i class="fas fa-check"></i>
-                            <span>Laget (${madeCount})</span>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <!-- Tag button -->
+                            <button onclick="recipeApp.modalManager.toggleTag('${recipe.id}', event)" 
+                                    class="flex items-center space-x-2 px-4 py-2 rounded-lg transition text-sm font-medium
+                                        ${recipe.tagged ? 'bg-yellow-600 text-white hover:bg-yellow-700' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
+                                <i class="fas fa-tag"></i>
+                                <span>Merk</span>
+                            </button>
+                            
+                            <!-- Made button -->
+                            <button onclick="recipeApp.modalManager.toggleMadeToday('${recipe.id}', event)" 
+                                    class="flex items-center space-x-2 px-4 py-2 rounded-lg transition text-sm font-medium
+                                        ${madeToday ? 'bg-amber-600 text-white hover:bg-amber-700' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
+                                <i class="fas fa-check"></i>
+                                <span>Laget (${madeCount})</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
