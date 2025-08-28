@@ -927,6 +927,165 @@ class FilterManager {
 }
 
 // ============================================================================
+// IMAGE LOADER CLASS
+// ============================================================================
+
+class ImageLoader {
+    constructor() {
+        this.loadingRows = new Set();
+        this.loadedImages = new Set();
+        this.bufferRows = 20; // Extra rows to load beyond viewport
+        this.scrollTimer = null;
+        this.resizeTimer = null;
+    }
+    
+    getColumnCount() {
+        // Detect from the actual CSS grid
+        const grid = document.getElementById('recipeGrid');
+        if (!grid || !grid.firstElementChild) return 1;
+        
+        const gridWidth = grid.offsetWidth;
+        const cardWidth = grid.firstElementChild.offsetWidth;
+        const gap = 24; // 1.5rem gap from Tailwind gap-6
+        
+        // Calculate columns accounting for gaps
+        const columns = Math.round((gridWidth + gap) / (cardWidth + gap));
+        return Math.max(1, columns);
+    }
+    
+    getVisibleRowRange() {
+        const grid = document.getElementById('recipeGrid');
+        const cards = Array.from(grid.children).filter(card => 
+            card.style.display !== 'none'
+        );
+        
+        if (cards.length === 0) return { start: 0, end: 0, totalRows: 0 };
+        
+        const columnCount = this.getColumnCount();
+        const viewportTop = window.scrollY;
+        const viewportBottom = viewportTop + window.innerHeight;
+        
+        let firstVisibleRow = null;
+        let lastVisibleRow = null;
+        
+        // Calculate which rows are visible
+        cards.forEach((card, index) => {
+            const rect = card.getBoundingClientRect();
+            const absoluteTop = rect.top + window.scrollY;
+            const absoluteBottom = absoluteTop + rect.height;
+            const row = Math.floor(index / columnCount);
+            
+            // Check if card is in or near viewport
+            if (absoluteBottom > viewportTop && absoluteTop < viewportBottom) {
+                if (firstVisibleRow === null) firstVisibleRow = row;
+                lastVisibleRow = row;
+            }
+        });
+        
+        const totalRows = Math.ceil(cards.length / columnCount);
+        
+        return {
+            start: Math.max(0, (firstVisibleRow ?? 0) - this.bufferRows),
+            end: Math.min(totalRows - 1, (lastVisibleRow ?? 0) + this.bufferRows),
+            totalRows: totalRows
+        };
+    }
+    
+    async loadRow(rowIndex) {
+        if (this.loadingRows.has(rowIndex)) return;
+        
+        this.loadingRows.add(rowIndex);
+        
+        const grid = document.getElementById('recipeGrid');
+        const cards = Array.from(grid.children).filter(card => 
+            card.style.display !== 'none'
+        );
+        
+        const columnCount = this.getColumnCount();
+        const startIdx = rowIndex * columnCount;
+        const endIdx = Math.min(startIdx + columnCount, cards.length);
+        
+        const loadPromises = [];
+        
+        for (let i = startIdx; i < endIdx; i++) {
+            const card = cards[i];
+            const img = card.querySelector('img[data-src]');
+            
+            if (img && !this.loadedImages.has(img)) {
+                loadPromises.push(this.loadImage(img));
+            }
+        }
+        
+        // Load all images in the row simultaneously
+        await Promise.all(loadPromises);
+    }
+    
+    loadImage(img) {
+        return new Promise((resolve) => {
+            const src = img.getAttribute('data-src');
+            if (!src || this.loadedImages.has(img)) {
+                resolve();
+                return;
+            }
+            
+            this.loadedImages.add(img);
+            const tempImg = new Image();
+            
+            tempImg.onload = () => {
+                img.src = src;
+                img.classList.add('opacity-100');
+                img.removeAttribute('data-src');
+                resolve();
+            };
+            
+            tempImg.onerror = () => {
+                // Still mark as loaded to prevent retries
+                img.removeAttribute('data-src');
+                resolve();
+            };
+            
+            tempImg.src = src;
+        });
+    }
+    
+    async loadVisibleRows() {
+        const { start, end } = this.getVisibleRowRange();
+        
+        // Load rows sequentially from top to bottom
+        for (let row = start; row <= end; row++) {
+            await this.loadRow(row);
+        }
+    }
+    
+    setupScrollHandler() {
+        const handleScroll = () => {
+            clearTimeout(this.scrollTimer);
+            this.scrollTimer = setTimeout(() => {
+                this.loadVisibleRows();
+            }, 100);
+        };
+        
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        
+        // Handle resize events (column count might change)
+        window.addEventListener('resize', () => {
+            clearTimeout(this.resizeTimer);
+            this.resizeTimer = setTimeout(() => {
+                // Clear loading state on resize as grid might have changed
+                this.loadingRows.clear();
+                this.loadVisibleRows();
+            }, 250);
+        });
+    }
+    
+    reset() {
+        // Clear all tracking when filters change
+        this.loadedImages.clear();
+        this.loadingRows.clear();
+    }
+}
+
+// ============================================================================
 // UI MANAGER CLASS
 // ============================================================================
 
@@ -935,7 +1094,7 @@ class UIManager {
         this.recipeDatabase = recipeDatabase;
         this.userDataManager = userDataManager;
         this.modalCallback = null; // Will be set later
-        this.loadingImages = new Set(); // Add this line
+        this.imageLoader = null; // Initialize as null
     }
 
     setModalCallback(callback) {
@@ -966,33 +1125,6 @@ class UIManager {
             }
         }
         return stars;
-    }
-
-    loadImage(img, src) {
-        const newImg = new Image();
-        newImg.onload = () => {
-            img.src = src;
-            img.classList.add('opacity-100');
-            img.removeAttribute('data-src');
-            this.loadingImages.delete(src);
-        };
-        newImg.onerror = () => {
-            this.loadingImages.delete(src);
-        };
-        newImg.src = src;
-    }
-
-    preloadInitialImages() {
-        const images = document.querySelectorAll('img[data-src]');
-        const imagesToPreload = Array.from(images).slice(0, 10);
-        
-        imagesToPreload.forEach(img => {
-            const src = img.getAttribute('data-src');
-            if (src && !this.loadingImages.has(src)) {
-                this.loadingImages.add(src);
-                this.loadImage(img, src);
-            }
-        });
     }
 
     updateRecipeCardTag(recipeId, isTagged) {
@@ -1046,7 +1178,8 @@ class UIManager {
         card.innerHTML = `
             <div class="h-48 bg-gradient-to-br from-amber-100 to-orange-100 relative overflow-hidden">
                 ${recipe.image ? 
-                    `<img data-src="${imageUrl}" 
+                    `<img data-src="${imageUrl}"
+                        loading="lazy"
                         alt="${recipe.title}" 
                         class="w-full h-full object-cover opacity-0 transition-opacity duration-300">` : 
                     `<div class="w-full h-full flex items-center justify-center">
@@ -1087,12 +1220,6 @@ class UIManager {
                 </div>
             </div>
         `;
-        
-        // Add loaded class once image loads
-        const img = card.querySelector('img');
-        if (img) {
-            img.onload = () => img.classList.add('opacity-100');
-        }
         
         return card;
     }
@@ -1153,7 +1280,15 @@ class UIManager {
         
         grid.innerHTML = '';
         grid.appendChild(fragment);
-        this.setupLazyLoading();
+        
+        // Reset image loader and load visible rows
+        requestAnimationFrame(() => {
+            if (this.imageLoader) {
+                this.imageLoader.reset();
+                this.imageLoader.loadVisibleRows();
+            }
+        });
+        
         this.setupCardClickHandlers();
     }
 
@@ -1174,42 +1309,14 @@ class UIManager {
     }
 
     setupLazyLoading() {
-        // Track loading state
-        this.loadingImages = new Set();
-        this.imageQueue = [];
+        // Create image loader if it doesn't exist
+        if (!this.imageLoader) {
+            this.imageLoader = new ImageLoader();
+            this.imageLoader.setupScrollHandler();
+        }
         
-        const imageObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    
-                    // Get all images that need loading
-                    const allImages = Array.from(document.querySelectorAll('img[data-src]'));
-                    const currentIndex = allImages.indexOf(img);
-                    
-                    // Buffer ahead: load current image plus next 9
-                    const imagesToLoad = allImages.slice(currentIndex, currentIndex + 10);
-                    
-                    imagesToLoad.forEach(imgToLoad => {
-                        const src = imgToLoad.getAttribute('data-src');
-                        if (src && !this.loadingImages.has(src)) {
-                            this.loadingImages.add(src);
-                            this.loadImage(imgToLoad, src);
-                            observer.unobserve(imgToLoad);
-                        }
-                    });
-                }
-            });
-        }, {
-            rootMargin: '300px' // Start loading 300px before images come into view
-        });
-
-        document.querySelectorAll('img[data-src]').forEach(img => {
-            imageObserver.observe(img);
-        });
-        
-        // Preload first 10 images immediately
-        this.preloadInitialImages();
+        // Load visible rows immediately
+        this.imageLoader.loadVisibleRows();
     }
 
     updateRecipeCardRating(recipeId, rating) {
