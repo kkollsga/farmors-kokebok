@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="Farmors Oppskrifter">
 
 <!-- iOS Home Screen Icon (optional but recommended) -->
-<!--  <link rel="apple-touch-icon" href="/icon-180.png"> -->
+<!--  <link rel="apple-touch-icon" href="/icon-180.jpg"> -->
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -96,9 +96,9 @@
     </div>
 </header>
 
- <!-- Search Bar -->
- <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-    <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg border border-white/50 p-1.5">
+<!-- Search Bar -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+    <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg border border-gray-200 p-1.5">
         <div class="relative">
             <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
             <input type="text" id="searchInput" placeholder="Søk etter oppskrifter eller ingredienser..." 
@@ -109,55 +109,72 @@
 
 <!-- Filter Bar -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-    <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg border border-white/50 p-4">
-        <div class="flex items-center gap-3">
-            <!-- Filter Button -->
-            <button id="filterToggle" onclick="recipeApp.filterManager.toggleFilterMenu()" 
-                    class="flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 text-sm font-medium shrink-0 shadow-sm hover:shadow-md">
-                <i class="fas fa-filter transition-transform duration-200 active:scale-90"></i>
-                <span>Filter</span>
-                <span id="filterCount" class="hidden bg-white/30 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">0</span>
-            </button>
-            
-            <!-- Filter Pills Container -->
-            <div id="filterPillsContainer" class="flex gap-2 flex-1 overflow-hidden transition-[max-width,opacity] duration-300 ease-out whitespace-nowrap">
-                <!-- Filter pills will be inserted here -->
+    <div class="relative"> <!-- Wrapper for positioning context -->
+        <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg border border-gray-200 p-4">
+            <div class="flex items-center gap-3">
+                <!-- Filter Button -->
+                <button id="filterToggle" onclick="recipeApp.filterManager.toggleFilterMenu()" 
+                        class="flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 text-sm font-medium shrink-0 shadow-sm hover:shadow-md">
+                    <i class="fas fa-filter transition-transform duration-200 active:scale-90"></i>
+                    <span>Filter</span>
+                    <span id="filterCount" class="hidden bg-white/30 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">0</span>
+                </button>
+                
+                <!-- Filter Pills Container -->
+                <div id="filterPillsContainer" class="flex gap-2 flex-1 overflow-hidden transition-[max-width,opacity] duration-300 ease-out whitespace-nowrap">
+                    <!-- Filter pills will be inserted here -->
+                </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Clear Filters Button (moved below) -->
-    <div class="flex justify-end mt-2">
+        
+        <!-- Clear Filters Button - absolutely positioned -->
         <button id="clearFilters" onclick="recipeApp.filterManager.clearAllFilters()" 
-                class="text-xs text-gray-500 hover:text-amber-600 transition-all duration-200 opacity-0 pointer-events-none font-medium px-3 py-1 rounded-lg hover:bg-white/80">
+                class="absolute right-0 -bottom-7 text-xs text-gray-500 hover:text-amber-600 transition-all duration-200 opacity-0 pointer-events-none font-medium px-3 py-1 rounded-lg z-10">
             Tøm filter
         </button>
-    </div>
-    
-    <!-- Filter Dropdown Menu -->
-    <div id="filterMenu" class="relative">
-        <div class="absolute top-2 left-0 bg-white rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] border border-gray-100 z-30 hidden min-w-[280px] max-h-[400px] flex flex-col">
-            <div class="text-sm font-semibold text-gray-700 px-4 pt-4 pb-2 border-b border-gray-100 flex-shrink-0">Velg kategorier</div>
-            <div id="filterOptions" class="px-4 py-2 overflow-y-auto flex-1 recipe-scroll">
-                <!-- Filter options will be inserted here -->
+        
+        <!-- Filter Dropdown Menu -->
+        <div id="filterMenu" class="absolute left-4 top-full mt-2 z-50">
+            <div class="bg-white rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] border border-gray-100 hidden min-w-[280px] max-h-[400px] flex flex-col">
+                <div class="text-sm font-semibold text-gray-700 px-4 pt-4 pb-2 border-b border-gray-100 flex-shrink-0">Velg kategorier</div>
+                <div id="filterOptions" class="px-4 py-2 overflow-y-auto flex-1 recipe-scroll">
+                    <!-- Filter options will be inserted here -->
+                </div>
             </div>
         </div>
     </div>
-</div>
-
-<!-- Recommendations Section -->
-<div id="recommendationsSection" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-    <div id="recommendations" class="mb-8">
-        <h2 class="font-display text-2xl text-amber-800 mb-4">Anbefalte for deg</h2>
-        <div id="recommendedRecipes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Recommended recipes will be inserted here -->
-        </div>
+    
+    <!-- Sort Selector -->
+    <div class="flex items-center gap-2 mt-4">
+        <button data-sort="recommendation" 
+                onclick="recipeApp.filterManager.changeSortOrder('recommendation')"
+                class="p-2 rounded-lg bg-amber-500 text-white transition-all duration-200"
+                title="Anbefalt rekkefølge">
+            <i class="fas fa-thumbs-up"></i>
+        </button>
+        <button data-sort="recipebook" 
+                onclick="recipeApp.filterManager.changeSortOrder('recipebook')"
+                class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
+                title="Oppskriftsbok rekkefølge">
+            <i class="fas fa-book"></i>
+        </button>
+        <button data-sort="madecount" 
+                onclick="recipeApp.filterManager.changeSortOrder('madecount')"
+                class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
+                title="Antall ganger laget">
+            <i class="fas fa-user"></i>
+        </button>
+        <button data-sort="rating" 
+                onclick="recipeApp.filterManager.changeSortOrder('rating')"
+                class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
+                title="Vurdering">
+            <i class="fas fa-star"></i>
+        </button>
     </div>
 </div>
 
-<!-- Main Recipe Grid -->
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-12 safe-bottom">
-    <h2 class="font-display text-2xl text-amber-800 mb-4">Alle Oppskrifter</h2>
+<!-- Main Recipe Grid (no header) -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 pb-12 safe-bottom">
     <div id="recipeGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Recipe cards will be inserted here -->
     </div>
@@ -185,8 +202,8 @@ const CONFIG = {
         SINGLE_COLUMN: 600
     },
     IMAGE_PATHS: {
-        LIST: 'images/full/',
-        MODAL: 'images/full/'
+        LIST: 'images/low/',
+        MODAL: 'images/hi/'
     }
 };
 
@@ -197,9 +214,8 @@ const CONFIG = {
 class RecipeDatabase {
     constructor() {
         this.recipes = [
-            {"id":"recipe_1755485212305_4c4rynvqc","title":"Hjemmelaget saft","servings":"Ca. 4–5 liter saft","provider":"Farmor","reference":"Oppskriftsbok","pageNumber":69,"category":"Drikke","meal":"Drikke","cuisine":"Norsk","description":"En modernisert versjon av Farmors saftoppskrift uten konserveringsmidler. Du kan velge mellom kokt saft, som gir lang holdbarhet, eller råsafting, som gir friskere smak men kortere holdbarhet. Begge metodene kan brukes på bær eller hylleblomst.","ingredients":[{"group":"Bær eller blomster (velg én)","items":["2 kg solbær","2 kg rips","2 kg bringebær","2 kg blåbær","30 hylleblomstklaser"]},{"group":"For saftkoking","items":["6–8 dl vann","600–800 g sukker per liter ferdig silt saft"]},{"group":"For råsafting","items":["2 sitroner i skiver (valgfritt)","30 g sitronsyre (ca. 2 ss)","1,5 liter vann","600–800 g sukker per liter ferdig silt saft"]}],"instructions":[{"group":"Koking","steps":["Skyll bær eller hylleblomster godt og fjern alt som er råttent.","Ha bær/blomster og vann i en stor kjele. Kok forsiktig til de er bleke og saften har trukket ut.","Sil massen gjennom et saftklede og la det renne minst 1 time (helst over natten).","Mål opp saften og tilsett 600–800 g sukker per liter silt saft.","Kok opp til sukkeret er oppløst.","Hell den varme saften på sterile flasker, skru til korkene og avkjøl.","Oppbevar mørkt og kjølig. TIP: Frysing forlenger holdbarheten."]},{"group":"Råsafting","steps":["Skyll bær eller hylleblomster godt og fjern alt som er råttent.","Legg bær/blomster i en stor bolle sammen med sitronskiver og sitronsyre.","Kok opp vann, hell over blandingen og dekk til.","La stå kaldt i 2–3 døgn, rør om av og til.","Sil saften gjennom klede og mål opp væsken.","Tilsett 600–800 g sukker per liter silt saft og rør til sukkeret er helt oppløst.","Hell på rene flasker og oppbevar kjølig eller frys ned.","TIP: Råsaft egner seg godt som sommerdrikk, i cocktails eller som base til gelé."]},"Bruk alltid rene redskaper og sterile flasker eller glass for best holdbarhet.","Oppbevar saften mørkt og kjølig, og merk flaskene med innhold og dato."]},
-            {"id":"recipe_1755485212305_6c4rynvqc","title":"Berlinerkranser","servings":"Ca. 30–40 stk.","provider":"Farmor","reference":"Farmors oppskrifter","pageNumber":3,"category":"Julekaker","meal":"Snacks","cuisine":"Norsk","description":"Berlinerkranser er en klassisk norsk julekake laget av en smør- og eggeplommerik deig. De formes til små kranser, pensles med eggehvite, dyppes i sukker og stekes til de er lett gylne. De har en sprø, søt overflate og en smørmør kjerne – en fast tradisjon på norske kakefat i julen.","image":"berlinerkranser.png","ingredients":["250 g hvetemel","65 g sukker","145 g margarin eller smør","1 eggeplomme","1 eggehvite (til pensling)","perlesukker eller grovt sukker (til topping)"],"instructions":["Smuldre sammen hvetemel, sukker og margarin til en smuldrete blanding.","Tilsett eggeplommen og kna deigen godt sammen til en smidig deig.","Del deigen i små emner og trill ut til fingertykke pølser.","Form små kranser og legg på et bakepapirkledd stekebrett.","Pensle kransene med lett pisket eggehvite.","Dypp oversiden i perlesukker eller grovt sukker.","Stek ved svak varme, ca. 175 °C, i 8–10 minutter til de er lett gylne.","Avkjøl på rist og oppbevar i tett kakeboks."],"createdAt":"2025-08-18"},
-            {"id":"recipe_1755484726501_29ubmpget","title":"Rundstykker","servings":"ca. 16 rundstykker","provider":"Farmor","category":"Brød","meal":"Frokost","cuisine":"Norsk","description":"Klassiske luftige rundstykker som passer perfekt til frokost, lunsj eller kveldsmat. Deigen er enkel å lage, og med både melk og smør får du myke rundstykker med god smak. De er like gode nystekte som oppvarmet, og egner seg også godt til frysing.","image":"rundstykker.png","ingredients":["500 g hvetemel","1 pose tørrgjær (ca. 11 g)","50 g smør (romtemperert eller smeltet)","1 ½ ts salt","2 dl melk (lunken, ca. 37–40 °C)","1 ½ dl vann (lunkent, ca. 37–40 °C)","1 ss sukker"],"instructions":["Bland sammen hvetemel, tørrgjær, salt og sukker i en stor bolle.","Varm melk og vann til ca. 37–40 °C. Ha dette i melblandingen sammen med smøret.","Elt deigen i kjøkkenmaskin i 8–10 minutter (eller 12–15 minutter for hånd) til den er smidig og slipper bollen.","Dekk bollen med plast eller klede og la deigen heve på et lunt sted i ca. 1 time, til den har blitt dobbelt så stor.","Del deigen i ca. 16 emner og trill til runde boller. Legg dem på et stekebrett med bakepapir.","Etterhev rundstykkene i 30–40 minutter under klede.","Forvarm ovnen til 220 °C over-/undervarme. Stek rundstykkene midt i ovnen i 10–12 minutter til de er gylne og gjennomstekte.","Avkjøl på rist før servering."],"createdAt":"2025-08-18"}
+            {"id":"recipe_1755874440324_k3zjgdsow","title":"Aftenbladets Sjokoladekake","servings":"12 porsjoner","provider":"Aftenbladet","reference":"Oppskriftsbok","pageNumber":61,"category":"Lagkaker","meal":"Kake","cuisine":"Norsk","description":"En klassisk norsk sjokoladelagkake slik den ofte ble laget på 60–70-tallet, med lys bunn og fyldig sjokoladekrem. Bunnen er luftig og deles i tre lag, fylt med en rik krem av sukker, melk, smeltet sjokolade og eggeplommer. Pyntes med mandler på toppen.","image":"aftenbladetssjokoladekake.jpg","ingredients":[{"group":"Kakebunn","items":["4 egg","200 g sukker","200 g hvetemel","2 ts bakepulver","100 g smør eller margarin (smeltet)"]},{"group":"Sjokoladekrem","items":["200 g sukker","6 ss melk","1 plate mørk kokesjokolade (ca. 100 g)","2 eggeplommer"]},{"group":"Pynt","items":["Høvlede mandler"]}],"instructions":["Pisk egg og sukker til en luftig eggedosis.","Sikt sammen mel og bakepulver og vend forsiktig inn i eggedosisen.","Rør inn smeltet smør.","Hell røren i en smurt kakeform (ca. 24 cm).","Stek ved 180–190 °C i ca. 35–40 minutter.","Avkjøl kaken helt og del den i tre lag.","Lag kremen: Pisk sukker og melk til hvitt og luftig. Rør inn smeltet kokesjokolade og tilsett eggeplommene.","Fyll kaken lagvis med kremen og dekk toppen.","Pynt med høvlede mandler."],"createdAt":"2025-08-22"},
+            {"id":"recipe_1755530008601_5c9sko0oi","title":"Wienerring","servings":"1 stor ring","provider":"Farmor","reference":"Oppskriftsbok","pageNumber":18,"category":"Gjærbakst","meal":"Kaffe","cuisine":"Dansk","description":"Wienerring er en klassisk gjærbakst fylt med en mild krem basert på fløte, vanilje og eggeplomme. Deigen rulles med fyll, formes til en ring og klippes opp slik at fyllet blir synlig under steking. Resultatet er en luftig og dekorativ festkake som passer perfekt på kaffebordet.","image":"wienerring.jpg","ingredients":[{"group":"Deig","items":["250 g hvetemel","50 g sukker","ca. 1 ¼ dl melk (lunken)","1 egg","40 g gjær","100 g smør","1 egg til pensling","Litt hakkede mandler til pynt"]},{"group":"Fyll","items":["1 eggeplomme","1 ½ dl fløte","½ ts vaniljesukker","1 ss potetmel","1 ss sukker"]}],"instructions":["Sikt sammen hvetemel og sukker i en bolle.","Løs opp gjæren i lunken melk og pisk inn egget.","Bland væsken i det tørre og elt deigen til den er smidig. Arbeid inn smøret til slutt. La heve til dobbel størrelse.","Lag fyllet: Pisk sammen fløte, eggeplomme, sukker, potetmel og vaniljesukker. Kok forsiktig opp under omrøring til en tykk krem. Avkjøl.","Kjevle deigen ut til et stort rektangel og fordel fyllet jevnt utover.","Rull deigen sammen fra langsiden til en lang pølse og legg den på et stekebrett med bakepapir.","Form pølsen til en stor ring og klem endene godt sammen.","Klipp skrå snitt med ca. 3 cm mellomrom nesten helt igjennom, og vri hvert stykke litt utover så fyllet synes.","Pensle med egg og dryss over hakkede mandler.","Stek ved 180 °C (varmluft) eller 200 °C (over- og undervarme) i ca. 25–30 minutter til den er gyllenbrun."],"createdAt":"2025-08-18"}
         ];
     }
 
@@ -329,20 +345,24 @@ class UserDataManager {
 // ============================================================================
 
 class FilterManager {
-    constructor(recipeDatabase, uiManager) {
+    constructor(recipeDatabase, uiManager, recommendationEngine, userDataManager) {
         this.recipeDatabase = recipeDatabase;
         this.uiManager = uiManager;
+        this.recommendationEngine = recommendationEngine;
+        this.userDataManager = userDataManager;
         this.activeFilters = new Map();
         this.filterMenuOpen = false;
         this.searchQuery = '';
+        this.collapsedSections = new Set(['category', 'meal', 'cuisine']);
+        this.sortOrder = 'recommendation';
     }
+
 
     setupEventListeners() {
         // Search input
         document.getElementById('searchInput').addEventListener('input', (e) => {
             this.searchQuery = e.target.value.toLowerCase();
             this.applyFilters();
-            this.updateRecommendationsVisibility();
         });
 
         // Close filter menu on outside click
@@ -368,18 +388,15 @@ class FilterManager {
                 const isScrollable = filterOptions.scrollHeight > filterOptions.clientHeight;
                 
                 if (isScrollable) {
-                    // Check if we're at the top or bottom of the scroll
                     const isAtTop = filterOptions.scrollTop === 0;
                     const isAtBottom = Math.abs(filterOptions.scrollTop + filterOptions.clientHeight - filterOptions.scrollHeight) < 1;
                     
-                    // Prevent scroll propagation to body
                     if ((e.deltaY < 0 && isAtTop) || (e.deltaY > 0 && isAtBottom)) {
                         e.preventDefault();
                     } else {
                         e.stopPropagation();
                     }
                 } else {
-                    // If not scrollable, prevent all scrolling
                     e.preventDefault();
                 }
             }
@@ -416,13 +433,29 @@ class FilterManager {
         return this.searchQuery.length > 0 || this.activeFilters.size > 0;
     }
 
-    updateRecommendationsVisibility() {
-        const recommendationsSection = document.getElementById('recommendationsSection');
-        if (this.hasActiveSearchOrFilters()) {
-            recommendationsSection.style.display = 'none';
-        } else {
-            recommendationsSection.style.display = 'block';
+    changeSortOrder(newOrder) {
+        const previousOrder = this.sortOrder;
+        this.sortOrder = newOrder;
+        
+        // Update visual state of sort buttons
+        document.querySelectorAll('[data-sort]').forEach(btn => {
+            if (btn.getAttribute('data-sort') === newOrder) {
+                // Selected button - no hover effect
+                btn.classList.remove('text-gray-700', 'hover:text-amber-600');
+                btn.classList.add('bg-amber-500', 'text-white');
+            } else {
+                // Unselected buttons - with hover effect
+                btn.classList.remove('bg-amber-500', 'text-white');
+                btn.classList.add('text-gray-700', 'hover:text-amber-600');
+            }
+        });
+        
+        // If switching back to recommendation from another sort, recalculate scores
+        if (newOrder === 'recommendation' && previousOrder !== 'recommendation') {
+            this.recommendationEngine.calculateAllScores();
         }
+        
+        this.applyFilters();
     }
 
     activateFilter(filterType, filterValue, event) {
@@ -435,7 +468,7 @@ class FilterManager {
         // Close modal if it's open
         const modal = document.getElementById('recipeModal');
         if (!modal.classList.contains('hidden')) {
-            window.recipeApp.modalManager.closeRecipe();
+            recipeApp.modalManager.closeRecipe();  // Keep this as recipeApp since it needs the global reference
         }
         
         // Add filter if not already active
@@ -445,8 +478,20 @@ class FilterManager {
             this.updateFilterButton();
             this.applyFilters();
             this.renderFilterOptions();
-            this.updateRecommendationsVisibility();
         }
+    }
+
+    toggleFilterSection(section, event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        
+        if (this.collapsedSections.has(section)) {
+            this.collapsedSections.delete(section);
+        } else {
+            this.collapsedSections.add(section);
+        }
+        this.renderFilterOptions();
     }
 
     toggleFilterType(type) {
@@ -459,7 +504,6 @@ class FilterManager {
         this.updateFilterButton();
         this.applyFilters();
         this.renderFilterOptions();
-        this.updateRecommendationsVisibility();
     }
 
     togglePillActive(type) {
@@ -476,7 +520,6 @@ class FilterManager {
         this.updateFilterButton();
         this.applyFilters();
         this.renderFilterOptions();
-        this.updateRecommendationsVisibility();
     }
 
     clearAllFilters() {
@@ -485,7 +528,6 @@ class FilterManager {
         this.updateFilterButton();
         this.applyFilters();
         this.renderFilterOptions();
-        this.updateRecommendationsVisibility();
     }
 
     toggleFilterMenu() {
@@ -509,71 +551,137 @@ class FilterManager {
         
         // Category filters
         if (filters.categories.length > 0) {
-            const categoryHeader = document.createElement('div');
-            categoryHeader.className = 'text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 pt-1 pb-1 sticky top-0 bg-white z-10';
-            categoryHeader.textContent = 'Kategori';
-            container.appendChild(categoryHeader);
+            const isCollapsed = this.collapsedSections.has('category');
+            const categorySection = document.createElement('div');
+            categorySection.className = 'mb-2';
             
-            filters.categories.forEach(category => {
-                const isSelected = this.activeFilters.has(`category:${category}`);
-                const option = document.createElement('label');
-                option.className = 'flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors';
-                option.innerHTML = `
-                    <span class="text-sm text-gray-700">${category}</span>
-                    <input type="checkbox" 
-                        ${isSelected ? 'checked' : ''} 
-                        onchange="recipeApp.filterManager.toggleFilterType('category:${category}')"
-                        onclick="event.stopPropagation()"
-                        class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer checked:bg-amber-600 checked:border-amber-600">
-                `;
-                container.appendChild(option);
-            });
+            // Collapsible header
+            const categoryHeader = document.createElement('button');
+            categoryHeader.className = 'w-full flex items-center justify-between text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 py-2 hover:bg-gray-50 rounded transition-colors';
+            categoryHeader.onclick = (e) => {
+                e.stopPropagation();
+                this.toggleFilterSection('category', e);
+            };
+            categoryHeader.innerHTML = `
+                <span>Kategori</span>
+                <i class="fas fa-chevron-${isCollapsed ? 'down' : 'up'} text-gray-400 text-xs transition-transform duration-200"></i>
+            `;
+            categorySection.appendChild(categoryHeader);
+            
+            // Collapsible content
+            if (!isCollapsed) {
+                const categoryContent = document.createElement('div');
+                categoryContent.className = 'mt-1';
+                
+                filters.categories.forEach(category => {
+                    const isSelected = this.activeFilters.has(`category:${category}`);
+                    const option = document.createElement('label');
+                    option.className = 'flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors';
+                    option.innerHTML = `
+                        <span class="text-sm text-gray-700">${category}</span>
+                        <input type="checkbox" 
+                            ${isSelected ? 'checked' : ''} 
+                            onchange="recipeApp.filterManager.toggleFilterType('category:${category}')"
+                            onclick="event.stopPropagation()"
+                            class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer checked:bg-amber-600 checked:border-amber-600">
+                    `;
+                    categoryContent.appendChild(option);
+                });
+                
+                categorySection.appendChild(categoryContent);
+            }
+            
+            container.appendChild(categorySection);
         }
         
         // Meal filters
         if (filters.meals.length > 0) {
-            const mealHeader = document.createElement('div');
-            mealHeader.className = 'text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 pt-3 pb-1 sticky top-0 bg-white z-10';
-            mealHeader.textContent = 'Måltid';
-            container.appendChild(mealHeader);
+            const isCollapsed = this.collapsedSections.has('meal');
+            const mealSection = document.createElement('div');
+            mealSection.className = 'mb-2';
             
-            filters.meals.forEach(meal => {
-                const isSelected = this.activeFilters.has(`meal:${meal}`);
-                const option = document.createElement('label');
-                option.className = 'flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors';
-                option.innerHTML = `
-                    <span class="text-sm text-gray-700">${meal}</span>
-                    <input type="checkbox" 
-                        ${isSelected ? 'checked' : ''} 
-                        onchange="recipeApp.filterManager.toggleFilterType('meal:${meal}')"
-                        onclick="event.stopPropagation()"
-                        class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer checked:bg-amber-600 checked:border-amber-600">
-                `;
-                container.appendChild(option);
-            });
+            // Collapsible header
+            const mealHeader = document.createElement('button');
+            mealHeader.className = 'w-full flex items-center justify-between text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 py-2 hover:bg-gray-50 rounded transition-colors';
+            mealHeader.onclick = (e) => {
+                e.stopPropagation();
+                this.toggleFilterSection('meal', e);
+            };
+            mealHeader.innerHTML = `
+                <span>Måltid</span>
+                <i class="fas fa-chevron-${isCollapsed ? 'down' : 'up'} text-gray-400 text-xs transition-transform duration-200"></i>
+            `;
+            mealSection.appendChild(mealHeader);
+            
+            // Collapsible content
+            if (!isCollapsed) {
+                const mealContent = document.createElement('div');
+                mealContent.className = 'mt-1';
+                
+                filters.meals.forEach(meal => {
+                    const isSelected = this.activeFilters.has(`meal:${meal}`);
+                    const option = document.createElement('label');
+                    option.className = 'flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors';
+                    option.innerHTML = `
+                        <span class="text-sm text-gray-700">${meal}</span>
+                        <input type="checkbox" 
+                            ${isSelected ? 'checked' : ''} 
+                            onchange="recipeApp.filterManager.toggleFilterType('meal:${meal}')"
+                            onclick="event.stopPropagation()"
+                            class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer checked:bg-amber-600 checked:border-amber-600">
+                    `;
+                    mealContent.appendChild(option);
+                });
+                
+                mealSection.appendChild(mealContent);
+            }
+            
+            container.appendChild(mealSection);
         }
         
         // Cuisine filters
         if (filters.cuisines.length > 0) {
-            const cuisineHeader = document.createElement('div');
-            cuisineHeader.className = 'text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 pt-3 pb-1 sticky top-0 bg-white z-10';
-            cuisineHeader.textContent = 'Kjøkken';
-            container.appendChild(cuisineHeader);
+            const isCollapsed = this.collapsedSections.has('cuisine');
+            const cuisineSection = document.createElement('div');
+            cuisineSection.className = 'mb-2';
             
-            filters.cuisines.forEach(cuisine => {
-                const isSelected = this.activeFilters.has(`cuisine:${cuisine}`);
-                const option = document.createElement('label');
-                option.className = 'flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors';
-                option.innerHTML = `
-                    <span class="text-sm text-gray-700">${cuisine}</span>
-                    <input type="checkbox" 
-                        ${isSelected ? 'checked' : ''} 
-                        onchange="recipeApp.filterManager.toggleFilterType('cuisine:${cuisine}')"
-                        onclick="event.stopPropagation()"
-                        class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer checked:bg-amber-600 checked:border-amber-600">
-                `;
-                container.appendChild(option);
-            });
+            // Collapsible header
+            const cuisineHeader = document.createElement('button');
+            cuisineHeader.className = 'w-full flex items-center justify-between text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 py-2 hover:bg-gray-50 rounded transition-colors';
+            cuisineHeader.onclick = (e) => {
+                e.stopPropagation();
+                this.toggleFilterSection('cuisine', e);
+            };
+            cuisineHeader.innerHTML = `
+                <span>Kjøkken</span>
+                <i class="fas fa-chevron-${isCollapsed ? 'down' : 'up'} text-gray-400 text-xs transition-transform duration-200"></i>
+            `;
+            cuisineSection.appendChild(cuisineHeader);
+            
+            // Collapsible content
+            if (!isCollapsed) {
+                const cuisineContent = document.createElement('div');
+                cuisineContent.className = 'mt-1';
+                
+                filters.cuisines.forEach(cuisine => {
+                    const isSelected = this.activeFilters.has(`cuisine:${cuisine}`);
+                    const option = document.createElement('label');
+                    option.className = 'flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors';
+                    option.innerHTML = `
+                        <span class="text-sm text-gray-700">${cuisine}</span>
+                        <input type="checkbox" 
+                            ${isSelected ? 'checked' : ''} 
+                            onchange="recipeApp.filterManager.toggleFilterType('cuisine:${cuisine}')"
+                            onclick="event.stopPropagation()"
+                            class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer checked:bg-amber-600 checked:border-amber-600">
+                    `;
+                    cuisineContent.appendChild(option);
+                });
+                
+                cuisineSection.appendChild(cuisineContent);
+            }
+            
+            container.appendChild(cuisineSection);
         }
     }
 
@@ -713,8 +821,67 @@ class FilterManager {
             });
         }
         
+        // Apply sorting based on current sort order
+        switch(this.sortOrder) {
+            case 'recommendation':
+                // Get detailed scores for logging
+                const scoredRecipes = filtered.map(recipe => {
+                    const score = this.recommendationEngine.getRecipeScore(recipe.id);
+                    return { recipe, score };
+                });
+                
+                // Sort by score
+                scoredRecipes.sort((a, b) => b.score - a.score);
+                
+                // Extract sorted recipes
+                filtered = scoredRecipes.map(item => item.recipe);
+                break;
+            
+            case 'recipebook':
+                filtered.sort((a, b) => {
+                    if (a.pageNumber && b.pageNumber) {
+                        return a.pageNumber - b.pageNumber;
+                    }
+                    return a.id.localeCompare(b.id);
+                });
+                break;
+            
+            case 'madecount':
+                filtered.sort((a, b) => {
+                    const countA = this.userDataManager.getRecipeData(a.id).madeDates?.length || 0;
+                    const countB = this.userDataManager.getRecipeData(b.id).madeDates?.length || 0;
+                    
+                    // Primary sort by made count
+                    if (countA !== countB) {
+                        return countB - countA;
+                    }
+                    
+                    // Secondary sort by recommendation score for ties
+                    const scoreA = this.recommendationEngine.getRecipeScore(a.id);
+                    const scoreB = this.recommendationEngine.getRecipeScore(b.id);
+                    return scoreB - scoreA;
+                });
+                break;
+            
+            case 'rating':
+                filtered.sort((a, b) => {
+                    const ratingA = this.userDataManager.getRecipeData(a.id).userRating || 0;
+                    const ratingB = this.userDataManager.getRecipeData(b.id).userRating || 0;
+                    
+                    // Primary sort by rating
+                    if (ratingA !== ratingB) {
+                        return ratingB - ratingA;
+                    }
+                    
+                    // Secondary sort by recommendation score for ties
+                    const scoreA = this.recommendationEngine.getRecipeScore(a.id);
+                    const scoreB = this.recommendationEngine.getRecipeScore(b.id);
+                    return scoreB - scoreA;
+                });
+                break;
+        }
+        
         const filteredIds = filtered.map(recipe => recipe.id);
-        // Don't force full render when just filtering
         this.uiManager.renderRecipes(filteredIds, false);
     }
 }
@@ -1632,8 +1799,14 @@ class ModalManager {
         // Update cards
         this.uiManager.updateRecipeCardRating(recipeId, rating);
         
-        // Update recommendations
-        this.recommendationEngine.updateRecommendations();
+        // Update recommendation score for this recipe
+        this.recommendationEngine.updateScoreForRecipe(recipeId);
+        
+        // Re-sort if we're in recommendation or rating mode
+        const filterManager = recipeApp.filterManager;
+        if (filterManager.sortOrder === 'recommendation' || filterManager.sortOrder === 'rating') {
+            filterManager.applyFilters();
+        }
     }
 
     clearRating(recipeId, event) {
@@ -1660,8 +1833,14 @@ class ModalManager {
         // Update cards
         this.uiManager.updateRecipeCardRating(recipeId, 0);
         
-        // Update recommendations
-        this.recommendationEngine.updateRecommendations();
+        // Update recommendation score for this recipe
+        this.recommendationEngine.updateScoreForRecipe(recipeId);
+        
+        // Re-sort if we're in recommendation or rating mode
+        const filterManager = recipeApp.filterManager;
+        if (filterManager.sortOrder === 'recommendation' || filterManager.sortOrder === 'rating') {
+            filterManager.applyFilters();
+        }
     }
 
     toggleMadeToday(recipeId, event) {
@@ -1692,8 +1871,14 @@ class ModalManager {
         // Update cards
         this.uiManager.updateRecipeCardCounter(recipeId, result.madeCount);
         
-        // Update recommendations
-        this.recommendationEngine.updateRecommendations();
+        // Update recommendation score for this recipe
+        this.recommendationEngine.updateScoreForRecipe(recipeId);
+        
+        // Re-sort if we're in recommendation or made count mode
+        const filterManager = recipeApp.filterManager;
+        if (filterManager.sortOrder === 'recommendation' || filterManager.sortOrder === 'madecount') {
+            filterManager.applyFilters();
+        }
     }
 }
 
@@ -1706,220 +1891,134 @@ class RecommendationEngine {
         this.recipeDatabase = recipeDatabase;
         this.userDataManager = userDataManager;
         this.uiManager = uiManager;
-        this.lastRecommendationUpdate = 0;
-        this.recommendationUpdateInterval = 60000; // 1 minute
-        this.pendingUpdate = null;
+        this.recipeScores = new Map();
     }
 
-    generateRecommendations() {
-        const recommended = document.getElementById('recommendedRecipes');
-        
-        const recs = this.getRecommendedRecipeIds();
-        
-        recommended.innerHTML = '';
-        recs.forEach(recipeId => {
-            const recipe = this.recipeDatabase.findById(recipeId);
-            if (recipe) {
-                const recipeWithUserData = this.userDataManager.getRecipeWithUserData(recipe);
-                const card = this.uiManager.createRecipeCard(recipeWithUserData);
-                recommended.appendChild(card);
-            }
-        });
-        
-        this.uiManager.setupLazyLoading();
-        this.uiManager.setupCardClickHandlers();
-        this.lastRecommendationUpdate = Date.now();
-    }
-
-    getRecommendedRecipeIds() {
+    calculateAllScores() {
         const recipeIds = this.recipeDatabase.getAllIds();
         
-        // Calculate scores for each recipe
-        const scoredRecipes = recipeIds.map(id => {
-            const userData = this.userDataManager.getRecipeData(id);
-            let score = 0;
+        recipeIds.forEach(id => {
+            const score = this.calculateRecipeScore(id);
+            this.recipeScores.set(id, score);
+        });
+    }
+
+    calculateRecipeScore(recipeId) {
+        const recipe = this.recipeDatabase.findById(recipeId);
+        const userData = this.userDataManager.getRecipeData(recipeId);
+        
+        // Weight configuration - adjust these to change importance
+        const WEIGHTS = {
+            BASE: 20,                 // Base score everyone starts with
+            USER_RATING: 10,          // 0-50 points (rating * multiplier)
+            NEVER_VIEWED: 30,         // 30 points bonus
+            MADE_COUNT: 5,            // 0-10 points based on how often made
+            NOSTALGIA_BONUS: 10,      // Bonus for old views
             
-            // Base score
-            score = Math.random() * 10;
+            // Recency multipliers (applied to base score portion)
+            RECENCY_TODAY: 0.1,       // Viewed today
+            RECENCY_RECENT: 0.3,      // 1-3 days ago
+            RECENCY_WEEK: 0.6,        // 3-7 days ago
+            RECENCY_NORMAL: 1.0,      // 7-30 days ago
             
-            // High rating bonus (significant boost)
-            if (userData.userRating) {
-                score += userData.userRating * 3;
+            // Category multipliers (applied to total score)
+            JULEKAKER_CHRISTMAS: 3.0,    // Nov-Dec multiplier
+            JULEKAKER_JANUARY: 1.5,      // January multiplier
+            JULEKAKER_OFF_SEASON: 0.05,  // Feb-Oct multiplier  
+            SLAKTEVEILEDNING: 0.01,      // Year-round penalty
+        };
+        
+        // Start with base score
+        let score = WEIGHTS.BASE;
+        
+        // Add user rating bonus (0 to 50 based on 1-5 star rating)
+        if (userData.userRating) {
+            score += userData.userRating * WEIGHTS.USER_RATING;
+        }
+        
+        // Add discovery bonus - never viewed recipes get a boost
+        if (!userData.lastViewed) {
+            score += WEIGHTS.NEVER_VIEWED;
+        }
+        
+        // Apply recency multiplier (reduces score for recent views)
+        let recencyMultiplier = WEIGHTS.RECENCY_NORMAL;
+        
+        if (userData.lastViewed) {
+            const now = new Date();
+            const viewedDate = new Date(userData.lastViewed);
+            const daysSinceView = (now - viewedDate) / (1000 * 60 * 60 * 24);
+            
+            if (daysSinceView < 1) {
+                // Viewed today - heavy reduction
+                recencyMultiplier = WEIGHTS.RECENCY_TODAY;
+            } else if (daysSinceView < 3) {
+                // 1-3 days ago - moderate reduction
+                recencyMultiplier = WEIGHTS.RECENCY_RECENT;
+            } else if (daysSinceView < 7) {
+                // 3-7 days ago - light reduction
+                recencyMultiplier = WEIGHTS.RECENCY_WEEK;
+            } else if (daysSinceView > 30) {
+                // Over a month ago - add nostalgia bonus
+                score += WEIGHTS.NOSTALGIA_BONUS;
             }
-            
-            // Never viewed bonus
-            if (!userData.lastViewed) {
-                score += 15;
-            }
-            
-            // Apply time-based penalty for recently viewed
-            if (userData.lastViewed) {
+        }
+        
+        // Apply recency multiplier
+        score *= recencyMultiplier;
+        
+        // Add popularity bonus - frequently made recipes
+        if (userData.madeDates && userData.madeDates.length > 0) {
+            // Cap at 10 points max (if made 10+ times)
+            const madeBonus = Math.min(userData.madeDates.length, 10) * (WEIGHTS.MADE_COUNT / 10);
+            score += madeBonus;
+        }
+        
+        // Apply category-based multipliers
+        if (recipe) {
+            // Christmas cakes - seasonal adjustment
+            if (recipe.category === 'Julekaker') {
                 const now = new Date();
-                const viewedDate = new Date(userData.lastViewed);
-                const hoursSinceView = (now - viewedDate) / (1000 * 60 * 60);
+                const month = now.getMonth(); // 0 = January, 11 = December
                 
-                if (hoursSinceView < 24) {
-                    // Strong penalty for first 24 hours (exponential decay)
-                    const penalty = 30 * Math.exp(-hoursSinceView / 8);
-                    score -= penalty;
-                } else if (hoursSinceView < 72) {
-                    // Medium penalty for 1-3 days
-                    const penalty = 10 * (1 - (hoursSinceView - 24) / 48);
-                    score -= penalty;
-                } else if (hoursSinceView < 168) {
-                    // Light penalty for 3-7 days
-                    const penalty = 5 * (1 - (hoursSinceView - 72) / 96);
-                    score -= penalty;
+                if (month === 10 || month === 11) {
+                    // November & December - prime season
+                    score *= WEIGHTS.JULEKAKER_CHRISTMAS;
+                } else if (month === 0) {
+                    // January - still acceptable
+                    score *= WEIGHTS.JULEKAKER_JANUARY;
                 } else {
-                    // Bonus for old views (nostalgia factor)
-                    score += 5;
+                    // February through October - heavily penalized
+                    score *= WEIGHTS.JULEKAKER_OFF_SEASON;
                 }
             }
             
-            // Made count influence (slight bonus for frequently made)
-            if (userData.madeDates && userData.madeDates.length > 0) {
-                score += Math.min(userData.madeDates.length * 0.5, 5);
+            // Preserves - always deprioritized
+            if (recipe.category === 'Slakteveiledning') {
+                score *= WEIGHTS.SLAKTEVEILEDNING;
             }
-            
-            return { id, score };
-        });
+        }
         
-        // Sort by score and take top 3
-        scoredRecipes.sort((a, b) => b.score - a.score);
-        return scoredRecipes.slice(0, 3).map(item => item.id);
+        // Ensure minimum score of 0
+        return Math.max(score, 0);
     }
 
-    updateRecommendations() {
-        // Check if recommendations are visible
-        const recommendationsSection = document.getElementById('recommendationsSection');
-        if (recommendationsSection.style.display === 'none') {
-            return;
+    getRecipeScore(recipeId) {
+        // Return cached score if available
+        if (this.recipeScores.has(recipeId)) {
+            return this.recipeScores.get(recipeId);
         }
         
-        // Debounce: only update if at least 1 minute has passed
-        const now = Date.now();
-        const timeSinceLastUpdate = now - this.lastRecommendationUpdate;
-        
-        // Clear any pending update
-        if (this.pendingUpdate) {
-            clearTimeout(this.pendingUpdate);
-        }
-        
-        if (timeSinceLastUpdate < this.recommendationUpdateInterval) {
-            // Schedule update for later
-            const delay = this.recommendationUpdateInterval - timeSinceLastUpdate;
-            this.pendingUpdate = setTimeout(() => {
-                this.updateRecommendations();
-            }, delay);
-            return;
-        }
-        
-        const container = document.getElementById('recommendedRecipes');
-        const newRecipeIds = this.getRecommendedRecipeIds();
-        
-        // Check if recommendations actually changed
-        const currentCards = Array.from(container.children);
-        const currentIds = currentCards.map(c => c.getAttribute('data-recipe-id'));
-        const changed = newRecipeIds.length !== currentIds.length || 
-                       !newRecipeIds.every((id, i) => id === currentIds[i]);
-        
-        if (!changed) {
-            // Just update the existing cards' data if needed
-            this.updateExistingCards(currentCards);
-            return;
-        }
-        
-        // Use simple content replacement with crossfade
-        this.simpleCrossfadeContent(container, newRecipeIds, currentCards);
-        this.lastRecommendationUpdate = now;
+        // Calculate and cache the score
+        const score = this.calculateRecipeScore(recipeId);
+        this.recipeScores.set(recipeId, score);
+        return score;
     }
 
-    updateExistingCards(cards) {
-        cards.forEach(card => {
-            const recipeId = card.getAttribute('data-recipe-id');
-            const userData = this.userDataManager.getRecipeData(recipeId);
-            
-            // Update stars
-            const stars = card.querySelectorAll('.recipe-stars i');
-            stars.forEach((star, index) => {
-                if (index < (userData.userRating || 0)) {
-                    star.classList.remove('far', 'text-gray-300');
-                    star.classList.add('fas', 'text-amber-400');
-                } else {
-                    star.classList.remove('fas', 'text-amber-400');
-                    star.classList.add('far', 'text-gray-300');
-                }
-            });
-            
-            // Update counter
-            const counter = card.querySelector('.recipe-counter');
-            if (counter) {
-                const newCount = userData.madeDates ? userData.madeDates.length : 0;
-                if (counter.textContent !== newCount.toString()) {
-                    counter.textContent = newCount;
-                }
-            }
-        });
-    }
-
-    simpleCrossfadeContent(container, newRecipeIds, currentCards) {
-        // Ensure we have exactly 3 cards (or as many as we need)
-        while (currentCards.length < newRecipeIds.length) {
-            const emptyCard = document.createElement('div');
-            emptyCard.className = 'bg-white rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1';
-            container.appendChild(emptyCard);
-            currentCards.push(emptyCard);
-        }
-        
-        // Fade out current content
-        currentCards.forEach((card, index) => {
-            if (index < newRecipeIds.length) {
-                card.style.transition = 'opacity 0.3s ease-out';
-                card.style.opacity = '0.5';
-            } else {
-                // Remove extra cards
-                card.style.transition = 'opacity 0.3s ease-out';
-                card.style.opacity = '0';
-                setTimeout(() => card.remove(), 300);
-            }
-        });
-        
-        // After fade out, replace content and fade in
-        setTimeout(() => {
-            newRecipeIds.forEach((recipeId, index) => {
-                const recipe = this.recipeDatabase.findById(recipeId);
-                if (recipe && currentCards[index]) {
-                    const recipeWithUserData = this.userDataManager.getRecipeWithUserData(recipe);
-                    const newCard = this.uiManager.createRecipeCard(recipeWithUserData);
-                    
-                    // Copy the HTML content but keep the same card element
-                    const oldCard = currentCards[index];
-                    oldCard.innerHTML = newCard.innerHTML;
-                    oldCard.setAttribute('data-recipe-id', recipeId);
-                    oldCard.setAttribute('data-recipe-click', recipeId);
-                    
-                    // Fade in
-                    requestAnimationFrame(() => {
-                        oldCard.style.transition = 'opacity 0.4s ease-out';
-                        oldCard.style.opacity = '1';
-                    });
-                }
-            });
-            
-            // Re-setup handlers after content update
-            this.uiManager.setupLazyLoading();
-            this.uiManager.setupCardClickHandlers();
-        }, 300);
-    }
-
-    // Force immediate update (bypasses debouncing)
-    forceUpdateRecommendations() {
-        if (this.pendingUpdate) {
-            clearTimeout(this.pendingUpdate);
-            this.pendingUpdate = null;
-        }
-        this.lastRecommendationUpdate = 0;
-        this.updateRecommendations();
+    updateScoreForRecipe(recipeId) {
+        // Recalculate score for a specific recipe (e.g., after rating/making it)
+        const score = this.calculateRecipeScore(recipeId);
+        this.recipeScores.set(recipeId, score);
     }
 }
 
@@ -1929,6 +2028,8 @@ class RecommendationEngine {
 
 class RecipeApp {
     constructor() {
+        // Remove this line: window.recipeApp = this;
+        
         // Initialize core components
         this.recipeDatabase = new RecipeDatabase();
         this.userDataManager = new UserDataManager();
@@ -1940,7 +2041,12 @@ class RecipeApp {
         );
         
         // Initialize managers that depend on other components
-        this.filterManager = new FilterManager(this.recipeDatabase, this.uiManager);
+        this.filterManager = new FilterManager(
+            this.recipeDatabase, 
+            this.uiManager,
+            this.recommendationEngine,
+            this.userDataManager
+        );
         this.modalManager = new ModalManager(
             this.recipeDatabase, 
             this.userDataManager, 
@@ -1961,11 +2067,12 @@ class RecipeApp {
     }
 
     init() {
-        // Initial render
+        // Calculate initial recommendation scores
+        this.recommendationEngine.calculateAllScores();
+        
+        // Initial render with recommendation sorting
         this.filterManager.updateFilterButton();
-        this.uiManager.renderRecipes();
-        this.recommendationEngine.generateRecommendations();
-        this.filterManager.updateRecommendationsVisibility();
+        this.filterManager.applyFilters(); // This will now sort by recommendation by default
         this.uiManager.setupLazyLoading();
     }
 }
