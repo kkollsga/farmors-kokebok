@@ -895,6 +895,7 @@ class UIManager {
         this.recipeDatabase = recipeDatabase;
         this.userDataManager = userDataManager;
         this.modalCallback = null; // Will be set later
+        this.loadingImages = new Set(); // Add this line
     }
 
     setModalCallback(callback) {
@@ -925,6 +926,33 @@ class UIManager {
             }
         }
         return stars;
+    }
+
+    loadImage(img, src) {
+        const newImg = new Image();
+        newImg.onload = () => {
+            img.src = src;
+            img.classList.add('opacity-100');
+            img.removeAttribute('data-src');
+            this.loadingImages.delete(src);
+        };
+        newImg.onerror = () => {
+            this.loadingImages.delete(src);
+        };
+        newImg.src = src;
+    }
+
+    preloadInitialImages() {
+        const images = document.querySelectorAll('img[data-src]');
+        const imagesToPreload = Array.from(images).slice(0, 10);
+        
+        imagesToPreload.forEach(img => {
+            const src = img.getAttribute('data-src');
+            if (src && !this.loadingImages.has(src)) {
+                this.loadingImages.add(src);
+                this.loadImage(img, src);
+            }
+        });
     }
 
     createRecipeCard(recipe) {
@@ -1066,31 +1094,42 @@ class UIManager {
     }
 
     setupLazyLoading() {
+        // Track loading state
+        this.loadingImages = new Set();
+        this.imageQueue = [];
+        
         const imageObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     const img = entry.target;
-                    const src = img.getAttribute('data-src');
                     
-                    if (src) {
-                        const newImg = new Image();
-                        newImg.onload = () => {
-                            img.src = src;
-                            img.classList.add('opacity-100');
-                            img.removeAttribute('data-src');
-                        };
-                        newImg.src = src;
-                    }
-                    observer.unobserve(img);
+                    // Get all images that need loading
+                    const allImages = Array.from(document.querySelectorAll('img[data-src]'));
+                    const currentIndex = allImages.indexOf(img);
+                    
+                    // Buffer ahead: load current image plus next 9
+                    const imagesToLoad = allImages.slice(currentIndex, currentIndex + 10);
+                    
+                    imagesToLoad.forEach(imgToLoad => {
+                        const src = imgToLoad.getAttribute('data-src');
+                        if (src && !this.loadingImages.has(src)) {
+                            this.loadingImages.add(src);
+                            this.loadImage(imgToLoad, src);
+                            observer.unobserve(imgToLoad);
+                        }
+                    });
                 }
             });
         }, {
-            rootMargin: '50px'
+            rootMargin: '300px' // Start loading 300px before images come into view
         });
 
         document.querySelectorAll('img[data-src]').forEach(img => {
             imageObserver.observe(img);
         });
+        
+        // Preload first 10 images immediately
+        this.preloadInitialImages();
     }
 
     updateRecipeCardRating(recipeId, rating) {
