@@ -127,19 +127,20 @@
             </div>
         </div>
         
-        <!-- Buttons Container - both buttons in same container for easier positioning -->
-        <div class="absolute -bottom-7 right-0 flex items-center gap-2">
+        <!-- Buttons Container - stays on right with flex -->
+        <div class="absolute -bottom-7 inset-x-0 flex justify-end gap-2">
             <!-- Copy URL Button -->
             <button id="copyURLButton" onclick="recipeApp.urlManager.copyToClipboard(recipeApp.urlManager.getShareableURL(), this)" 
                     class="text-xs text-gray-500 hover:text-amber-600 transition-all duration-200 font-medium px-3 py-1 rounded-lg">
-                <i class="fas fa-copy mr-1"></i>
-                <span>Kopier URL</span>
+                <i class="fas fa-copy sm:mr-1"></i>
+                <span class="hidden sm:inline">Kopier URL</span>
             </button>
             
             <!-- Clear Filters Button -->
             <button id="clearFilters" onclick="recipeApp.filterManager.clearAllFilters()" 
-                    class="text-xs text-gray-500 hover:text-amber-600 transition-all duration-200 opacity-0 pointer-events-none font-medium px-3 py-1 rounded-lg">
-                Tøm filter
+                    class="hidden text-xs text-gray-500 hover:text-amber-600 transition-all duration-200 font-medium px-3 py-1 rounded-lg">
+                <i class="fas fa-times sm:mr-1"></i>
+                <span class="hidden sm:inline">Tøm filter</span>
             </button>
         </div>
         
@@ -155,37 +156,38 @@
     </div>
     
     <!-- Sort Selector -->
-<div class="flex items-center gap-4 ml-8 mt-4">
-    <button data-sort="recommendation" 
-            onclick="recipeApp.filterManager.changeSortOrder('recommendation')"
-            class="p-2 rounded-lg bg-amber-500 text-white transition-all duration-200"
-            title="Anbefalt rekkefølge">
-        <i class="fas fa-thumbs-up"></i>
-    </button>
-    <button data-sort="recipebook" 
-            onclick="recipeApp.filterManager.changeSortOrder('recipebook')"
-            class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
-            title="Oppskriftsbok rekkefølge">
-        <i class="fas fa-book"></i>
-    </button>
-    <button data-sort="alphabetical" 
-            onclick="recipeApp.filterManager.changeSortOrder('alphabetical')"
-            class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
-            title="Alfabetisk">
-        <i class="fas fa-sort-alpha-down"></i>
-    </button>
-    <button data-sort="madecount" 
-            onclick="recipeApp.filterManager.changeSortOrder('madecount')"
-            class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
-            title="Antall ganger laget">
-        <i class="fas fa-utensils"></i>
-    </button>
-    <button data-sort="rating" 
-            onclick="recipeApp.filterManager.changeSortOrder('rating')"
-            class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
-            title="Vurdering">
-        <i class="fas fa-star"></i>
-    </button>
+    <div class="flex items-center gap-4 ml-8 mt-4">
+        <button data-sort="recommendation" 
+                onclick="recipeApp.filterManager.changeSortOrder('recommendation')"
+                class="p-2 rounded-lg bg-amber-500 text-white transition-all duration-200"
+                title="Anbefalt rekkefølge">
+            <i class="fas fa-thumbs-up"></i>
+        </button>
+        <button data-sort="recipebook" 
+                onclick="recipeApp.filterManager.changeSortOrder('recipebook')"
+                class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
+                title="Oppskriftsbok rekkefølge">
+            <i class="fas fa-book"></i>
+        </button>
+        <button data-sort="alphabetical" 
+                onclick="recipeApp.filterManager.changeSortOrder('alphabetical')"
+                class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
+                title="Alfabetisk">
+            <i class="fas fa-sort-alpha-down"></i>
+        </button>
+        <button data-sort="madecount" 
+                onclick="recipeApp.filterManager.changeSortOrder('madecount')"
+                class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
+                title="Antall ganger laget">
+            <i class="fas fa-utensils"></i>
+        </button>
+        <button data-sort="rating" 
+                onclick="recipeApp.filterManager.changeSortOrder('rating')"
+                class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
+                title="Vurdering">
+            <i class="fas fa-star"></i>
+        </button>
+    </div>
 </div>
 
 <!-- Main Recipe Grid (no header) -->
@@ -1105,28 +1107,15 @@ class FilterManager {
             });
         }
         
-        // Update button positions
+        // Update button visibility
         const clearBtn = document.getElementById('clearFilters');
-        const copyBtn = document.getElementById('copyURLButton');
         
         if (hasFilters) {
             // Show clear button
-            clearBtn.classList.remove('opacity-0', 'pointer-events-none');
-            clearBtn.classList.add('opacity-100');
-            
-            // Position copy button to the left of clear button
-            if (copyBtn) {
-                copyBtn.style.right = '80px'; // Adjust based on clear button width + margin
-            }
+            clearBtn.classList.remove('hidden');
         } else {
             // Hide clear button
-            clearBtn.classList.add('opacity-0', 'pointer-events-none');
-            clearBtn.classList.remove('opacity-100');
-            
-            // Copy button returns to right edge
-            if (copyBtn) {
-                copyBtn.style.right = '0';
-            }
+            clearBtn.classList.add('hidden');
         }
     }
 
