@@ -145,32 +145,37 @@
     </div>
     
     <!-- Sort Selector -->
-    <div class="flex items-center gap-2 mt-4">
-        <button data-sort="recommendation" 
-                onclick="recipeApp.filterManager.changeSortOrder('recommendation')"
-                class="p-2 rounded-lg bg-amber-500 text-white transition-all duration-200"
-                title="Anbefalt rekkefølge">
-            <i class="fas fa-thumbs-up"></i>
-        </button>
-        <button data-sort="recipebook" 
-                onclick="recipeApp.filterManager.changeSortOrder('recipebook')"
-                class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
-                title="Oppskriftsbok rekkefølge">
-            <i class="fas fa-book"></i>
-        </button>
-        <button data-sort="madecount" 
-                onclick="recipeApp.filterManager.changeSortOrder('madecount')"
-                class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
-                title="Antall ganger laget">
-            <i class="fas fa-utensils"></i>
-        </button>
-        <button data-sort="rating" 
-                onclick="recipeApp.filterManager.changeSortOrder('rating')"
-                class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
-                title="Vurdering">
-            <i class="fas fa-star"></i>
-        </button>
-    </div>
+<div class="flex items-center gap-4 ml-8 mt-4">
+    <button data-sort="recommendation" 
+            onclick="recipeApp.filterManager.changeSortOrder('recommendation')"
+            class="p-2 rounded-lg bg-amber-500 text-white transition-all duration-200"
+            title="Anbefalt rekkefølge">
+        <i class="fas fa-thumbs-up"></i>
+    </button>
+    <button data-sort="recipebook" 
+            onclick="recipeApp.filterManager.changeSortOrder('recipebook')"
+            class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
+            title="Oppskriftsbok rekkefølge">
+        <i class="fas fa-book"></i>
+    </button>
+    <button data-sort="alphabetical" 
+            onclick="recipeApp.filterManager.changeSortOrder('alphabetical')"
+            class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
+            title="Alfabetisk">
+        <i class="fas fa-sort-alpha-down"></i>
+    </button>
+    <button data-sort="madecount" 
+            onclick="recipeApp.filterManager.changeSortOrder('madecount')"
+            class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
+            title="Antall ganger laget">
+        <i class="fas fa-utensils"></i>
+    </button>
+    <button data-sort="rating" 
+            onclick="recipeApp.filterManager.changeSortOrder('rating')"
+            class="p-2 rounded-lg text-gray-700 hover:text-amber-600 transition-all duration-200"
+            title="Vurdering">
+        <i class="fas fa-star"></i>
+    </button>
 </div>
 
 <!-- Main Recipe Grid (no header) -->
@@ -863,62 +868,86 @@ class FilterManager {
             return dateB - dateA;
         });
         
+        // Pre-calculate all data needed for sorting to avoid repeated calls
+        const recipeDataCache = new Map();
+        
+        const getRecipeData = (recipe) => {
+            if (recipeDataCache.has(recipe.id)) {
+                return recipeDataCache.get(recipe.id);
+            }
+            
+            const data = {
+                recipe: recipe,
+                score: this.recommendationEngine.getRecipeScore(recipe.id),
+                rating: this.userDataManager.getRecipeData(recipe.id).userRating || 0,
+                madeCount: this.userDataManager.getRecipeData(recipe.id).madeDates?.length || 0,
+                pageNumber: recipe.pageNumber || Number.MAX_SAFE_INTEGER,
+                title: recipe.title
+            };
+            
+            recipeDataCache.set(recipe.id, data);
+            return data;
+        };
+        
+        // Helper comparison functions
+        const compareByPageNumber = (dataA, dataB) => {
+            if (dataA.pageNumber !== dataB.pageNumber) {
+                return dataA.pageNumber - dataB.pageNumber;
+            }
+            return dataA.recipe.id.localeCompare(dataB.recipe.id);
+        };
+        
+        const compareByRecommendation = (dataA, dataB) => {
+            if (dataA.score !== dataB.score) {
+                return dataB.score - dataA.score;
+            }
+            return compareByPageNumber(dataA, dataB);
+        };
+        
         // Apply sorting to untagged recipes based on current sort order
+        const enrichedRecipes = untaggedRecipes.map(recipe => getRecipeData(recipe));
+        
         switch(this.sortOrder) {
             case 'recommendation':
-                const scoredRecipes = untaggedRecipes.map(recipe => {
-                    const score = this.recommendationEngine.getRecipeScore(recipe.id);
-                    return { recipe, score };
+                enrichedRecipes.sort(compareByRecommendation);
+                break;
+            
+            case 'alphabetical':
+                enrichedRecipes.sort((a, b) => {
+                    return a.title.localeCompare(b.title, 'no-NO');
                 });
-                scoredRecipes.sort((a, b) => b.score - a.score);
-                untaggedRecipes.length = 0;
-                untaggedRecipes.push(...scoredRecipes.map(item => item.recipe));
                 break;
             
             case 'recipebook':
-                untaggedRecipes.sort((a, b) => {
-                    if (a.pageNumber && b.pageNumber) {
-                        return a.pageNumber - b.pageNumber;
-                    }
-                    return a.id.localeCompare(b.id);
-                });
+                enrichedRecipes.sort(compareByPageNumber);
                 break;
             
             case 'madecount':
-                untaggedRecipes.sort((a, b) => {
-                    const countA = this.userDataManager.getRecipeData(a.id).madeDates?.length || 0;
-                    const countB = this.userDataManager.getRecipeData(b.id).madeDates?.length || 0;
-                    
-                    if (countA !== countB) {
-                        return countB - countA;
+                enrichedRecipes.sort((a, b) => {
+                    if (a.madeCount !== b.madeCount) {
+                        return b.madeCount - a.madeCount;
                     }
-                    
-                    const scoreA = this.recommendationEngine.getRecipeScore(a.id);
-                    const scoreB = this.recommendationEngine.getRecipeScore(b.id);
-                    return scoreB - scoreA;
+                    return compareByRecommendation(a, b);
                 });
                 break;
             
             case 'rating':
-                untaggedRecipes.sort((a, b) => {
-                    const ratingA = this.userDataManager.getRecipeData(a.id).userRating || 0;
-                    const ratingB = this.userDataManager.getRecipeData(b.id).userRating || 0;
-                    
-                    if (ratingA !== ratingB) {
-                        return ratingB - ratingA;
+                enrichedRecipes.sort((a, b) => {
+                    if (a.rating !== b.rating) {
+                        return b.rating - a.rating;
                     }
-                    
-                    const scoreA = this.recommendationEngine.getRecipeScore(a.id);
-                    const scoreB = this.recommendationEngine.getRecipeScore(b.id);
-                    return scoreB - scoreA;
+                    return compareByRecommendation(a, b);
                 });
                 break;
         }
         
+        // Extract sorted recipes from enriched data
+        const sortedUntaggedRecipes = enrichedRecipes.map(data => data.recipe);
+        
         // Combine tagged (at top) with untagged
         const finalFiltered = [
             ...taggedRecipes.map(item => item.recipe),
-            ...untaggedRecipes
+            ...sortedUntaggedRecipes
         ];
         
         const filteredIds = finalFiltered.map(recipe => recipe.id);
@@ -2171,6 +2200,9 @@ class RecommendationEngine {
     }
 
     calculateAllScores() {
+        // Clear existing scores to force fresh calculation
+        this.recipeScores.clear();
+        
         const recipeIds = this.recipeDatabase.getAllIds();
         
         recipeIds.forEach(id => {
