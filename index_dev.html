@@ -109,7 +109,7 @@
 
 <!-- Filter Bar -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-    <div class="relative"> <!-- Wrapper for positioning context -->
+    <div class="relative">
         <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg border border-gray-200 p-4">
             <div class="flex items-center gap-3">
                 <!-- Filter Button -->
@@ -127,11 +127,21 @@
             </div>
         </div>
         
-        <!-- Clear Filters Button - absolutely positioned -->
-        <button id="clearFilters" onclick="recipeApp.filterManager.clearAllFilters()" 
-                class="absolute right-0 -bottom-7 text-xs text-gray-500 hover:text-amber-600 transition-all duration-200 opacity-0 pointer-events-none font-medium px-3 py-1 rounded-lg z-10">
-            Tøm filter
-        </button>
+        <!-- Buttons Container - both buttons in same container for easier positioning -->
+        <div class="absolute -bottom-7 right-0 flex items-center gap-2">
+            <!-- Copy URL Button -->
+            <button id="copyURLButton" onclick="recipeApp.urlManager.copyToClipboard(recipeApp.urlManager.getShareableURL(), this)" 
+                    class="text-xs text-gray-500 hover:text-amber-600 transition-all duration-200 font-medium px-3 py-1 rounded-lg">
+                <i class="fas fa-copy mr-1"></i>
+                <span>Kopier URL</span>
+            </button>
+            
+            <!-- Clear Filters Button -->
+            <button id="clearFilters" onclick="recipeApp.filterManager.clearAllFilters()" 
+                    class="text-xs text-gray-500 hover:text-amber-600 transition-all duration-200 opacity-0 pointer-events-none font-medium px-3 py-1 rounded-lg">
+                Tøm filter
+            </button>
+        </div>
         
         <!-- Filter Dropdown Menu -->
         <div id="filterMenu" class="absolute left-4 top-full mt-2 z-50">
@@ -225,8 +235,8 @@ const CONFIG = {
 class RecipeDatabase {
     constructor() {
         this.recipes = [
-            {"id":"recipe_1755874440324_k3zjgdsow","title":"Aftenbladets Sjokoladekake","servings":"12 porsjoner","provider":"Aftenbladet","reference":"Oppskriftsbok","pageNumber":61,"category":"Lagkaker","meal":"Kake","cuisine":"Norsk","description":"En klassisk norsk sjokoladelagkake slik den ofte ble laget på 60–70-tallet, med lys bunn og fyldig sjokoladekrem. Bunnen er luftig og deles i tre lag, fylt med en rik krem av sukker, melk, smeltet sjokolade og eggeplommer. Pyntes med mandler på toppen.","image":"aftenbladetssjokoladekake.jpg","ingredients":[{"group":"Kakebunn","items":["4 egg","200 g sukker","200 g hvetemel","2 ts bakepulver","100 g smør eller margarin (smeltet)"]},{"group":"Sjokoladekrem","items":["200 g sukker","6 ss melk","1 plate mørk kokesjokolade (ca. 100 g)","2 eggeplommer"]},{"group":"Pynt","items":["Høvlede mandler"]}],"instructions":["Pisk egg og sukker til en luftig eggedosis.","Sikt sammen mel og bakepulver og vend forsiktig inn i eggedosisen.","Rør inn smeltet smør.","Hell røren i en smurt kakeform (ca. 24 cm).","Stek ved 180–190 °C i ca. 35–40 minutter.","Avkjøl kaken helt og del den i tre lag.","Lag kremen: Pisk sukker og melk til hvitt og luftig. Rør inn smeltet kokesjokolade og tilsett eggeplommene.","Fyll kaken lagvis med kremen og dekk toppen.","Pynt med høvlede mandler."],"createdAt":"2025-08-22"},
-            {"id":"recipe_1755530008601_5c9sko0oi","title":"Wienerring","servings":"1 stor ring","provider":"Farmor","reference":"Oppskriftsbok","pageNumber":18,"category":"Gjærbakst","meal":"Kaffe","cuisine":"Dansk","description":"Wienerring er en klassisk gjærbakst fylt med en mild krem basert på fløte, vanilje og eggeplomme. Deigen rulles med fyll, formes til en ring og klippes opp slik at fyllet blir synlig under steking. Resultatet er en luftig og dekorativ festkake som passer perfekt på kaffebordet.","image":"wienerring.jpg","ingredients":[{"group":"Deig","items":["250 g hvetemel","50 g sukker","ca. 1 ¼ dl melk (lunken)","1 egg","40 g gjær","100 g smør","1 egg til pensling","Litt hakkede mandler til pynt"]},{"group":"Fyll","items":["1 eggeplomme","1 ½ dl fløte","½ ts vaniljesukker","1 ss potetmel","1 ss sukker"]}],"instructions":["Sikt sammen hvetemel og sukker i en bolle.","Løs opp gjæren i lunken melk og pisk inn egget.","Bland væsken i det tørre og elt deigen til den er smidig. Arbeid inn smøret til slutt. La heve til dobbel størrelse.","Lag fyllet: Pisk sammen fløte, eggeplomme, sukker, potetmel og vaniljesukker. Kok forsiktig opp under omrøring til en tykk krem. Avkjøl.","Kjevle deigen ut til et stort rektangel og fordel fyllet jevnt utover.","Rull deigen sammen fra langsiden til en lang pølse og legg den på et stekebrett med bakepapir.","Form pølsen til en stor ring og klem endene godt sammen.","Klipp skrå snitt med ca. 3 cm mellomrom nesten helt igjennom, og vri hvert stykke litt utover så fyllet synes.","Pensle med egg og dryss over hakkede mandler.","Stek ved 180 °C (varmluft) eller 200 °C (over- og undervarme) i ca. 25–30 minutter til den er gyllenbrun."],"createdAt":"2025-08-18"}
+            {"id":"recipe_1755874440324_k3zjgdsow","title":"Aftenbladets Sjokoladekake","servings":"12 porsjoner","provider":"Aftenbladet","reference":"Oppskriftsbok","pageNumber":61,"category":"Lagkaker","meal":"Kake","cuisine":"Norsk","description":"Luftig sjokoladelagkake med tre lag og fyldig sjokoladekrem av melk, sukker og eggeplommer. Den lyse bunnen deles opp og fylles med en rik, hjemmelaget krem som gir en perfekt balanse mellom lett kakebunn og kremete fyll. Mandlene på toppen tilfører sprøhet og en nøtteaktig kontrast. Kaken har en dyp sjokoladesmak uten å være for søt, og egner seg utmerket til festlige anledninger eller søndagskos.","image":"aftenbladetssjokoladekake.jpg","ingredients":[{"group":"Kakebunn","items":["4 egg","200 g sukker","200 g hvetemel","2 ts bakepulver","100 g smør eller margarin (smeltet)"]},{"group":"Sjokoladekrem","items":["200 g sukker","6 ss melk","1 plate mørk kokesjokolade (ca. 100 g)","2 eggeplommer"]},{"group":"Pynt","items":["Høvlede mandler"]}],"instructions":["Pisk egg og sukker til en luftig eggedosis.","Sikt sammen mel og bakepulver og vend forsiktig inn i eggedosisen.","Rør inn smeltet smør.","Hell røren i en smurt kakeform (ca. 24 cm).","Stek ved 180–190 °C i ca. 35–40 minutter.","Avkjøl kaken helt og del den i tre lag.","Lag kremen: Pisk sukker og melk til hvitt og luftig. Rør inn smeltet kokesjokolade og tilsett eggeplommene.","Fyll kaken lagvis med kremen og dekk toppen.","Pynt med høvlede mandler."],"createdAt":"2025-08-22"},
+            {"id":"recipe_1755530008601_5c9sko0oi","title":"Wienerring","servings":"1 stor ring","provider":"Farmor","reference":"Oppskriftsbok","pageNumber":18,"category":"Gjærbakst","meal":"Kaffe","cuisine":"Dansk","description":"Dekorativ wienerring med synlig kremfyll som bobler frem under steking. Den milde vaniljekremen komplimenterer den søte gjærdeigen. Klippingen skaper vakker presentasjon. Perfekt sentrum på festbordet.","image":"wienerring.jpg","ingredients":[{"group":"Deig","items":["250 g hvetemel","50 g sukker","ca. 1 ¼ dl melk (lunken)","1 egg","40 g gjær","100 g smør","1 egg til pensling","Litt hakkede mandler til pynt"]},{"group":"Fyll","items":["1 eggeplomme","1 ½ dl fløte","½ ts vaniljesukker","1 ss potetmel","1 ss sukker"]}],"instructions":["Sikt sammen hvetemel og sukker i en bolle.","Løs opp gjæren i lunken melk og pisk inn egget.","Bland væsken i det tørre og elt deigen til den er smidig. Arbeid inn smøret til slutt. La heve til dobbel størrelse.","Lag fyllet: Pisk sammen fløte, eggeplomme, sukker, potetmel og vaniljesukker. Kok forsiktig opp under omrøring til en tykk krem. Avkjøl.","Kjevle deigen ut til et stort rektangel og fordel fyllet jevnt utover.","Rull deigen sammen fra langsiden til en lang pølse og legg den på et stekebrett med bakepapir.","Form pølsen til en stor ring og klem endene godt sammen.","Klipp skrå snitt med ca. 3 cm mellomrom nesten helt igjennom, og vri hvert stykke litt utover så fyllet synes.","Pensle med egg og dryss over hakkede mandler.","Stek ved 180 °C (varmluft) eller 200 °C (over- og undervarme) i ca. 25–30 minutter til den er gyllenbrun."],"createdAt":"2025-08-18"}
         ];
     }
 
@@ -365,6 +375,183 @@ class UserDataManager {
 }
 
 // ============================================================================
+// URL MANAGER CLASS
+// ============================================================================
+
+class URLManager {
+    constructor(filterManager, modalManager, recipeDatabase) {
+        this.filterManager = filterManager;
+        this.modalManager = modalManager;
+        this.recipeDatabase = recipeDatabase;
+        this.baseURL = 'https://kkollsga.github.io/kokebok/';
+        this.isUpdatingFromURL = false;
+    }
+
+    // Initialize from URL parameters on page load
+    initializeFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        
+        // Handle filters - params.get automatically decodes %3A back to :
+        const filterParam = params.get('filter');
+        if (filterParam) {
+            // The filter string is already decoded by params.get()
+            // So "category%3ADrikke" becomes "category:Drikke"
+            const filters = filterParam.split(',');
+            filters.forEach(filter => {
+                if (filter.includes(':')) {
+                    this.filterManager.activeFilters.set(filter, true);
+                }
+            });
+            this.filterManager.renderFilterPills();
+            this.filterManager.updateFilterButton();
+        }
+        
+        // Handle recipe modal
+        const recipeParam = params.get('recipe');
+        if (recipeParam) {
+            const recipe = this.recipeDatabase.getAll().find(r => 
+                r.title.toLowerCase() === recipeParam.toLowerCase()
+            );
+            
+            if (recipe) {
+                setTimeout(() => {
+                    this.modalManager.showRecipe(recipe.id);
+                }, 100);
+            }
+        }
+    }
+
+    // Update browser URL without reloading
+    updateURL() {
+        if (this.isUpdatingFromURL) return;
+        
+        // Build URL manually to avoid double encoding issues
+        const parts = [];
+        
+        // Add active filters
+        if (this.filterManager.activeFilters.size > 0) {
+            const activeFilters = Array.from(this.filterManager.activeFilters.keys())
+                .filter(key => this.filterManager.activeFilters.get(key));
+            if (activeFilters.length > 0) {
+                // Don't encode the colons in filters
+                parts.push('filter=' + activeFilters.join(','));
+            }
+        }
+        
+        // Add open recipe
+        if (this.modalManager.currentRecipeId) {
+            const recipe = this.recipeDatabase.findById(this.modalManager.currentRecipeId);
+            if (recipe) {
+                parts.push('recipe=' + encodeURIComponent(recipe.title));
+            }
+        }
+        
+        // Update browser URL
+        const newURL = parts.length > 0 ? '?' + parts.join('&') : '';
+        const fullURL = window.location.pathname + newURL;
+        
+        window.history.replaceState({
+            filters: Array.from(this.filterManager.activeFilters),
+            recipeId: this.modalManager.currentRecipeId
+        }, '', fullURL);
+    }
+
+    // Get shareable URL for current state
+    getShareableURL() {
+        const parts = [];
+        
+        // Add active filters
+        if (this.filterManager.activeFilters.size > 0) {
+            const activeFilters = Array.from(this.filterManager.activeFilters.keys())
+                .filter(key => this.filterManager.activeFilters.get(key));
+            if (activeFilters.length > 0) {
+                // Don't encode the colons in filters
+                parts.push('filter=' + activeFilters.join(','));
+            }
+        }
+        
+        // Add open recipe
+        if (this.modalManager.currentRecipeId) {
+            const recipe = this.recipeDatabase.findById(this.modalManager.currentRecipeId);
+            if (recipe) {
+                parts.push('recipe=' + encodeURIComponent(recipe.title));
+            }
+        }
+        
+        return parts.length > 0 ? `${this.baseURL}?${parts.join('&')}` : this.baseURL;
+    }
+
+    // Get shareable URL for specific recipe
+    getRecipeURL(recipeId) {
+        const recipe = this.recipeDatabase.findById(recipeId);
+        if (!recipe) return this.baseURL;
+        
+        return `${this.baseURL}?recipe=${encodeURIComponent(recipe.title)}`;
+    }
+
+    // Copy URL to clipboard with visual feedback
+    async copyToClipboard(url, buttonElement) {
+        try {
+            await navigator.clipboard.writeText(url);
+            
+            // Visual feedback
+            if (buttonElement) {
+                const originalHTML = buttonElement.innerHTML;
+                const originalClass = buttonElement.className;
+                
+                buttonElement.innerHTML = '<i class="fas fa-check"></i>';
+                buttonElement.classList.add('text-green-600');
+                
+                setTimeout(() => {
+                    buttonElement.innerHTML = originalHTML;
+                    buttonElement.className = originalClass;
+                }, 1500);
+            }
+            
+            return true;
+        } catch (err) {
+            console.error('Failed to copy URL:', err);
+            return false;
+        }
+    }
+
+    // Setup browser history navigation
+    setupHistoryListener() {
+        window.addEventListener('popstate', (event) => {
+            this.isUpdatingFromURL = true;
+            
+            if (event.state) {
+                // Restore filters
+                this.filterManager.activeFilters.clear();
+                if (event.state.filters) {
+                    event.state.filters.forEach(([key, value]) => {
+                        this.filterManager.activeFilters.set(key, value);
+                    });
+                }
+                this.filterManager.renderFilterPills();
+                this.filterManager.updateFilterButton();
+                this.filterManager.applyFilters();
+                
+                // Restore or close modal
+                if (event.state.recipeId) {
+                    this.modalManager.showRecipe(event.state.recipeId);
+                } else if (this.modalManager.currentRecipeId) {
+                    this.modalManager.closeRecipe();
+                }
+            } else {
+                // No state - clear everything
+                this.filterManager.clearAllFilters();
+                if (this.modalManager.currentRecipeId) {
+                    this.modalManager.closeRecipe();
+                }
+            }
+            
+            this.isUpdatingFromURL = false;
+        });
+    }
+}
+
+// ============================================================================
 // FILTER MANAGER CLASS
 // ============================================================================
 
@@ -379,8 +566,12 @@ class FilterManager {
         this.searchQuery = '';
         this.collapsedSections = new Set(['category', 'meal', 'cuisine']);
         this.sortOrder = 'recommendation';
+        this.urlManager = null; // Will be set by RecipeApp
     }
 
+    setURLManager(urlManager) {
+        this.urlManager = urlManager;
+    }
 
     setupEventListeners() {
         // Search input
@@ -528,6 +719,11 @@ class FilterManager {
         this.updateFilterButton();
         this.applyFilters();
         this.renderFilterOptions();
+        
+        // Update URL when filters change
+        if (this.urlManager) {
+            this.urlManager.updateURL();
+        }
     }
 
     togglePillActive(type) {
@@ -544,6 +740,11 @@ class FilterManager {
         this.updateFilterButton();
         this.applyFilters();
         this.renderFilterOptions();
+        
+        // Update URL when filters change
+        if (this.urlManager) {
+            this.urlManager.updateURL();
+        }
     }
 
     clearAllFilters() {
@@ -552,6 +753,11 @@ class FilterManager {
         this.updateFilterButton();
         this.applyFilters();
         this.renderFilterOptions();
+        
+        // Update URL when filters change
+        if (this.urlManager) {
+            this.urlManager.updateURL();
+        }
     }
 
     toggleFilterMenu() {
@@ -748,14 +954,28 @@ class FilterManager {
             });
         }
         
-        // Update clear button visibility
+        // Update button positions
         const clearBtn = document.getElementById('clearFilters');
+        const copyBtn = document.getElementById('copyURLButton');
+        
         if (hasFilters) {
+            // Show clear button
             clearBtn.classList.remove('opacity-0', 'pointer-events-none');
             clearBtn.classList.add('opacity-100');
+            
+            // Position copy button to the left of clear button
+            if (copyBtn) {
+                copyBtn.style.right = '80px'; // Adjust based on clear button width + margin
+            }
         } else {
+            // Hide clear button
             clearBtn.classList.add('opacity-0', 'pointer-events-none');
             clearBtn.classList.remove('opacity-100');
+            
+            // Copy button returns to right edge
+            if (copyBtn) {
+                copyBtn.style.right = '0';
+            }
         }
     }
 
@@ -1395,7 +1615,12 @@ class ModalManager {
         this.currentRecipeId = null;
         this.completedSteps = new Map();
         this.activeStep = null;
+        this.urlManager = null; // Will be set by RecipeApp
         this.setupEventListeners();
+    }
+
+    setURLManager(urlManager) {
+        this.urlManager = urlManager;
     }
 
     setupEventListeners() {
@@ -1462,16 +1687,20 @@ class ModalManager {
         // Track view
         this.userDataManager.trackView(recipeId);
         
-        // Lock body scroll - UPDATED APPROACH
+        // Update URL when modal opens
+        if (this.urlManager) {
+            this.urlManager.updateURL();
+        }
+        
+        // Lock body scroll
         this.scrollPosition = window.pageYOffset;
         document.body.classList.add('modal-open');
         
-        // For iOS, prevent scroll on the body
         document.body.style.overflow = 'hidden';
         document.body.style.position = 'relative';
-        document.documentElement.style.overflow = 'hidden'; // Also lock html element
+        document.documentElement.style.overflow = 'hidden';
         
-        // Setup modal layout (fullscreen vs windowed)
+        // Setup modal layout
         this.setupModalLayout();
         
         // Generate and insert content
@@ -1570,6 +1799,10 @@ class ModalManager {
         const heroImageHeight = isMobile ? 'h-56' : 'h-80';
         const isFullscreen = window.innerWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
         
+        // Configurable blur amount - adjust this value (0-20)
+        // 0 = no blur, 1 = very subtle, 2-3 = subtle, 5+ = noticeable
+        const PLACEHOLDER_BLUR_PIXELS = 0; // Very subtle blur
+        
         return `
             <!-- Full modal background with rounded corners for desktop -->
             <div class="absolute inset-0 bg-gradient-to-br from-amber-100 to-orange-100 ${!isFullscreen ? 'rounded-2xl' : ''} z-0">
@@ -1580,7 +1813,8 @@ class ModalManager {
                             <!-- Low-res placeholder (loads instantly from cache) -->
                             <img src="${imageLowUrl}" 
                                 alt="${recipe.title}" 
-                                class="w-full h-full object-cover absolute inset-0 filter blur-sm scale-105">
+                                class="w-full h-full object-cover absolute inset-0"
+                                style="filter: blur(${PLACEHOLDER_BLUR_PIXELS}px);">
                             <!-- High-res overlay (loads on top) -->
                             <img src="${imageHighUrl}" 
                                 alt="${recipe.title}" 
@@ -1665,11 +1899,18 @@ class ModalManager {
             <div class="px-4 py-6">
                 <!-- Title and metadata -->
                 <div class="mb-4">
-                    <h2 class="font-display text-2xl text-gray-800 ${sourceInfo ? 'mb-1' : 'mb-2'}">${recipe.title}</h2>
+                    <div class="flex items-start gap-2">
+                        <h2 class="font-display text-2xl text-gray-800 ${sourceInfo ? 'mb-1' : 'mb-2'}">${recipe.title}</h2>
+                        <button onclick="recipeApp.modalManager.copyRecipeURL('${recipe.id}', event)" 
+                                class="text-gray-400 hover:text-gray-600 transition-all duration-200 p-1 flex-shrink-0">
+                            <i class="fas fa-copy text-sm"></i>
+                        </button>
+                    </div>
                     ${sourceInfo ? `<p class="text-xs text-amber-600 mb-2">${sourceInfo}</p>` : ''}
                     ${this.renderTags(recipe)}
                 </div>
                 
+                <!-- Rest of mobile content remains the same -->
                 <!-- Actions -->
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
@@ -1697,14 +1938,12 @@ class ModalManager {
                     </div>
                 </div>
                 
-                <!-- Description -->
                 ${recipe.description ? `
                     <div class="pb-4 mb-6 border-b border-amber-600">
                         <p class="text-gray-700 text-sm leading-relaxed">${recipe.description}</p>
                     </div>
                 ` : ''}
                 
-                <!-- Ingredients -->
                 <div class="mb-6 pb-6 border-b border-amber-600">
                     <h3 class="font-display text-xl text-amber-800 mb-3">Ingredienser</h3>
                     ${this.renderIngredients(recipe.ingredients)}
@@ -1714,7 +1953,6 @@ class ModalManager {
                     </div>
                 </div>
                 
-                <!-- Instructions -->
                 <div class="mb-8">
                     <h3 class="font-display text-xl text-amber-800 mb-3">Slik gjør du</h3>
                     ${this.renderInstructions(recipe.instructions, true)}
@@ -1723,7 +1961,6 @@ class ModalManager {
         `;
     }
 
-    // Desktop content layout (two columns, more spacious)
     generateDesktopContent(recipe) {
         const sourceInfo = this.uiManager.formatSource(recipe);
         const today = new Date().toISOString().split('T')[0];
@@ -1734,14 +1971,19 @@ class ModalManager {
             <div class="px-8 py-8">
                 <!-- Header section -->
                 <div class="border-b border-gray-100 pb-4 mb-6">
-                    <h2 class="font-display text-3xl text-gray-800 ${sourceInfo ? 'mb-1' : 'mb-2'}">${recipe.title}</h2>
+                    <div class="flex items-start gap-3">
+                        <h2 class="font-display text-3xl text-gray-800 ${sourceInfo ? 'mb-1' : 'mb-2'}">${recipe.title}</h2>
+                        <button onclick="recipeApp.modalManager.copyRecipeURL('${recipe.id}', event)" 
+                                class="text-gray-400 hover:text-gray-600 transition-all duration-200 p-1.5 flex-shrink-0">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
                     ${sourceInfo ? `<p class="text-sm text-amber-600 mb-2">${sourceInfo}</p>` : ''}
                     ${this.renderTags(recipe)}
                     
                     <!-- Actions row -->
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
-                            <!-- Rating -->
                             <div class="flex items-center gap-2">
                                 <button id="eraser-${recipe.id}" 
                                         onclick="recipeApp.modalManager.clearRating('${recipe.id}', event)" 
@@ -1755,7 +1997,6 @@ class ModalManager {
                         </div>
                         
                         <div class="flex items-center gap-2">
-                            <!-- Tag button -->
                             <button onclick="recipeApp.modalManager.toggleTag('${recipe.id}', event)" 
                                     class="flex items-center space-x-2 px-4 py-2 rounded-lg transition text-sm font-medium
                                         ${recipe.tagged ? 'bg-yellow-600 text-white hover:bg-yellow-700' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
@@ -1763,7 +2004,6 @@ class ModalManager {
                                 <span>Merk</span>
                             </button>
                             
-                            <!-- Made button -->
                             <button onclick="recipeApp.modalManager.toggleMadeToday('${recipe.id}', event)" 
                                     class="flex items-center space-x-2 px-4 py-2 rounded-lg transition text-sm font-medium
                                         ${madeToday ? 'bg-amber-600 text-white hover:bg-amber-700' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}">
@@ -1774,14 +2014,12 @@ class ModalManager {
                     </div>
                 </div>
                 
-                <!-- Description -->
                 ${recipe.description ? `
                     <div class="pb-6 mb-6 border-b border-amber-600">
                         <p class="text-gray-700 leading-relaxed">${recipe.description}</p>
                     </div>
                 ` : ''}
                 
-                <!-- Two column layout for ingredients and instructions -->
                 <div class="grid md:grid-cols-[2fr,3fr] gap-8">
                     <div class="pr-8 border-r border-amber-600">
                         <h3 class="font-display text-xl text-amber-800 mb-4">Ingredienser</h3>
@@ -2050,17 +2288,32 @@ class ModalManager {
         // Hide modal
         modal.classList.add('hidden');
         
-        // Restore body scroll - UPDATED APPROACH
+        // Update URL when modal closes
+        if (this.urlManager) {
+            this.urlManager.updateURL();
+        }
+        
+        // Restore body scroll
         document.body.classList.remove('modal-open');
         document.body.style.overflow = '';
         document.body.style.position = '';
-        document.documentElement.style.overflow = ''; // Restore html element
-        // Remove the line that resets body.style.top
-        // document.body.style.top = ''; // REMOVE THIS
+        document.documentElement.style.overflow = '';
         window.scrollTo(0, this.scrollPosition);
         
         // Reset modal classes to default state
         this.resetModalToDefault();
+    }
+
+    copyRecipeURL(recipeId, event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        
+        if (this.urlManager) {
+            const url = this.urlManager.getRecipeURL(recipeId);
+            const button = event ? event.currentTarget : null;
+            this.urlManager.copyToClipboard(url, button);
+        }
     }
 
     // Reset modal to default state (for next opening)
@@ -2347,8 +2600,6 @@ class RecommendationEngine {
 
 class RecipeApp {
     constructor() {
-        // Remove this line: window.recipeApp = this;
-        
         // Initialize core components
         this.recipeDatabase = new RecipeDatabase();
         this.userDataManager = new UserDataManager();
@@ -2373,13 +2624,25 @@ class RecipeApp {
             this.recommendationEngine
         );
         
+        // Initialize URL Manager
+        this.urlManager = new URLManager(
+            this.filterManager,
+            this.modalManager,
+            this.recipeDatabase
+        );
+        
+        // Connect URL manager to other managers
+        this.filterManager.setURLManager(this.urlManager);
+        this.modalManager.setURLManager(this.urlManager);
+        
         // Set up the modal callback in UIManager
         this.uiManager.setModalCallback((recipeId) => {
             this.modalManager.showRecipe(recipeId);
         });
         
-        // Setup filter event listeners after all components are ready
+        // Setup event listeners
         this.filterManager.setupEventListeners();
+        this.urlManager.setupHistoryListener();
         
         // Initialize the app
         this.init();
@@ -2389,9 +2652,12 @@ class RecipeApp {
         // Calculate initial recommendation scores
         this.recommendationEngine.calculateAllScores();
         
+        // Initialize from URL parameters
+        this.urlManager.initializeFromURL();
+        
         // Initial render with recommendation sorting
         this.filterManager.updateFilterButton();
-        this.filterManager.applyFilters(); // This will now sort by recommendation by default
+        this.filterManager.applyFilters();
         this.uiManager.setupLazyLoading();
     }
 }
