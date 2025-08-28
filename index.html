@@ -1715,7 +1715,8 @@ class ModalManager {
 
     // Generate hero section (shared between mobile and desktop)
     generateHeroSection(recipe) {
-        const imageUrl = recipe.image ? CONFIG.IMAGE_PATHS.MODAL + recipe.image : null;
+        const imageLowUrl = recipe.image ? CONFIG.IMAGE_PATHS.LIST + recipe.image : null;
+        const imageHighUrl = recipe.image ? CONFIG.IMAGE_PATHS.MODAL + recipe.image : null;
         const isMobile = window.innerWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
         const heroImageHeight = isMobile ? 'h-56' : 'h-80';
         const isFullscreen = window.innerWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
@@ -1726,7 +1727,17 @@ class ModalManager {
                 <!-- Hero image at the top -->
                 <div class="absolute inset-x-0 top-0 ${heroImageHeight} ${!isFullscreen ? 'rounded-t-2xl overflow-hidden' : ''}">
                     ${recipe.image ? 
-                        `<img src="${imageUrl}" alt="${recipe.title}" class="w-full h-full object-cover">` : 
+                        `<div class="relative w-full h-full">
+                            <!-- Low-res placeholder (loads instantly from cache) -->
+                            <img src="${imageLowUrl}" 
+                                alt="${recipe.title}" 
+                                class="w-full h-full object-cover absolute inset-0 filter blur-sm scale-105">
+                            <!-- High-res overlay (loads on top) -->
+                            <img src="${imageHighUrl}" 
+                                alt="${recipe.title}" 
+                                class="w-full h-full object-cover absolute inset-0 opacity-0 transition-opacity duration-500"
+                                onload="this.classList.remove('opacity-0'); this.classList.add('opacity-100');">
+                        </div>` : 
                         `<div class="w-full h-full flex items-center justify-center">
                             <span class="text-8xl opacity-30">🍞</span>
                         </div>`}
