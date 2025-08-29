@@ -1598,20 +1598,13 @@ class KokebokViewer {
         this.currentPage = 1;
         this.totalPages = 150; // Adjust based on your actual page count
         this.zoomLevel = 1;
-        this.minZoom = 0.5;
-        this.maxZoom = 3;
+        this.minZoom = 1; // Will be set dynamically
+        this.maxZoom = 5;
         this.panX = 0;
         this.panY = 0;
         this.isPanning = false;
         this.startX = 0;
         this.startY = 0;
-        this.filters = {
-            brightness: 100,
-            contrast: 100,
-            sharpness: 0,
-            sepia: 0,
-            invert: 0
-        };
         this.touchStartDistance = 0;
         this.lastTouchX = 0;
         this.lastTouchY = 0;
@@ -1625,113 +1618,72 @@ class KokebokViewer {
     createModal() {
         const modal = document.createElement('div');
         modal.id = 'kokebokViewer';
-        modal.className = 'fixed inset-x-0 top-12 bottom-0 bg-black/95 backdrop-blur-sm hidden z-[60] flex flex-col';
+        // Use absolute positioning to stay within recipe modal bounds
+        modal.className = 'absolute inset-0 top-20 bg-white hidden z-[60] flex flex-col rounded-t-2xl overflow-hidden shadow-2xl border border-amber-200';
         
         modal.innerHTML = `
             <!-- Close button -->
             <button onclick="recipeApp.kokebokViewer.close()" 
-                    class="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg transition-transform hover:scale-110">
-                <i class="fas fa-times text-gray-600 text-lg"></i>
+                    class="absolute top-3 right-3 z-10 text-amber-700 hover:text-amber-500 transition-all duration-200 p-2"
+                    style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+                <i class="fas fa-times text-xl"></i>
             </button>
             
-            <!-- Image container -->
-            <div id="kokebokContainer" class="flex-1 overflow-hidden relative bg-gray-900">
+            <!-- Image container (expanded) -->
+            <div id="kokebokContainer" class="flex-1 overflow-hidden relative bg-gradient-to-br from-amber-50/30 to-orange-50/30">
                 <div id="kokebokImageWrapper" class="w-full h-full flex items-center justify-center">
                     <img id="kokebokImage" 
-                         class="max-w-none transition-transform duration-200 cursor-move select-none"
+                         class="max-w-none cursor-move select-none shadow-lg"
                          draggable="false"
                          style="transform-origin: center center;">
                 </div>
             </div>
             
-            <!-- Controls bar -->
-            <div class="bg-gray-900/95 backdrop-blur border-t border-gray-700 p-4">
-                <!-- Navigation and zoom controls -->
-                <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center gap-2">
-                        <button onclick="recipeApp.kokebokViewer.previousPage()" 
-                                class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50"
-                                id="prevPageBtn">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <div class="px-3 py-2 bg-gray-800 text-white rounded-lg min-w-[100px] text-center">
-                            <span id="pageIndicator">Side 1</span>
-                        </div>
-                        <button onclick="recipeApp.kokebokViewer.nextPage()" 
-                                class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50"
-                                id="nextPageBtn">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
+            <!-- Minimal navigation bar -->
+            <div class="bg-white border-t border-amber-200 px-4 py-2">
+                <div class="flex items-center justify-center gap-2">
+                    <button onclick="recipeApp.kokebokViewer.previousPage()" 
+                            class="px-3 py-1.5 bg-white hover:bg-amber-50 text-amber-700 rounded-lg border border-amber-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            id="prevPageBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="px-4 py-1.5 bg-amber-100 text-amber-800 rounded-lg min-w-[100px] text-center font-medium text-sm border border-amber-300">
+                        <span id="pageIndicator">Side 1</span>
                     </div>
-                    
-                    <div class="flex items-center gap-2">
-                        <button onclick="recipeApp.kokebokViewer.zoomOut()" 
-                                class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors">
-                            <i class="fas fa-search-minus"></i>
-                        </button>
-                        <button onclick="recipeApp.kokebokViewer.resetZoom()" 
-                                class="px-3 py-2 bg-gray-800 text-white rounded-lg min-w-[60px] text-sm">
-                            <span id="zoomLevel">100%</span>
-                        </button>
-                        <button onclick="recipeApp.kokebokViewer.zoomIn()" 
-                                class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors">
-                            <i class="fas fa-search-plus"></i>
-                        </button>
-                    </div>
+                    <button onclick="recipeApp.kokebokViewer.nextPage()" 
+                            class="px-3 py-1.5 bg-white hover:bg-amber-50 text-amber-700 rounded-lg border border-amber-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            id="nextPageBtn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
-                
-                <!-- Filter controls -->
-                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
-                    <div class="flex flex-col">
-                        <label class="text-gray-400 mb-1">Lysstyrke</label>
-                        <input type="range" min="50" max="150" value="100" 
-                               oninput="recipeApp.kokebokViewer.updateFilter('brightness', this.value)"
-                               class="accent-amber-600">
-                    </div>
-                    <div class="flex flex-col">
-                        <label class="text-gray-400 mb-1">Kontrast</label>
-                        <input type="range" min="50" max="200" value="100" 
-                               oninput="recipeApp.kokebokViewer.updateFilter('contrast', this.value)"
-                               class="accent-amber-600">
-                    </div>
-                    <div class="flex flex-col">
-                        <label class="text-gray-400 mb-1">Skarphet</label>
-                        <input type="range" min="0" max="10" value="0" 
-                               oninput="recipeApp.kokebokViewer.updateFilter('sharpness', this.value)"
-                               class="accent-amber-600">
-                    </div>
-                    <div class="flex flex-col">
-                        <label class="text-gray-400 mb-1">Sepia</label>
-                        <input type="range" min="0" max="100" value="0" 
-                               oninput="recipeApp.kokebokViewer.updateFilter('sepia', this.value)"
-                               class="accent-amber-600">
-                    </div>
-                    <div class="flex flex-col">
-                        <label class="text-gray-400 mb-1">Inverter</label>
-                        <input type="range" min="0" max="100" value="0" 
-                               oninput="recipeApp.kokebokViewer.updateFilter('invert', this.value)"
-                               class="accent-amber-600">
-                    </div>
-                </div>
-                
-                <!-- Reset filters button -->
-                <button onclick="recipeApp.kokebokViewer.resetFilters()" 
-                        class="mt-2 px-3 py-1 bg-gray-800 hover:bg-gray-700 text-white text-xs rounded-lg transition-colors">
-                    <i class="fas fa-undo mr-1"></i> Tilbakestill filtre
-                </button>
             </div>
         `;
         
-        document.body.appendChild(modal);
+        // Don't append yet - will do in open()
         this.modalElement = modal;
         this.imageElement = document.getElementById('kokebokImage');
         this.containerElement = document.getElementById('kokebokContainer');
+    }
+
+    updateModalPosition() {
+        // Check if recipe modal is in fullscreen mode
+        const windowWidth = window.innerWidth;
+        const isFullscreen = windowWidth <= 1000; // CONFIG.BREAKPOINTS.FULLSCREEN_MODAL
+        
+        if (isFullscreen) {
+            // Fullscreen mode - only top corners rounded
+            this.modalElement.className = 'absolute inset-0 top-20 bg-white hidden z-[60] flex flex-col rounded-t-2xl overflow-hidden shadow-2xl border border-amber-200';
+        } else {
+            // Desktop mode - all corners rounded
+            this.modalElement.className = 'absolute inset-0 top-20 bg-white hidden z-[60] flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-amber-200';
+        }
     }
 
     setupEventListeners() {
         // Mouse wheel zoom
         this.containerElement?.addEventListener('wheel', (e) => {
             e.preventDefault();
+            e.stopPropagation(); // Prevent bubbling to recipe modal
             const delta = e.deltaY > 0 ? 0.9 : 1.1;
             this.zoom(delta, e.clientX, e.clientY);
         });
@@ -1739,6 +1691,7 @@ class KokebokViewer {
         // Mouse drag panning
         this.imageElement?.addEventListener('mousedown', (e) => {
             e.preventDefault();
+            e.stopPropagation(); // Prevent bubbling
             this.startPanning(e.clientX, e.clientY);
         });
 
@@ -1754,6 +1707,7 @@ class KokebokViewer {
 
         // Touch events for mobile
         this.imageElement?.addEventListener('touchstart', (e) => {
+            e.stopPropagation(); // Prevent bubbling
             if (e.touches.length === 1) {
                 // Single touch - start panning
                 const touch = e.touches[0];
@@ -1811,6 +1765,7 @@ class KokebokViewer {
             if (this.modalElement && !this.modalElement.classList.contains('hidden')) {
                 switch(e.key) {
                     case 'Escape':
+                        e.stopPropagation(); // Prevent closing recipe modal
                         this.close();
                         break;
                     case 'ArrowLeft':
@@ -1819,39 +1774,45 @@ class KokebokViewer {
                     case 'ArrowRight':
                         this.nextPage();
                         break;
-                    case '+':
-                    case '=':
-                        this.zoomIn();
-                        break;
-                    case '-':
-                        this.zoomOut();
-                        break;
-                    case '0':
-                        this.resetZoom();
-                        break;
                 }
+            }
+        });
+
+        // Stop click propagation on modal to prevent closing recipe modal
+        this.modalElement?.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // Update position on window resize
+        window.addEventListener('resize', () => {
+            if (this.modalElement && !this.modalElement.classList.contains('hidden')) {
+                this.updateModalPosition();
             }
         });
     }
 
     open(pageNumber) {
+        // Find the recipe modal content container
+        const recipeModal = document.getElementById('recipeModal');
+        const modalContent = recipeModal?.querySelector('#modalContent') || recipeModal?.querySelector('.flex.flex-col');
+        
+        if (modalContent && !modalContent.contains(this.modalElement)) {
+            modalContent.appendChild(this.modalElement);
+            // Re-get references after DOM insertion
+            this.imageElement = document.getElementById('kokebokImage');
+            this.containerElement = document.getElementById('kokebokContainer');
+            // Re-setup event listeners for the newly inserted elements
+            this.setupEventListeners();
+        }
+        
         this.currentPage = pageNumber || 1;
-        this.resetView();
+        this.updateModalPosition();
         this.loadPage(this.currentPage);
         this.modalElement.classList.remove('hidden');
-        
-        // Lock body scroll
-        document.body.style.overflow = 'hidden';
     }
 
     close() {
         this.modalElement.classList.add('hidden');
-        
-        // Restore body scroll (only if recipe modal is also closed)
-        const recipeModal = document.getElementById('recipeModal');
-        if (recipeModal.classList.contains('hidden')) {
-            document.body.style.overflow = '';
-        }
     }
 
     loadPage(pageNumber) {
@@ -1862,7 +1823,8 @@ class KokebokViewer {
         this.imageElement.onload = () => {
             this.updatePageIndicator();
             this.updateNavigationButtons();
-            this.applyFilters();
+            // Fit to page and set as minimum zoom
+            this.fitToPage();
         };
         
         this.imageElement.onerror = () => {
@@ -1870,10 +1832,31 @@ class KokebokViewer {
         };
     }
 
+    fitToPage() {
+        if (!this.imageElement || !this.containerElement) return;
+        
+        const containerWidth = this.containerElement.clientWidth;
+        const containerHeight = this.containerElement.clientHeight;
+        const imageWidth = this.imageElement.naturalWidth || 1949;
+        const imageHeight = this.imageElement.naturalHeight || 2456;
+        
+        // Calculate scale to fit with small padding
+        const padding = 20;
+        const scaleX = (containerWidth - padding) / imageWidth;
+        const scaleY = (containerHeight - padding) / imageHeight;
+        const scale = Math.min(scaleX, scaleY);
+        
+        // Set this as both current zoom and minimum zoom
+        this.zoomLevel = scale;
+        this.minZoom = scale;
+        this.panX = 0;
+        this.panY = 0;
+        this.updateTransform();
+    }
+
     previousPage() {
         if (this.currentPage > 1) {
             this.currentPage--;
-            this.resetView();
             this.loadPage(this.currentPage);
         }
     }
@@ -1881,7 +1864,6 @@ class KokebokViewer {
     nextPage() {
         if (this.currentPage < this.totalPages) {
             this.currentPage++;
-            this.resetView();
             this.loadPage(this.currentPage);
         }
     }
@@ -1902,24 +1884,7 @@ class KokebokViewer {
             
             this.zoomLevel = newZoom;
             this.updateTransform();
-            this.updateZoomIndicator();
         }
-    }
-
-    zoomIn() {
-        this.zoom(1.2, this.containerElement.offsetWidth / 2, this.containerElement.offsetHeight / 2);
-    }
-
-    zoomOut() {
-        this.zoom(0.8, this.containerElement.offsetWidth / 2, this.containerElement.offsetHeight / 2);
-    }
-
-    resetZoom() {
-        this.zoomLevel = 1;
-        this.panX = 0;
-        this.panY = 0;
-        this.updateTransform();
-        this.updateZoomIndicator();
     }
 
     startPanning(x, y) {
@@ -1946,62 +1911,16 @@ class KokebokViewer {
         this.imageElement.style.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.zoomLevel})`;
     }
 
-    updateFilter(filterName, value) {
-        this.filters[filterName] = value;
-        this.applyFilters();
-    }
-
-    applyFilters() {
-        const filterString = `
-            brightness(${this.filters.brightness}%)
-            contrast(${this.filters.contrast}%)
-            sepia(${this.filters.sepia}%)
-            invert(${this.filters.invert}%)
-            ${this.filters.sharpness > 0 ? `drop-shadow(0 0 ${this.filters.sharpness}px rgba(0,0,0,0.5))` : ''}
-        `.trim();
-        
-        this.imageElement.style.filter = filterString;
-    }
-
-    resetFilters() {
-        this.filters = {
-            brightness: 100,
-            contrast: 100,
-            sharpness: 0,
-            sepia: 0,
-            invert: 0
-        };
-        
-        // Reset all sliders
-        const sliders = this.modalElement.querySelectorAll('input[type="range"]');
-        sliders[0].value = 100; // brightness
-        sliders[1].value = 100; // contrast
-        sliders[2].value = 0;   // sharpness
-        sliders[3].value = 0;   // sepia
-        sliders[4].value = 0;   // invert
-        
-        this.applyFilters();
-    }
-
-    resetView() {
-        this.zoomLevel = 1;
-        this.panX = 0;
-        this.panY = 0;
-        this.updateTransform();
-        this.updateZoomIndicator();
-    }
-
     updatePageIndicator() {
         document.getElementById('pageIndicator').textContent = `Side ${this.currentPage}`;
     }
 
     updateNavigationButtons() {
-        document.getElementById('prevPageBtn').disabled = this.currentPage <= 1;
-        document.getElementById('nextPageBtn').disabled = this.currentPage >= this.totalPages;
-    }
-
-    updateZoomIndicator() {
-        document.getElementById('zoomLevel').textContent = `${Math.round(this.zoomLevel * 100)}%`;
+        const prevBtn = document.getElementById('prevPageBtn');
+        const nextBtn = document.getElementById('nextPageBtn');
+        
+        if (prevBtn) prevBtn.disabled = this.currentPage <= 1;
+        if (nextBtn) nextBtn.disabled = this.currentPage >= this.totalPages;
     }
 }
 
@@ -2394,7 +2313,18 @@ class ModalManager {
                             <i class="fas fa-copy"></i>
                         </button>
                     </div>
-                    ${sourceInfo ? `<p class="text-sm text-amber-600 mb-2">${sourceInfo}</p>` : ''}
+                    ${sourceInfo ? `
+                        <div class="flex items-center gap-2 mb-2">
+                            <p class="text-xs text-amber-600">${sourceInfo}</p>
+                            ${recipe.pageNumber ? `
+                                <button onclick="recipeApp.kokebokViewer.open(${recipe.pageNumber})" 
+                                        class="text-amber-600 hover:text-amber-700 transition-colors"
+                                        title="Vis oppskrift i kokeboken">
+                                    <i class="fas fa-book text-xs"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    ` : ''}
                     ${this.renderTags(recipe)}
                     
                     <!-- Actions row -->
@@ -3033,6 +2963,7 @@ class RecipeApp {
             this.recommendationEngine,
             this.userDataManager
         );
+        this.kokebokViewer = new KokebokViewer();
         this.modalManager = new ModalManager(
             this.recipeDatabase, 
             this.userDataManager, 
