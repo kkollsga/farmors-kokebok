@@ -1945,6 +1945,10 @@ class KokebokViewer {
         // Track this URL for cache clearing
         this.loadedImageUrls.add(imageUrl);
         
+        // Update page indicator and navigation buttons IMMEDIATELY
+        this.updatePageIndicator();
+        this.updateNavigationButtons();
+        
         if (this.imageElement) {
             // Show loading spinner
             const spinner = document.getElementById('kokebokLoadingSpinner');
@@ -1958,8 +1962,6 @@ class KokebokViewer {
             tempImg.onload = () => {
                 // Image loaded successfully - update the displayed image
                 this.imageElement.src = imageUrl;
-                this.updatePageIndicator();
-                this.updateNavigationButtons();
                 this.fitToPage();
                 
                 // Hide loading spinner
