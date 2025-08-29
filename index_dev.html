@@ -1590,6 +1590,422 @@ class UIManager {
 }
 
 // ============================================================================
+// KOKEBOK VIEWER CLASS
+// ============================================================================
+
+class KokebokViewer {
+    constructor() {
+        this.currentPage = 1;
+        this.totalPages = 150; // Adjust based on your actual page count
+        this.zoomLevel = 1;
+        this.minZoom = 0.5;
+        this.maxZoom = 3;
+        this.panX = 0;
+        this.panY = 0;
+        this.isPanning = false;
+        this.startX = 0;
+        this.startY = 0;
+        this.filters = {
+            brightness: 100,
+            contrast: 100,
+            sharpness: 0,
+            sepia: 0,
+            invert: 0
+        };
+        this.touchStartDistance = 0;
+        this.lastTouchX = 0;
+        this.lastTouchY = 0;
+        this.modalElement = null;
+        this.imageElement = null;
+        this.containerElement = null;
+        this.createModal();
+        this.setupEventListeners();
+    }
+
+    createModal() {
+        const modal = document.createElement('div');
+        modal.id = 'kokebokViewer';
+        modal.className = 'fixed inset-x-0 top-12 bottom-0 bg-black/95 backdrop-blur-sm hidden z-[60] flex flex-col';
+        
+        modal.innerHTML = `
+            <!-- Close button -->
+            <button onclick="recipeApp.kokebokViewer.close()" 
+                    class="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur rounded-full p-2 hover:bg-white shadow-lg transition-transform hover:scale-110">
+                <i class="fas fa-times text-gray-600 text-lg"></i>
+            </button>
+            
+            <!-- Image container -->
+            <div id="kokebokContainer" class="flex-1 overflow-hidden relative bg-gray-900">
+                <div id="kokebokImageWrapper" class="w-full h-full flex items-center justify-center">
+                    <img id="kokebokImage" 
+                         class="max-w-none transition-transform duration-200 cursor-move select-none"
+                         draggable="false"
+                         style="transform-origin: center center;">
+                </div>
+            </div>
+            
+            <!-- Controls bar -->
+            <div class="bg-gray-900/95 backdrop-blur border-t border-gray-700 p-4">
+                <!-- Navigation and zoom controls -->
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <button onclick="recipeApp.kokebokViewer.previousPage()" 
+                                class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                                id="prevPageBtn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <div class="px-3 py-2 bg-gray-800 text-white rounded-lg min-w-[100px] text-center">
+                            <span id="pageIndicator">Side 1</span>
+                        </div>
+                        <button onclick="recipeApp.kokebokViewer.nextPage()" 
+                                class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                                id="nextPageBtn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <button onclick="recipeApp.kokebokViewer.zoomOut()" 
+                                class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <button onclick="recipeApp.kokebokViewer.resetZoom()" 
+                                class="px-3 py-2 bg-gray-800 text-white rounded-lg min-w-[60px] text-sm">
+                            <span id="zoomLevel">100%</span>
+                        </button>
+                        <button onclick="recipeApp.kokebokViewer.zoomIn()" 
+                                class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Filter controls -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                    <div class="flex flex-col">
+                        <label class="text-gray-400 mb-1">Lysstyrke</label>
+                        <input type="range" min="50" max="150" value="100" 
+                               oninput="recipeApp.kokebokViewer.updateFilter('brightness', this.value)"
+                               class="accent-amber-600">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-gray-400 mb-1">Kontrast</label>
+                        <input type="range" min="50" max="200" value="100" 
+                               oninput="recipeApp.kokebokViewer.updateFilter('contrast', this.value)"
+                               class="accent-amber-600">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-gray-400 mb-1">Skarphet</label>
+                        <input type="range" min="0" max="10" value="0" 
+                               oninput="recipeApp.kokebokViewer.updateFilter('sharpness', this.value)"
+                               class="accent-amber-600">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-gray-400 mb-1">Sepia</label>
+                        <input type="range" min="0" max="100" value="0" 
+                               oninput="recipeApp.kokebokViewer.updateFilter('sepia', this.value)"
+                               class="accent-amber-600">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-gray-400 mb-1">Inverter</label>
+                        <input type="range" min="0" max="100" value="0" 
+                               oninput="recipeApp.kokebokViewer.updateFilter('invert', this.value)"
+                               class="accent-amber-600">
+                    </div>
+                </div>
+                
+                <!-- Reset filters button -->
+                <button onclick="recipeApp.kokebokViewer.resetFilters()" 
+                        class="mt-2 px-3 py-1 bg-gray-800 hover:bg-gray-700 text-white text-xs rounded-lg transition-colors">
+                    <i class="fas fa-undo mr-1"></i> Tilbakestill filtre
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        this.modalElement = modal;
+        this.imageElement = document.getElementById('kokebokImage');
+        this.containerElement = document.getElementById('kokebokContainer');
+    }
+
+    setupEventListeners() {
+        // Mouse wheel zoom
+        this.containerElement?.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            this.zoom(delta, e.clientX, e.clientY);
+        });
+
+        // Mouse drag panning
+        this.imageElement?.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            this.startPanning(e.clientX, e.clientY);
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (this.isPanning) {
+                this.pan(e.clientX, e.clientY);
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            this.stopPanning();
+        });
+
+        // Touch events for mobile
+        this.imageElement?.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                // Single touch - start panning
+                const touch = e.touches[0];
+                this.startPanning(touch.clientX, touch.clientY);
+                this.lastTouchX = touch.clientX;
+                this.lastTouchY = touch.clientY;
+            } else if (e.touches.length === 2) {
+                // Two touches - start pinch zoom
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                this.touchStartDistance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+            }
+        });
+
+        this.imageElement?.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1 && this.isPanning) {
+                // Single touch - pan
+                const touch = e.touches[0];
+                this.pan(touch.clientX, touch.clientY);
+                this.lastTouchX = touch.clientX;
+                this.lastTouchY = touch.clientY;
+            } else if (e.touches.length === 2) {
+                // Two touches - pinch zoom
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+                
+                if (this.touchStartDistance > 0) {
+                    const delta = currentDistance / this.touchStartDistance;
+                    const centerX = (touch1.clientX + touch2.clientX) / 2;
+                    const centerY = (touch1.clientY + touch2.clientY) / 2;
+                    this.zoom(delta, centerX, centerY);
+                    this.touchStartDistance = currentDistance;
+                }
+            }
+        });
+
+        this.imageElement?.addEventListener('touchend', (e) => {
+            if (e.touches.length === 0) {
+                this.stopPanning();
+                this.touchStartDistance = 0;
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (this.modalElement && !this.modalElement.classList.contains('hidden')) {
+                switch(e.key) {
+                    case 'Escape':
+                        this.close();
+                        break;
+                    case 'ArrowLeft':
+                        this.previousPage();
+                        break;
+                    case 'ArrowRight':
+                        this.nextPage();
+                        break;
+                    case '+':
+                    case '=':
+                        this.zoomIn();
+                        break;
+                    case '-':
+                        this.zoomOut();
+                        break;
+                    case '0':
+                        this.resetZoom();
+                        break;
+                }
+            }
+        });
+    }
+
+    open(pageNumber) {
+        this.currentPage = pageNumber || 1;
+        this.resetView();
+        this.loadPage(this.currentPage);
+        this.modalElement.classList.remove('hidden');
+        
+        // Lock body scroll
+        document.body.style.overflow = 'hidden';
+    }
+
+    close() {
+        this.modalElement.classList.add('hidden');
+        
+        // Restore body scroll (only if recipe modal is also closed)
+        const recipeModal = document.getElementById('recipeModal');
+        if (recipeModal.classList.contains('hidden')) {
+            document.body.style.overflow = '';
+        }
+    }
+
+    loadPage(pageNumber) {
+        const paddedNumber = String(pageNumber).padStart(3, '0');
+        const imageUrl = `images/kokebok/kokebok-page-${paddedNumber}.jpg`;
+        
+        this.imageElement.src = imageUrl;
+        this.imageElement.onload = () => {
+            this.updatePageIndicator();
+            this.updateNavigationButtons();
+            this.applyFilters();
+        };
+        
+        this.imageElement.onerror = () => {
+            console.error(`Failed to load page ${pageNumber}`);
+        };
+    }
+
+    previousPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+            this.resetView();
+            this.loadPage(this.currentPage);
+        }
+    }
+
+    nextPage() {
+        if (this.currentPage < this.totalPages) {
+            this.currentPage++;
+            this.resetView();
+            this.loadPage(this.currentPage);
+        }
+    }
+
+    zoom(delta, clientX, clientY) {
+        const newZoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.zoomLevel * delta));
+        
+        if (newZoom !== this.zoomLevel) {
+            // Calculate zoom center point relative to container
+            const rect = this.containerElement.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            
+            // Adjust pan to keep zoom centered on cursor
+            const zoomRatio = newZoom / this.zoomLevel;
+            this.panX = x - (x - this.panX) * zoomRatio;
+            this.panY = y - (y - this.panY) * zoomRatio;
+            
+            this.zoomLevel = newZoom;
+            this.updateTransform();
+            this.updateZoomIndicator();
+        }
+    }
+
+    zoomIn() {
+        this.zoom(1.2, this.containerElement.offsetWidth / 2, this.containerElement.offsetHeight / 2);
+    }
+
+    zoomOut() {
+        this.zoom(0.8, this.containerElement.offsetWidth / 2, this.containerElement.offsetHeight / 2);
+    }
+
+    resetZoom() {
+        this.zoomLevel = 1;
+        this.panX = 0;
+        this.panY = 0;
+        this.updateTransform();
+        this.updateZoomIndicator();
+    }
+
+    startPanning(x, y) {
+        this.isPanning = true;
+        this.startX = x - this.panX;
+        this.startY = y - this.panY;
+        this.imageElement.style.cursor = 'grabbing';
+    }
+
+    pan(x, y) {
+        if (this.isPanning) {
+            this.panX = x - this.startX;
+            this.panY = y - this.startY;
+            this.updateTransform();
+        }
+    }
+
+    stopPanning() {
+        this.isPanning = false;
+        this.imageElement.style.cursor = 'move';
+    }
+
+    updateTransform() {
+        this.imageElement.style.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.zoomLevel})`;
+    }
+
+    updateFilter(filterName, value) {
+        this.filters[filterName] = value;
+        this.applyFilters();
+    }
+
+    applyFilters() {
+        const filterString = `
+            brightness(${this.filters.brightness}%)
+            contrast(${this.filters.contrast}%)
+            sepia(${this.filters.sepia}%)
+            invert(${this.filters.invert}%)
+            ${this.filters.sharpness > 0 ? `drop-shadow(0 0 ${this.filters.sharpness}px rgba(0,0,0,0.5))` : ''}
+        `.trim();
+        
+        this.imageElement.style.filter = filterString;
+    }
+
+    resetFilters() {
+        this.filters = {
+            brightness: 100,
+            contrast: 100,
+            sharpness: 0,
+            sepia: 0,
+            invert: 0
+        };
+        
+        // Reset all sliders
+        const sliders = this.modalElement.querySelectorAll('input[type="range"]');
+        sliders[0].value = 100; // brightness
+        sliders[1].value = 100; // contrast
+        sliders[2].value = 0;   // sharpness
+        sliders[3].value = 0;   // sepia
+        sliders[4].value = 0;   // invert
+        
+        this.applyFilters();
+    }
+
+    resetView() {
+        this.zoomLevel = 1;
+        this.panX = 0;
+        this.panY = 0;
+        this.updateTransform();
+        this.updateZoomIndicator();
+    }
+
+    updatePageIndicator() {
+        document.getElementById('pageIndicator').textContent = `Side ${this.currentPage}`;
+    }
+
+    updateNavigationButtons() {
+        document.getElementById('prevPageBtn').disabled = this.currentPage <= 1;
+        document.getElementById('nextPageBtn').disabled = this.currentPage >= this.totalPages;
+    }
+
+    updateZoomIndicator() {
+        document.getElementById('zoomLevel').textContent = `${Math.round(this.zoomLevel * 100)}%`;
+    }
+}
+
+// ============================================================================
 // MODAL MANAGER CLASS
 // ============================================================================
 
@@ -1895,7 +2311,18 @@ class ModalManager {
                             <i class="fas fa-copy text-sm"></i>
                         </button>
                     </div>
-                    ${sourceInfo ? `<p class="text-xs text-amber-600 mb-2">${sourceInfo}</p>` : ''}
+                    ${sourceInfo ? `
+                        <div class="flex items-center gap-2 mb-2">
+                            <p class="text-xs text-amber-600">${sourceInfo}</p>
+                            ${recipe.pageNumber ? `
+                                <button onclick="recipeApp.kokebokViewer.open(${recipe.pageNumber})" 
+                                        class="text-amber-600 hover:text-amber-700 transition-colors"
+                                        title="Vis oppskrift i kokeboken">
+                                    <i class="fas fa-book text-xs"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    ` : ''}
                     ${this.renderTags(recipe)}
                 </div>
                 
