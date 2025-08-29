@@ -1757,11 +1757,13 @@ class KokebokViewer {
         this.startX = 0;
         this.startY = 0;
         this.touchStartDistance = 0;
-        this.lastTouchX = 0;
-        this.lastTouchY = 0;
+        this.initialZoom = 1;
+        this.initialPanX = 0;
+        this.initialPanY = 0;
         this.modalElement = null;
         this.imageElement = null;
         this.containerElement = null;
+        this.isOpen = false;
         this.createModal();
         this.setupEventListeners();
     }
@@ -1769,7 +1771,6 @@ class KokebokViewer {
     createModal() {
         const modal = document.createElement('div');
         modal.id = 'kokebokViewer';
-        // Use absolute positioning to stay within recipe modal bounds
         modal.className = 'absolute inset-0 top-20 bg-white hidden z-[60] flex flex-col rounded-t-2xl overflow-hidden shadow-2xl border border-amber-200';
         
         modal.innerHTML = `
@@ -1810,22 +1811,25 @@ class KokebokViewer {
             </div>
         `;
         
-        // Don't append yet - will do in open()
         this.modalElement = modal;
         this.imageElement = document.getElementById('kokebokImage');
         this.containerElement = document.getElementById('kokebokContainer');
     }
 
     updateModalPosition() {
-        // Check if recipe modal is in fullscreen mode
         const windowWidth = window.innerWidth;
-        const isFullscreen = windowWidth <= 1000; // CONFIG.BREAKPOINTS.FULLSCREEN_MODAL
+        const windowHeight = window.innerHeight;
+        const isLandscape = windowWidth > windowHeight;
+        const isFullscreen = windowWidth <= 1000;
         
-        if (isFullscreen) {
-            // Fullscreen mode - only top corners rounded
+        if (isLandscape && windowWidth <= 900) {
+            // Landscape on mobile - cover entire recipe modal
+            this.modalElement.className = 'absolute inset-0 bg-white hidden z-[60] flex flex-col overflow-hidden shadow-2xl border border-amber-200';
+        } else if (isFullscreen) {
+            // Portrait fullscreen - top rounded corners with margin
             this.modalElement.className = 'absolute inset-0 top-20 bg-white hidden z-[60] flex flex-col rounded-t-2xl overflow-hidden shadow-2xl border border-amber-200';
         } else {
-            // Desktop mode - all corners rounded
+            // Desktop - all corners rounded with margin
             this.modalElement.className = 'absolute inset-0 top-20 bg-white hidden z-[60] flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-amber-200';
         }
     }
@@ -1834,7 +1838,7 @@ class KokebokViewer {
         // Mouse wheel zoom
         this.containerElement?.addEventListener('wheel', (e) => {
             e.preventDefault();
-            e.stopPropagation(); // Prevent bubbling to recipe modal
+            e.stopPropagation();
             const delta = e.deltaY > 0 ? 0.9 : 1.1;
             this.zoom(delta, e.clientX, e.clientY);
         });
@@ -1842,7 +1846,7 @@ class KokebokViewer {
         // Mouse drag panning
         this.imageElement?.addEventListener('mousedown', (e) => {
             e.preventDefault();
-            e.stopPropagation(); // Prevent bubbling
+            e.stopPropagation();
             this.startPanning(e.clientX, e.clientY);
         });
 
@@ -1858,56 +1862,80 @@ class KokebokViewer {
 
         // Touch events for mobile
         this.imageElement?.addEventListener('touchstart', (e) => {
-            e.stopPropagation(); // Prevent bubbling
+            e.stopPropagation();
             if (e.touches.length === 1) {
                 // Single touch - start panning
                 const touch = e.touches[0];
                 this.startPanning(touch.clientX, touch.clientY);
-                this.lastTouchX = touch.clientX;
-                this.lastTouchY = touch.clientY;
             } else if (e.touches.length === 2) {
                 // Two touches - start pinch zoom
                 e.preventDefault();
+                this.isPanning = false;
+                
                 const touch1 = e.touches[0];
                 const touch2 = e.touches[1];
+                
+                // Calculate initial distance between fingers
                 this.touchStartDistance = Math.hypot(
                     touch2.clientX - touch1.clientX,
                     touch2.clientY - touch1.clientY
                 );
+                
+                // Store initial zoom and pan state
+                this.initialZoom = this.zoomLevel;
+                this.initialPanX = this.panX;
+                this.initialPanY = this.panY;
+                
+                // Calculate center point between fingers relative to container
+                const rect = this.containerElement.getBoundingClientRect();
+                this.pinchCenterX = ((touch1.clientX + touch2.clientX) / 2) - rect.left;
+                this.pinchCenterY = ((touch1.clientY + touch2.clientY) / 2) - rect.top;
             }
-        });
+        }, { passive: false });
 
         this.imageElement?.addEventListener('touchmove', (e) => {
             if (e.touches.length === 1 && this.isPanning) {
                 // Single touch - pan
                 const touch = e.touches[0];
                 this.pan(touch.clientX, touch.clientY);
-                this.lastTouchX = touch.clientX;
-                this.lastTouchY = touch.clientY;
             } else if (e.touches.length === 2) {
                 // Two touches - pinch zoom
                 e.preventDefault();
                 const touch1 = e.touches[0];
                 const touch2 = e.touches[1];
+                
+                // Calculate current distance
                 const currentDistance = Math.hypot(
                     touch2.clientX - touch1.clientX,
                     touch2.clientY - touch1.clientY
                 );
                 
                 if (this.touchStartDistance > 0) {
-                    const delta = currentDistance / this.touchStartDistance;
-                    const centerX = (touch1.clientX + touch2.clientX) / 2;
-                    const centerY = (touch1.clientY + touch2.clientY) / 2;
-                    this.zoom(delta, centerX, centerY);
-                    this.touchStartDistance = currentDistance;
+                    // Calculate zoom scale based on pinch gesture
+                    const scale = currentDistance / this.touchStartDistance;
+                    const newZoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.initialZoom * scale));
+                    
+                    // Calculate how much we're zooming
+                    const zoomDelta = newZoom / this.zoomLevel;
+                    
+                    // Update pan to keep pinch center point stable
+                    this.panX = this.pinchCenterX - (this.pinchCenterX - this.panX) * zoomDelta;
+                    this.panY = this.pinchCenterY - (this.pinchCenterY - this.panY) * zoomDelta;
+                    
+                    this.zoomLevel = newZoom;
+                    this.updateTransform();
                 }
             }
-        });
+        }, { passive: false });
 
         this.imageElement?.addEventListener('touchend', (e) => {
             if (e.touches.length === 0) {
                 this.stopPanning();
                 this.touchStartDistance = 0;
+            } else if (e.touches.length === 1) {
+                // One finger remains - switch to panning
+                const touch = e.touches[0];
+                this.startPanning(touch.clientX, touch.clientY);
             }
         });
 
@@ -1916,7 +1944,7 @@ class KokebokViewer {
             if (this.modalElement && !this.modalElement.classList.contains('hidden')) {
                 switch(e.key) {
                     case 'Escape':
-                        e.stopPropagation(); // Prevent closing recipe modal
+                        e.stopPropagation();
                         this.close();
                         break;
                     case 'ArrowLeft':
@@ -1929,15 +1957,29 @@ class KokebokViewer {
             }
         });
 
-        // Stop click propagation on modal to prevent closing recipe modal
+        // Stop click propagation on modal
         this.modalElement?.addEventListener('click', (e) => {
             e.stopPropagation();
         });
 
-        // Update position on window resize
+        // Handle orientation change
+        window.addEventListener('orientationchange', () => {
+            if (this.isOpen) {
+                setTimeout(() => {
+                    this.updateModalPosition();
+                    this.fitToPage();
+                }, 100);
+            }
+        });
+
+        // Handle window resize
         window.addEventListener('resize', () => {
-            if (this.modalElement && !this.modalElement.classList.contains('hidden')) {
+            if (this.isOpen) {
                 this.updateModalPosition();
+                // Recalculate fit on resize
+                if (Math.abs(this.zoomLevel - this.minZoom) < 0.01) {
+                    this.fitToPage();
+                }
             }
         });
     }
@@ -1957,6 +1999,7 @@ class KokebokViewer {
         }
         
         this.currentPage = pageNumber || 1;
+        this.isOpen = true;
         this.updateModalPosition();
         this.loadPage(this.currentPage);
         this.modalElement.classList.remove('hidden');
@@ -1964,6 +2007,7 @@ class KokebokViewer {
 
     close() {
         this.modalElement.classList.add('hidden');
+        this.isOpen = false;
     }
 
     loadPage(pageNumber) {
@@ -1974,7 +2018,6 @@ class KokebokViewer {
         this.imageElement.onload = () => {
             this.updatePageIndicator();
             this.updateNavigationButtons();
-            // Fit to page and set as minimum zoom
             this.fitToPage();
         };
         
@@ -2023,12 +2066,10 @@ class KokebokViewer {
         const newZoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.zoomLevel * delta));
         
         if (newZoom !== this.zoomLevel) {
-            // Calculate zoom center point relative to container
             const rect = this.containerElement.getBoundingClientRect();
             const x = clientX - rect.left;
             const y = clientY - rect.top;
             
-            // Adjust pan to keep zoom centered on cursor
             const zoomRatio = newZoom / this.zoomLevel;
             this.panX = x - (x - this.panX) * zoomRatio;
             this.panY = y - (y - this.panY) * zoomRatio;
