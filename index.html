@@ -1798,9 +1798,16 @@ class KokebokViewer {
             <div id="kokebokContainer" class="flex-1 overflow-hidden relative bg-gradient-to-br from-amber-50/30 to-orange-50/30">
                 <div id="kokebokImageWrapper" class="w-full h-full flex items-center justify-center">
                     <img id="kokebokImage" 
-                         class="max-w-none cursor-move select-none shadow-lg"
-                         draggable="false"
-                         style="transform-origin: center center;">
+                        class="max-w-none cursor-move select-none shadow-lg"
+                        draggable="false"
+                        style="transform-origin: center center;">
+                </div>
+                <!-- Loading spinner overlay -->
+                <div id="kokebokLoadingSpinner" class="absolute inset-0 flex items-center justify-center bg-white/70 hidden z-20">
+                    <div class="flex flex-col items-center">
+                        <i class="fas fa-spinner fa-spin text-4xl text-amber-600 mb-2"></i>
+                        <span class="text-amber-700 text-sm font-medium">Laster side...</span>
+                    </div>
                 </div>
             </div>
             
@@ -2051,6 +2058,12 @@ class KokebokViewer {
             this.setupEventListeners();
         }
         
+        // Ensure spinner is hidden initially
+        const spinner = document.getElementById('kokebokLoadingSpinner');
+        if (spinner) {
+            spinner.classList.add('hidden');
+        }
+        
         this.currentPage = pageNumber || 1;
         this.isOpen = true;
         this.updateModalPosition();
@@ -2084,16 +2097,52 @@ class KokebokViewer {
         this.loadedImageUrls.add(imageUrl);
         
         if (this.imageElement) {
-            this.imageElement.src = imageUrl;
-            this.imageElement.onload = () => {
+            // Show loading spinner
+            const spinner = document.getElementById('kokebokLoadingSpinner');
+            if (spinner) {
+                spinner.classList.remove('hidden');
+            }
+            
+            // Create a new image to preload
+            const tempImg = new Image();
+            
+            tempImg.onload = () => {
+                // Image loaded successfully - update the displayed image
+                this.imageElement.src = imageUrl;
                 this.updatePageIndicator();
                 this.updateNavigationButtons();
                 this.fitToPage();
+                
+                // Hide loading spinner
+                if (spinner) {
+                    spinner.classList.add('hidden');
+                }
             };
             
-            this.imageElement.onerror = () => {
+            tempImg.onerror = () => {
                 console.error(`Failed to load page ${pageNumber}`);
+                
+                // Hide loading spinner even on error
+                if (spinner) {
+                    spinner.classList.add('hidden');
+                }
+                
+                // Optionally show an error message
+                this.imageElement.style.display = 'none';
+                const wrapper = document.getElementById('kokebokImageWrapper');
+                if (wrapper && !wrapper.querySelector('.error-message')) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message text-center text-amber-700';
+                    errorDiv.innerHTML = `
+                        <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
+                        <p>Kunne ikke laste side ${pageNumber}</p>
+                    `;
+                    wrapper.appendChild(errorDiv);
+                }
             };
+            
+            // Start loading the image
+            tempImg.src = imageUrl;
         }
     }
 
