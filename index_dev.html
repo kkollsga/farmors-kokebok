@@ -1615,6 +1615,8 @@ class KokebokViewer {
         this.isOpen = false;
         this.eventListenersAttached = false;
         this.loadedImageUrls = new Set(); // Track loaded kokebok images
+        this.currentLoadingImage = null;  // Track the current loading image
+        this.loadRequestId = 0;  // Unique ID for each load request
         this.createModal();
         
         // Store bound event handlers for proper removal
@@ -1921,6 +1923,14 @@ class KokebokViewer {
     }
 
     close() {
+        // Cancel any pending image load
+        if (this.currentLoadingImage) {
+            this.currentLoadingImage.onload = null;
+            this.currentLoadingImage.onerror = null;
+            this.currentLoadingImage.src = '';
+            this.currentLoadingImage = null;
+        }
+        
         // Hide modal
         this.modalElement.classList.add('hidden');
         this.isOpen = false;
@@ -1942,6 +1952,18 @@ class KokebokViewer {
         const paddedNumber = String(pageNumber).padStart(3, '0');
         const imageUrl = `images/kokebok/kokebok-page-${paddedNumber}.jpg`;
         
+        // Increment request ID for this load
+        this.loadRequestId++;
+        const thisRequestId = this.loadRequestId;
+        
+        // Cancel previous load if it exists
+        if (this.currentLoadingImage) {
+            this.currentLoadingImage.onload = null;
+            this.currentLoadingImage.onerror = null;
+            this.currentLoadingImage.src = '';  // Cancel the load
+            this.currentLoadingImage = null;
+        }
+        
         // Track this URL for cache clearing
         this.loadedImageUrls.add(imageUrl);
         
@@ -1950,6 +1972,13 @@ class KokebokViewer {
         this.updateNavigationButtons();
         
         if (this.imageElement) {
+            // Clear any previous error messages
+            const errorMsg = document.querySelector('#kokebokImageWrapper .error-message');
+            if (errorMsg) {
+                errorMsg.remove();
+                this.imageElement.style.display = '';
+            }
+            
             // Show loading spinner
             const spinner = document.getElementById('kokebokLoadingSpinner');
             if (spinner) {
@@ -1958,8 +1987,14 @@ class KokebokViewer {
             
             // Create a new image to preload
             const tempImg = new Image();
+            this.currentLoadingImage = tempImg;
             
             tempImg.onload = () => {
+                // Only process if this is still the current request
+                if (thisRequestId !== this.loadRequestId) {
+                    return;  // This load was superseded by a newer one
+                }
+                
                 // Image loaded successfully - update the displayed image
                 this.imageElement.src = imageUrl;
                 this.fitToPage();
@@ -1968,9 +2003,17 @@ class KokebokViewer {
                 if (spinner) {
                     spinner.classList.add('hidden');
                 }
+                
+                // Clear the loading reference
+                this.currentLoadingImage = null;
             };
             
             tempImg.onerror = () => {
+                // Only process if this is still the current request
+                if (thisRequestId !== this.loadRequestId) {
+                    return;  // This load was superseded by a newer one
+                }
+                
                 console.error(`Failed to load page ${pageNumber}`);
                 
                 // Hide loading spinner even on error
@@ -1978,7 +2021,7 @@ class KokebokViewer {
                     spinner.classList.add('hidden');
                 }
                 
-                // Optionally show an error message
+                // Show error message
                 this.imageElement.style.display = 'none';
                 const wrapper = document.getElementById('kokebokImageWrapper');
                 if (wrapper && !wrapper.querySelector('.error-message')) {
@@ -1990,6 +2033,9 @@ class KokebokViewer {
                     `;
                     wrapper.appendChild(errorDiv);
                 }
+                
+                // Clear the loading reference
+                this.currentLoadingImage = null;
             };
             
             // Start loading the image
