@@ -235,6 +235,7 @@ const CONFIG = {
 // Global data storage
 let UI_TEXT = {};
 let RECIPES_DATA = [];
+let TAXONOMY = {};
 
 // ============================================================================
 // DUMMY DATA GENERATOR (for local development)
@@ -254,11 +255,12 @@ class DummyRecipeGenerator {
             'loff.jpg'
         ];
         
-        this.categories = ['Dessert', 'Kaker', 'Konfekt', 'Rundkaker'];
-        this.meals = ['Kaffe', 'Kake', 'Middag', 'Dessert'];
-        this.cuisines = ['Norsk', 'Svensk', 'Tysk', 'Italiensk'];
+        // Use taxonomy if available, otherwise use defaults
+        this.categories = TAXONOMY.categories ? Object.values(TAXONOMY.categories) : ['Dessert', 'Kaker', 'Konfekt', 'Rundkaker'];
+        this.meals = TAXONOMY.meals ? Object.values(TAXONOMY.meals) : ['Kaffe', 'Kake', 'Middag', 'Dessert'];
+        this.cuisines = TAXONOMY.cuisines ? Object.values(TAXONOMY.cuisines) : ['Norsk', 'Svensk', 'Tysk', 'Italiensk'];
         this.providers = ['Farmor', 'Bestemor', 'Tante Kari', 'Mor'];
-        this.references = ['Oppskriftsbok', 'Familieoppskrift', 'Gammelt hefte'];
+        this.references = TAXONOMY.sources ? Object.values(TAXONOMY.sources) : ['Oppskriftsbok', 'Familieoppskrift', 'Gammelt hefte'];
         
         // Extract words and sentences from lorem text
         this.words = this.loremText.toLowerCase()
@@ -369,6 +371,14 @@ async function loadAppData() {
         // Use hardcoded UI text for local development
         UI_TEXT = {"header":{"title":"Farmors Kokebok"},"search":{"placeholder":"Søk etter oppskrifter eller ingredienser..."},"filter":{"button":"Filter","title":"Velg kategorier","clear":"Tøm filter","categories":{"category":"Kategori","meal":"Måltid","cuisine":"Kjøkken"}},"sort":{"recommendation":"Anbefalt rekkefølge","recipebook":"Oppskriftsbok rekkefølge","alphabetical":"Alfabetisk","madeCount":"Antall ganger laget","rating":"Vurdering"},"copyUrl":{"button":"Kopier URL","buttonShort":"Kopier URL"},"recipe":{"servings":"Porsjoner","page":"s.","ingredients":"Ingredienser","instructions":"Slik gjør du","tip":"Tips:","made":"Laget","mark":"Merk","viewInBook":"Vis oppskrift i kokeboken","noImage":"🍞"},"kokebok":{"loading":"Laster side...","page":"Side","errorLoading":"Kunne ikke laste side"},"loading":{"spinner":"Laster..."},"meta":{"cuisineSuffix":"kjøkken"}};
         
+        // Minimal taxonomy for local development - includes types for testing special rules
+        TAXONOMY = {
+            categories: { "dessert": "Dessert", "layercakes": "Kaker", "confections": "Konfekt", "roundcakes": "Rundkaker", "christmas": "Julekaker", "butchery": "Slakteveiledning" },
+            meals: { "coffee": "Kaffe", "cake": "Kake", "dinner": "Middag", "dessert": "Dessert" },
+            cuisines: { "norwegian": "Norsk", "swedish": "Svensk", "italian": "Italiensk", "european": "Europeisk" },
+            sources: { "recipebook": "Oppskriftsbok" }
+        };
+        
         // Generate dummy recipes
         const generator = new DummyRecipeGenerator();
         RECIPES_DATA = generator.generateRecipes(CONFIG.DUMMY_RECIPES_COUNT);
@@ -383,9 +393,18 @@ async function loadAppData() {
             const uiResponse = await fetch(CONFIG.DATA_PATHS.UI);
             UI_TEXT = await uiResponse.json();
             
-            // Load recipes
+            // Load recipes and taxonomy
             const recipesResponse = await fetch(CONFIG.DATA_PATHS.RECIPES);
             const recipesData = await recipesResponse.json();
+            
+            // Extract taxonomy
+            TAXONOMY = {
+                categories: recipesData.categories || {},
+                meals: recipesData.meals || {},
+                cuisines: recipesData.cuisines || {},
+                sources: recipesData.sources || {}
+            };
+            
             RECIPES_DATA = recipesData.recipes;
             
             updateUIText();
@@ -395,6 +414,14 @@ async function loadAppData() {
             
             // Fallback to minimal hardcoded data if loading fails
             UI_TEXT = {"header":{"title":"Farmors Kokebok"},"search":{"placeholder":"Søk etter oppskrifter eller ingredienser..."},"filter":{"button":"Filter","title":"Velg kategorier","clear":"Tøm filter","categories":{"category":"Kategori","meal":"Måltid","cuisine":"Kjøkken"}},"sort":{"recommendation":"Anbefalt rekkefølge","recipebook":"Oppskriftsbok rekkefølge","alphabetical":"Alfabetisk","madeCount":"Antall ganger laget","rating":"Vurdering"},"copyUrl":{"button":"Kopier URL","buttonShort":"Kopier URL"},"recipe":{"servings":"Porsjoner","page":"s.","ingredients":"Ingredienser","instructions":"Slik gjør du","tip":"Tips:","made":"Laget","mark":"Merk","viewInBook":"Vis oppskrift i kokeboken","noImage":"🍞"},"kokebok":{"loading":"Laster side...","page":"Side","errorLoading":"Kunne ikke laste side"},"loading":{"spinner":"Laster..."},"meta":{"cuisineSuffix":"kjøkken"}};
+            
+            // Fallback taxonomy - minimal set
+            TAXONOMY = {
+                categories: { "dessert": "Dessert", "christmas": "Julekaker", "butchery": "Slakteveiledning" },
+                meals: { "dinner": "Middag", "coffee": "Kaffe" },
+                cuisines: { "norwegian": "Norsk" },
+                sources: { "recipebook": "Oppskriftsbok" }
+            };
             
             // Generate dummy recipes as fallback
             const generator = new DummyRecipeGenerator();
@@ -453,22 +480,32 @@ class RecipeDatabase {
         return [...this.recipes];
     }
 
+    // Simplified version using taxonomy
     getFilters() {
-        const categories = new Set();
-        const meals = new Set();
-        const cuisines = new Set();
-        
-        this.recipes.forEach(recipe => {
-            if (recipe.category) categories.add(recipe.category);
-            if (recipe.meal) meals.add(recipe.meal);
-            if (recipe.cuisine) cuisines.add(recipe.cuisine);
-        });
-        
         return {
-            categories: Array.from(categories).sort(),
-            meals: Array.from(meals).sort(),
-            cuisines: Array.from(cuisines).sort()
+            categories: Object.values(TAXONOMY.categories).sort(),
+            meals: Object.values(TAXONOMY.meals).sort(),
+            cuisines: Object.values(TAXONOMY.cuisines).sort()
         };
+    }
+    
+    // New helper methods for getting international keys
+    getCategoryKey(categoryValue) {
+        return Object.keys(TAXONOMY.categories).find(
+            key => TAXONOMY.categories[key] === categoryValue
+        );
+    }
+
+    getMealKey(mealValue) {
+        return Object.keys(TAXONOMY.meals).find(
+            key => TAXONOMY.meals[key] === mealValue
+        );
+    }
+
+    getCuisineKey(cuisineValue) {
+        return Object.keys(TAXONOMY.cuisines).find(
+            key => TAXONOMY.cuisines[key] === cuisineValue
+        );
     }
 }
 
@@ -3141,10 +3178,10 @@ class RecommendationEngine {
             RECENCY_WEEK: 0.6,
             RECENCY_NORMAL: 1.0,
             
-            JULEKAKER_CHRISTMAS: 3.0,
-            JULEKAKER_JANUARY: 1.5,
-            JULEKAKER_OFF_SEASON: 0.05,
-            SLAKTEVEILEDNING: 0.01,
+            CHRISTMAS_SEASON: 3.0,      // November-December multiplier
+            CHRISTMAS_JANUARY: 1.5,      // January multiplier
+            CHRISTMAS_OFF_SEASON: 0.05,  // Rest of year multiplier
+            BUTCHERY: 0.01,             // Butchery guide weight
         };
         
         let score = WEIGHTS.BASE;
@@ -3183,21 +3220,26 @@ class RecommendationEngine {
         }
         
         if (recipe) {
-            if (recipe.category === 'Julekaker') {
+            // Get the international category key
+            const categoryKey = this.recipeDatabase.getCategoryKey(recipe.category);
+            
+            // Christmas recipes (using international key)
+            if (categoryKey === 'christmas') {
                 const now = new Date();
                 const month = now.getMonth();
                 
-                if (month === 10 || month === 11) {
-                    score *= WEIGHTS.JULEKAKER_CHRISTMAS;
-                } else if (month === 0) {
-                    score *= WEIGHTS.JULEKAKER_JANUARY;
+                if (month === 10 || month === 11) {  // November or December
+                    score *= WEIGHTS.CHRISTMAS_SEASON;
+                } else if (month === 0) {  // January
+                    score *= WEIGHTS.CHRISTMAS_JANUARY;
                 } else {
-                    score *= WEIGHTS.JULEKAKER_OFF_SEASON;
+                    score *= WEIGHTS.CHRISTMAS_OFF_SEASON;
                 }
             }
             
-            if (recipe.category === 'Slakteveiledning') {
-                score *= WEIGHTS.SLAKTEVEILEDNING;
+            // Butchery guide (using international key)
+            if (categoryKey === 'butchery') {
+                score *= WEIGHTS.BUTCHERY;
             }
         }
         
