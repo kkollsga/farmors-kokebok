@@ -1,0 +1,51 @@
+{
+    "header": {
+      "title": "Farmors Kokebok"
+    },
+    "search": {
+      "placeholder": "Søk etter oppskrifter eller ingredienser..."
+    },
+    "filter": {
+      "button": "Filter",
+      "title": "Velg kategorier",
+      "clear": "Tøm filter",
+      "categories": {
+        "category": "Kategori",
+        "meal": "Måltid",
+        "cuisine": "Kjøkken"
+      }
+    },
+    "sort": {
+      "recommendation": "Anbefalt rekkefølge",
+      "recipebook": "Oppskriftsbok rekkefølge",
+      "alphabetical": "Alfabetisk",
+      "madeCount": "Antall ganger laget",
+      "rating": "Vurdering"
+    },
+    "copyUrl": {
+      "button": "Kopier URL",
+      "buttonShort": "Kopier URL"
+    },
+    "recipe": {
+      "servings": "Porsjoner",
+      "page": "s.",
+      "ingredients": "Ingredienser",
+      "instructions": "Slik gjør du",
+      "tip": "Tips:",
+      "made": "Laget",
+      "mark": "Merk",
+      "viewInBook": "Vis oppskrift i kokeboken",
+      "noImage": "🍞"
+    },
+    "kokebok": {
+      "loading": "Laster side...",
+      "page": "Side",
+      "errorLoading": "Kunne ikke laste side"
+    },
+    "loading": {
+      "spinner": "Laster..."
+    },
+    "meta": {
+      "cuisineSuffix": "kjøkken"
+    }
+  }
