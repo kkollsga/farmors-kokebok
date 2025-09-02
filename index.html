@@ -404,6 +404,17 @@ function normalizePathForLanguage(path) {
     return cleanPath.replace('farmors-kokebok/', `farmors-kokebok/${CURRENT_LANGUAGE}/`);
 }
 
+function updateHTMLLanguage() {
+    // Map your internal codes to proper HTML language codes
+    const htmlLangMap = {
+        'no': 'no',
+        'en': 'en',
+        'pb': 'pt-BR'  // Brazilian Portuguese
+    };
+    
+    document.documentElement.lang = htmlLangMap[CURRENT_LANGUAGE] || CURRENT_LANGUAGE;
+}
+
 // ============================================================================
 // DATA LOADER
 // ============================================================================
@@ -413,6 +424,9 @@ async function loadAppData() {
     
     // Detect language from URL query parameter
     CURRENT_LANGUAGE = detectLanguageFromURL();
+
+    // Update HTML lang attribute
+    updateHTMLLanguage();
     
     if (isLocal) {
         console.log('Running locally - using dummy data');
