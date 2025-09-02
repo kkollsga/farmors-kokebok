@@ -231,7 +231,7 @@ const CONFIG = {
     },
     DUMMY_RECIPES_COUNT: 20,
     DEFAULT_LANGUAGE: 'no',
-    SUPPORTED_LANGUAGES: ['no', 'pb'] // Add more as needed
+    SUPPORTED_LANGUAGES: ['no', 'pb']
 };
 
 // Global data storage
@@ -411,8 +411,8 @@ function normalizePathForLanguage(path) {
 async function loadAppData() {
     const isLocal = window.location.protocol === 'file:';
     
-    // Detect language from URL path
-    CURRENT_LANGUAGE = detectLanguageFromPath();
+    // Detect language from URL query parameter
+    CURRENT_LANGUAGE = detectLanguageFromURL();
     
     if (isLocal) {
         console.log('Running locally - using dummy data');
@@ -677,12 +677,16 @@ class URLManager {
         this.filterManager = filterManager;
         this.modalManager = modalManager;
         this.recipeDatabase = recipeDatabase;
-        this.baseURL = 'https://kkollsga.github.io/farmors-kokebok/';
+        this.baseURL = window.location.protocol === 'file:' 
+            ? window.location.href.split('?')[0]
+            : 'https://kkollsga.github.io/farmors-kokebok/';
         this.isUpdatingFromURL = false;
     }
 
     initializeFromURL() {
         const params = new URLSearchParams(window.location.search);
+        
+        // Skip language param as it's already handled
         
         // Handle filter parameter - now using international keys
         const filterParam = params.get('filter');
@@ -737,6 +741,11 @@ class URLManager {
         if (this.isUpdatingFromURL) return;
         
         const parts = [];
+        
+        // Add language parameter if not default
+        if (CURRENT_LANGUAGE !== CONFIG.DEFAULT_LANGUAGE) {
+            parts.push(`lang=${CURRENT_LANGUAGE}`);
+        }
         
         // Build filter parameter with international keys
         if (this.filterManager.activeFilters.size > 0) {
@@ -823,7 +832,8 @@ class URLManager {
     }
 
     getRecipeURL(recipeId) {
-        return `${this.baseURL}?recipe=${recipeId}`;
+        const langParam = CURRENT_LANGUAGE !== CONFIG.DEFAULT_LANGUAGE ? `?lang=${CURRENT_LANGUAGE}&` : '?';
+        return `${this.baseURL}${langParam}recipe=${recipeId}`;
     }
 
     async copyToClipboard(url, buttonElement) {
