@@ -226,16 +226,19 @@ const CONFIG = {
         DEFAULT_HOVER_SHADOW: 'hover:shadow-xl'
     },
     DATA_PATHS: {
-        UI: 'data/ui-no.json',
-        RECIPES: 'data/recipes-no.json'
+        UI: 'data/ui-{lang}.json',
+        RECIPES: 'data/recipes-{lang}.json'
     },
-    DUMMY_RECIPES_COUNT: 20 // Configure number of dummy recipes here
+    DUMMY_RECIPES_COUNT: 20,
+    DEFAULT_LANGUAGE: 'no',
+    SUPPORTED_LANGUAGES: ['no', 'pb'] // Add more as needed
 };
 
 // Global data storage
 let UI_TEXT = {};
 let RECIPES_DATA = [];
 let TAXONOMY = {};
+let CURRENT_LANGUAGE = CONFIG.DEFAULT_LANGUAGE;
 
 // ============================================================================
 // DUMMY DATA GENERATOR (for local development)
@@ -359,11 +362,58 @@ class DummyRecipeGenerator {
 }
 
 // ============================================================================
+// LANGUAGE HELPER FUNCTIONS
+// ============================================================================
+
+function detectLanguageFromPath() {
+    const path = window.location.pathname;
+    // Check for language code in path like /en/ or /pb/
+    const langMatch = path.match(/\/([a-z]{2})\/?/);
+    
+    if (langMatch && CONFIG.SUPPORTED_LANGUAGES.includes(langMatch[1])) {
+        return langMatch[1];
+    }
+    
+    return CONFIG.DEFAULT_LANGUAGE;
+}
+
+function getBaseURLWithLanguage() {
+    const isLocal = window.location.protocol === 'file:';
+    
+    if (isLocal) {
+        return window.location.href.split('?')[0];
+    }
+    
+    const basePath = 'https://kkollsga.github.io/farmors-kokebok';
+    
+    if (CURRENT_LANGUAGE === CONFIG.DEFAULT_LANGUAGE) {
+        return basePath + '/';
+    }
+    
+    return `${basePath}/${CURRENT_LANGUAGE}/`;
+}
+
+function normalizePathForLanguage(path) {
+    // Remove any existing language code from path
+    const cleanPath = path.replace(/\/[a-z]{2}\/?/, '/');
+    
+    if (CURRENT_LANGUAGE === CONFIG.DEFAULT_LANGUAGE) {
+        return cleanPath;
+    }
+    
+    // Add language code to path
+    return cleanPath.replace('farmors-kokebok/', `farmors-kokebok/${CURRENT_LANGUAGE}/`);
+}
+
+// ============================================================================
 // DATA LOADER
 // ============================================================================
 
 async function loadAppData() {
     const isLocal = window.location.protocol === 'file:';
+    
+    // Detect language from URL path
+    CURRENT_LANGUAGE = detectLanguageFromPath();
     
     if (isLocal) {
         console.log('Running locally - using dummy data');
@@ -371,7 +421,7 @@ async function loadAppData() {
         // Use hardcoded UI text for local development
         UI_TEXT = {"header":{"title":"Farmors Kokebok"},"search":{"placeholder":"Søk etter oppskrifter eller ingredienser..."},"filter":{"button":"Filter","title":"Velg kategorier","clear":"Tøm filter","categories":{"category":"Kategori","meal":"Måltid","cuisine":"Kjøkken"}},"sort":{"recommendation":"Anbefalt rekkefølge","recipebook":"Oppskriftsbok rekkefølge","alphabetical":"Alfabetisk","madeCount":"Antall ganger laget","rating":"Vurdering"},"copyUrl":{"button":"Kopier URL","buttonShort":"Kopier URL"},"recipe":{"servings":"Porsjoner","page":"s.","ingredients":"Ingredienser","instructions":"Slik gjør du","tip":"Tips:","made":"Laget","mark":"Merk","viewInBook":"Vis oppskrift i kokeboken","noImage":"🍞"},"kokebok":{"loading":"Laster side...","page":"Side","errorLoading":"Kunne ikke laste side"},"loading":{"spinner":"Laster..."},"meta":{"cuisineSuffix":"kjøkken"}};
         
-        // Minimal taxonomy for local development - includes types for testing special rules
+        // Minimal taxonomy for local development
         TAXONOMY = {
             categories: { "dessert": "Dessert", "layercakes": "Kaker", "confections": "Konfekt", "roundcakes": "Rundkaker", "christmas": "Julekaker", "butchery": "Slakteveiledning" },
             meals: { "coffee": "Kaffe", "cake": "Kake", "dinner": "Middag", "dessert": "Dessert" },
@@ -386,15 +436,17 @@ async function loadAppData() {
         updateUIText();
         return true;
     } else {
-        console.log('Running on web - loading data from JSON files');
+        console.log(`Running on web - loading data for language: ${CURRENT_LANGUAGE}`);
         
         try {
-            // Load UI text
-            const uiResponse = await fetch(CONFIG.DATA_PATHS.UI);
+            // Load UI text for the selected language
+            const uiPath = CONFIG.DATA_PATHS.UI.replace('{lang}', CURRENT_LANGUAGE);
+            const uiResponse = await fetch(uiPath);
             UI_TEXT = await uiResponse.json();
             
-            // Load recipes and taxonomy
-            const recipesResponse = await fetch(CONFIG.DATA_PATHS.RECIPES);
+            // Load recipes and taxonomy for the selected language
+            const recipesPath = CONFIG.DATA_PATHS.RECIPES.replace('{lang}', CURRENT_LANGUAGE);
+            const recipesResponse = await fetch(recipesPath);
             const recipesData = await recipesResponse.json();
             
             // Extract taxonomy
@@ -410,12 +462,18 @@ async function loadAppData() {
             updateUIText();
             return true;
         } catch (error) {
-            console.error('Failed to load app data:', error);
+            console.error(`Failed to load app data for language ${CURRENT_LANGUAGE}:`, error);
             
-            // Fallback to minimal hardcoded data if loading fails
+            // Try to fallback to default language
+            if (CURRENT_LANGUAGE !== CONFIG.DEFAULT_LANGUAGE) {
+                console.log(`Falling back to default language: ${CONFIG.DEFAULT_LANGUAGE}`);
+                CURRENT_LANGUAGE = CONFIG.DEFAULT_LANGUAGE;
+                return loadAppData(); // Recursive call with default language
+            }
+            
+            // If even default language fails, use hardcoded data
             UI_TEXT = {"header":{"title":"Farmors Kokebok"},"search":{"placeholder":"Søk etter oppskrifter eller ingredienser..."},"filter":{"button":"Filter","title":"Velg kategorier","clear":"Tøm filter","categories":{"category":"Kategori","meal":"Måltid","cuisine":"Kjøkken"}},"sort":{"recommendation":"Anbefalt rekkefølge","recipebook":"Oppskriftsbok rekkefølge","alphabetical":"Alfabetisk","madeCount":"Antall ganger laget","rating":"Vurdering"},"copyUrl":{"button":"Kopier URL","buttonShort":"Kopier URL"},"recipe":{"servings":"Porsjoner","page":"s.","ingredients":"Ingredienser","instructions":"Slik gjør du","tip":"Tips:","made":"Laget","mark":"Merk","viewInBook":"Vis oppskrift i kokeboken","noImage":"🍞"},"kokebok":{"loading":"Laster side...","page":"Side","errorLoading":"Kunne ikke laste side"},"loading":{"spinner":"Laster..."},"meta":{"cuisineSuffix":"kjøkken"}};
             
-            // Fallback taxonomy - minimal set
             TAXONOMY = {
                 categories: { "dessert": "Dessert", "christmas": "Julekaker", "butchery": "Slakteveiledning" },
                 meals: { "dinner": "Middag", "coffee": "Kaffe" },
@@ -423,7 +481,6 @@ async function loadAppData() {
                 sources: { "recipebook": "Oppskriftsbok" }
             };
             
-            // Generate dummy recipes as fallback
             const generator = new DummyRecipeGenerator();
             RECIPES_DATA = generator.generateRecipes(5);
             
@@ -613,7 +670,7 @@ class UserDataManager {
 }
 
 // ============================================================================
-// URL MANAGER CLASS
+// URL MANAGER CLASS (UPDATED FOR MULTILINGUAL SUPPORT)
 // ============================================================================
 
 class URLManager {
@@ -621,32 +678,53 @@ class URLManager {
         this.filterManager = filterManager;
         this.modalManager = modalManager;
         this.recipeDatabase = recipeDatabase;
-        this.baseURL = window.location.protocol === 'file:' 
-            ? window.location.href.split('?')[0]
-            : 'https://kkollsga.github.io/farmors-kokebok/';
+        this.baseURL = getBaseURLWithLanguage();
         this.isUpdatingFromURL = false;
     }
 
     initializeFromURL() {
         const params = new URLSearchParams(window.location.search);
         
+        // Handle filter parameter - now using international keys
         const filterParam = params.get('filter');
         if (filterParam) {
             const filters = filterParam.split(',');
             filters.forEach(filter => {
                 if (filter.includes(':')) {
-                    this.filterManager.activeFilters.set(filter, true);
+                    const [filterType, filterKey] = filter.split(':');
+                    
+                    // Convert international key to localized value
+                    let localizedValue = filterKey;
+                    
+                    if (filterType === 'category' && TAXONOMY.categories[filterKey]) {
+                        localizedValue = TAXONOMY.categories[filterKey];
+                    } else if (filterType === 'meal' && TAXONOMY.meals[filterKey]) {
+                        localizedValue = TAXONOMY.meals[filterKey];
+                    } else if (filterType === 'cuisine' && TAXONOMY.cuisines[filterKey]) {
+                        localizedValue = TAXONOMY.cuisines[filterKey];
+                    }
+                    
+                    this.filterManager.activeFilters.set(`${filterType}:${localizedValue}`, true);
                 }
             });
             this.filterManager.renderFilterPills();
             this.filterManager.updateFilterButton();
         }
         
+        // Handle recipe parameter - now supports both ID and title for backwards compatibility
         const recipeParam = params.get('recipe');
         if (recipeParam) {
-            const recipe = this.recipeDatabase.getAll().find(r => 
-                r.title.toLowerCase() === recipeParam.toLowerCase()
-            );
+            let recipe = null;
+            
+            // First try to find by ID
+            recipe = this.recipeDatabase.findById(recipeParam);
+            
+            // If not found by ID, try by title (for backwards compatibility)
+            if (!recipe) {
+                recipe = this.recipeDatabase.getAll().find(r => 
+                    r.title.toLowerCase() === decodeURIComponent(recipeParam).toLowerCase()
+                );
+            }
             
             if (recipe) {
                 setTimeout(() => {
@@ -661,19 +739,36 @@ class URLManager {
         
         const parts = [];
         
+        // Build filter parameter with international keys
         if (this.filterManager.activeFilters.size > 0) {
-            const activeFilters = Array.from(this.filterManager.activeFilters.keys())
-                .filter(key => this.filterManager.activeFilters.get(key));
+            const activeFilters = [];
+            
+            this.filterManager.activeFilters.forEach((value, key) => {
+                if (!value) return;
+                
+                const [filterType, filterValue] = key.split(':');
+                let internationalKey = filterValue;
+                
+                // Convert localized value to international key
+                if (filterType === 'category') {
+                    internationalKey = this.recipeDatabase.getCategoryKey(filterValue) || filterValue;
+                } else if (filterType === 'meal') {
+                    internationalKey = this.recipeDatabase.getMealKey(filterValue) || filterValue;
+                } else if (filterType === 'cuisine') {
+                    internationalKey = this.recipeDatabase.getCuisineKey(filterValue) || filterValue;
+                }
+                
+                activeFilters.push(`${filterType}:${internationalKey}`);
+            });
+            
             if (activeFilters.length > 0) {
                 parts.push('filter=' + activeFilters.join(','));
             }
         }
         
+        // Build recipe parameter with ID
         if (this.modalManager.currentRecipeId) {
-            const recipe = this.recipeDatabase.findById(this.modalManager.currentRecipeId);
-            if (recipe) {
-                parts.push('recipe=' + encodeURIComponent(recipe.title));
-            }
+            parts.push('recipe=' + this.modalManager.currentRecipeId);
         }
         
         const newURL = parts.length > 0 ? '?' + parts.join('&') : '';
@@ -688,29 +783,43 @@ class URLManager {
     getShareableURL() {
         const parts = [];
         
+        // Build filter parameter with international keys
         if (this.filterManager.activeFilters.size > 0) {
-            const activeFilters = Array.from(this.filterManager.activeFilters.keys())
-                .filter(key => this.filterManager.activeFilters.get(key));
+            const activeFilters = [];
+            
+            this.filterManager.activeFilters.forEach((value, key) => {
+                if (!value) return;
+                
+                const [filterType, filterValue] = key.split(':');
+                let internationalKey = filterValue;
+                
+                // Convert localized value to international key
+                if (filterType === 'category') {
+                    internationalKey = this.recipeDatabase.getCategoryKey(filterValue) || filterValue;
+                } else if (filterType === 'meal') {
+                    internationalKey = this.recipeDatabase.getMealKey(filterValue) || filterValue;
+                } else if (filterType === 'cuisine') {
+                    internationalKey = this.recipeDatabase.getCuisineKey(filterValue) || filterValue;
+                }
+                
+                activeFilters.push(`${filterType}:${internationalKey}`);
+            });
+            
             if (activeFilters.length > 0) {
                 parts.push('filter=' + activeFilters.join(','));
             }
         }
         
+        // Build recipe parameter with ID
         if (this.modalManager.currentRecipeId) {
-            const recipe = this.recipeDatabase.findById(this.modalManager.currentRecipeId);
-            if (recipe) {
-                parts.push('recipe=' + encodeURIComponent(recipe.title));
-            }
+            parts.push('recipe=' + this.modalManager.currentRecipeId);
         }
         
         return parts.length > 0 ? `${this.baseURL}?${parts.join('&')}` : this.baseURL;
     }
 
     getRecipeURL(recipeId) {
-        const recipe = this.recipeDatabase.findById(recipeId);
-        if (!recipe) return this.baseURL;
-        
-        return `${this.baseURL}?recipe=${encodeURIComponent(recipe.title)}`;
+        return `${this.baseURL}?recipe=${recipeId}`;
     }
 
     async copyToClipboard(url, buttonElement) {

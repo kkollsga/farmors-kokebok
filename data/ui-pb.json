@@ -1,0 +1,51 @@
+{
+    "header": {
+      "title": "Livro de Receitas da Vovó"
+    },
+    "search": {
+      "placeholder": "Buscar receitas ou ingredientes..."
+    },
+    "filter": {
+      "button": "Filtrar",
+      "title": "Selecionar categorias",
+      "clear": "Limpar filtros",
+      "categories": {
+        "category": "Categoria",
+        "meal": "Refeição",
+        "cuisine": "Cozinha"
+      }
+    },
+    "sort": {
+      "recommendation": "Ordem recomendada",
+      "recipebook": "Ordem do livro de receitas",
+      "alphabetical": "Alfabética",
+      "madeCount": "Número de vezes preparado",
+      "rating": "Avaliação"
+    },
+    "copyUrl": {
+      "button": "Copiar URL",
+      "buttonShort": "Copiar URL"
+    },
+    "recipe": {
+      "servings": "Porções",
+      "page": "p.",
+      "ingredients": "Ingredientes",
+      "instructions": "Modo de preparo",
+      "tip": "Dica:",
+      "made": "Preparado",
+      "mark": "Marcar",
+      "viewInBook": "Ver receita no livro de receitas",
+      "noImage": "🍞"
+    },
+    "kokebok": {
+      "loading": "Carregando página...",
+      "page": "Página",
+      "errorLoading": "Não foi possível carregar a página"
+    },
+    "loading": {
+      "spinner": "Carregando..."
+    },
+    "meta": {
+      "cuisineSuffix": "cozinha"
+    }
+  }
