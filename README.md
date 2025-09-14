@@ -29,8 +29,8 @@ Dette er en digitalisering av Farmors oppskriftsbok - en skattkiste av tradisjon
 ### 📊 Sorteringsalternativer
 Velg visningsrekkefølge fra nedtrekksmenyen:
 - **Anbefalt**: Basert på dine vurderinger og bruksmønster
+- **Oppskriftsbok rekkefølge**: Organisert etter sidetall i kokeboken
 - **Alfabetisk**: A-Å rekkefølge
-- **Nyeste først**: Sist lagt til oppskrifter
 - **Høyest vurdert**: Dine beste vurderinger først
 - **Mest laget**: Oppskrifter du har laget flest ganger
 
