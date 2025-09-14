@@ -1,45 +1,4 @@
 {
-  "categories": {
-    "layercakes": "Lagkaker",
-    "loafcakes": "Formkaker",
-    "sheetcakes": "Langpannekaker",
-    "roundcakes": "Rundkaker",
-    "dessert": "Dessert",
-    "sides": "Tilbehør",
-    "cookies": "Småkaker",
-    "christmas": "Julekaker",
-    "mains": "Hovedretter",
-    "yeastbakes": "Gjærbakst",
-    "flatbreads": "Pannekaker og lefser",
-    "butchery": "Slakteveiledning",
-    "bread": "Brød og rundstykker",
-    "drinks": "Drikke",
-    "confections": "Konfekt",
-    "cordials": "Saft"
-  },
-  "meals": {
-    "cake": "Kake",
-    "dessert": "Dessert",
-    "brunch": "Frokost/Lunsj",
-    "coffee": "Kaffe",
-    "dinner": "Middag",
-    "preserve": "Bevaring",
-    "drinks": "Drikke"
-  },
-  "cuisines": {
-    "norwegian": "Norsk",
-    "american": "Amerikansk",
-    "russian": "Russisk",
-    "brazilian": "Brasiliansk",
-    "scandinavian": "Skandinavisk",
-    "european": "Europeisk",
-    "italian": "Italiensk",
-    "swedish": "Svensk",
-    "danish": "Dansk"
-  },
-  "sources": {
-    "recipebook": "Oppskriftsbok"
-  },
   "recipes": [
     {"id":"recipe_1755874440324_k3zjgdsow","title":"Aftenbladets Sjokoladekake","servings":"12 porsjoner","provider":"Aftenbladet","reference":"Oppskriftsbok","pageNumber":61,"category":"Lagkaker","meal":"Kake","cuisine":"Norsk","description":"Luftig sjokoladelagkake med tre lag og fyldig sjokoladekrem av melk, sukker og eggeplommer. Den lyse bunnen deles opp og fylles med en rik, hjemmelaget krem som gir en perfekt balanse mellom lett kakebunn og kremete fyll. Mandlene på toppen tilfører sprøhet og en nøtteaktig kontrast. Kaken har en dyp sjokoladesmak uten å være for søt, og egner seg utmerket til festlige anledninger eller søndagskos.","image":"aftenbladetssjokoladekake.jpg","ingredients":[{"group":"Kakebunn","items":["4 egg","200 g sukker","200 g hvetemel","2 ts bakepulver","100 g smør eller margarin (smeltet)"]},{"group":"Sjokoladekrem","items":["200 g sukker","6 ss melk","1 plate mørk kokesjokolade (ca. 100 g)","2 eggeplommer"]},{"group":"Pynt","items":["Høvlede mandler"]}],"instructions":["Pisk egg og sukker til en luftig eggedosis.","Sikt sammen mel og bakepulver og vend forsiktig inn i eggedosisen.","Rør inn smeltet smør.","Hell røren i en smurt kakeform (ca. 24 cm).","Stek ved 180–190 °C i ca. 35–40 minutter.","Avkjøl kaken helt og del den i tre lag.","Lag kremen: Pisk sukker og melk til hvitt og luftig. Rør inn smeltet kokesjokolade og tilsett eggeplommene.","Fyll kaken lagvis med kremen og dekk toppen.","Pynt med høvlede mandler."],"createdAt":"2025-08-22"},
     {"id":"recipe_1755825227921_4w2ssuko6","title":"Amerikansk fruktkake","servings":"12 porsjoner","provider":"Farmor","reference":"Oppskriftsbok","pageNumber":44,"category":"Formkaker","meal":"Kake","cuisine":"Amerikansk","description":"Mektig fruktkake med store mengder smør, sukker og tørket frukt som gir intens sødme. Aprikosene eller eplene tilføres direkte uten bløtlegging, noe som bevarer deres tekstur og skaper smakskontraster i kaken. Resultatet er en holdbar og rik kake med kraftig fruktsmak, perfekt som festkake eller når man ønsker noe ekstra søtt. Holder seg godt i flere dager og blir ofte bedre etter litt lagring.","image":"amerikanskfruktkake.jpg","ingredients":["4 egg","500 g sukker","2 dl kremfløte","250 g smør, smeltet","500 g hvetemel","2 ts bakepulver","200 g tørkede aprikoser eller eplebiter"],"instructions":["Forvarm ovnen til 175 °C.","Smør en stor brød- eller kakeform.","Pisk egg og sukker til en luftig eggedosis.","Rør inn smeltet smør og fløte.","Bland mel med bakepulver og sikt det inn.","Vend inn tørkede aprikoser eller eplebiter (uten bløtlegging).","Hell røren i formen og stek midt i ovnen i ca. 45 minutter.","Avkjøl i formen i noen minutter før kaken hvelves over på rist."],"createdAt":"2025-08-22"},
