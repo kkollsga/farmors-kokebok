@@ -2653,11 +2653,6 @@ class ModalManager {
                         `<div class="w-full h-full flex items-center justify-center">
                             <span class="text-8xl opacity-30">${UI_TEXT.recipe.noImage}</span>
                         </div>`}
-                    ${recipe.category ? 
-                        `<span onclick="recipeApp.filterManager.activateFilter('category', '${recipe.category}', event)" 
-                            class="absolute top-4 left-4 bg-white/90 backdrop-blur text-xs md:text-sm font-medium px-2 py-1 md:px-3 md:py-1.5 rounded-full text-amber-700 transition-all duration-300 cursor-pointer hover:scale-105 hover:bg-amber-50 hover:shadow-xl hover:text-amber-800">
-                            ${recipe.category}
-                        </span>` : ''}
                 </div>
             </div>
         `;
@@ -2669,6 +2664,17 @@ class ModalManager {
                     class="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2 md:p-2.5 hover:bg-white shadow-lg transition-transform hover:scale-110">
                 <i class="fas fa-times text-gray-600 text-lg md:text-xl"></i>
             </button>
+        `;
+    }
+
+    generateCategoryButton(recipe) {
+        if (!recipe.category) return '';
+        
+        return `
+            <span onclick="recipeApp.filterManager.activateFilter('category', '${recipe.category}', event)" 
+                  class="absolute top-4 left-4 bg-white/90 backdrop-blur text-xs md:text-sm font-medium px-2 py-1 md:px-3 md:py-1.5 rounded-full text-amber-700 transition-all duration-300 cursor-pointer hover:scale-105 hover:bg-amber-50 hover:shadow-xl hover:text-amber-800">
+                ${recipe.category}
+            </span>
         `;
     }
 
@@ -2692,11 +2698,12 @@ class ModalManager {
         
         modalWrapper.innerHTML = `
             ${this.generateHeroSection(recipeWithUserData)}
+            ${this.generateCategoryButton(recipeWithUserData)}
             ${this.generateCloseButton()}
-            <div id="scrollableContent" class="absolute inset-0 overflow-y-auto z-10">
-                <!-- Invisible spacer div instead of margin - blocks interactions when scrolled over pills -->
-                <div class="${isMobileLayout ? 'h-48' : 'h-72'}" style="pointer-events: none;"></div>
-                <div class="min-h-full bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
+            <div id="scrollableContent" class="absolute inset-0 overflow-y-auto z-10" style="pointer-events: none;">
+                <!-- Invisible spacer div with no pointer events -->
+                <div class="${isMobileLayout ? 'h-48' : 'h-72'}"></div>
+                <div class="min-h-full bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)]" style="pointer-events: auto;">
                     ${isMobileLayout ? 
                         this.generateMobileContent(recipeWithUserData) : 
                         this.generateDesktopContent(recipeWithUserData)}
