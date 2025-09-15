@@ -2694,92 +2694,15 @@ class ModalManager {
             ${this.generateHeroSection(recipeWithUserData)}
             ${this.generateCloseButton()}
             <div id="scrollableContent" class="absolute inset-0 overflow-y-auto z-10">
-                <div class="${contentMarginTop} min-h-full bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
+                <!-- Invisible spacer div instead of margin - blocks interactions when scrolled over pills -->
+                <div class="${isMobileLayout ? 'h-48' : 'h-72'}" style="pointer-events: none;"></div>
+                <div class="min-h-full bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
                     ${isMobileLayout ? 
                         this.generateMobileContent(recipeWithUserData) : 
                         this.generateDesktopContent(recipeWithUserData)}
                 </div>
             </div>
         `;
-        
-        // Industry standard approach: Use elementFromPoint to check actual visibility
-        requestAnimationFrame(() => {
-            const scrollableContent = modalWrapper.querySelector('#scrollableContent');
-            const categoryPill = modalWrapper.querySelector('.absolute.top-4.left-4');
-            
-            if (scrollableContent && categoryPill) {
-                let isHovering = false;
-                
-                // Check if the pill is the topmost element at its center point
-                const isPillActuallyVisible = () => {
-                    const rect = categoryPill.getBoundingClientRect();
-                    const centerX = rect.left + rect.width / 2;
-                    const centerY = rect.top + rect.height / 2;
-                    const topElement = document.elementFromPoint(centerX, centerY);
-                    return categoryPill.contains(topElement) || categoryPill === topElement;
-                };
-                
-                // Handle interactions
-                const handleInteraction = (e, isClick = false) => {
-                    if (!isPillActuallyVisible()) {
-                        if (isHovering) {
-                            isHovering = false;
-                            scrollableContent.style.cursor = '';
-                            categoryPill.style.transform = '';
-                            categoryPill.style.backgroundColor = '';
-                            categoryPill.style.boxShadow = '';
-                            categoryPill.style.color = '';
-                        }
-                        return;
-                    }
-                    
-                    const rect = categoryPill.getBoundingClientRect();
-                    const x = e.clientX;
-                    const y = e.clientY;
-                    const isOverPill = x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-                    
-                    if (isClick && isOverPill) {
-                        e.stopPropagation();
-                        categoryPill.click();
-                        return;
-                    }
-                    
-                    const wasHovering = isHovering;
-                    isHovering = isOverPill;
-                    
-                    if (isHovering !== wasHovering) {
-                        if (isHovering) {
-                            scrollableContent.style.cursor = 'pointer';
-                            categoryPill.style.transform = 'scale(1.05)';
-                            categoryPill.style.backgroundColor = 'rgb(254 243 199 / 0.9)';
-                            categoryPill.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
-                            categoryPill.style.color = 'rgb(146 64 14)';
-                        } else {
-                            scrollableContent.style.cursor = '';
-                            categoryPill.style.transform = '';
-                            categoryPill.style.backgroundColor = '';
-                            categoryPill.style.boxShadow = '';
-                            categoryPill.style.color = '';
-                        }
-                    } else if (isHovering) {
-                        scrollableContent.style.cursor = 'pointer';
-                    }
-                };
-                
-                scrollableContent.addEventListener('mousemove', (e) => handleInteraction(e));
-                scrollableContent.addEventListener('click', (e) => handleInteraction(e, true));
-                scrollableContent.addEventListener('mouseleave', () => {
-                    if (isHovering) {
-                        isHovering = false;
-                        scrollableContent.style.cursor = '';
-                        categoryPill.style.transform = '';
-                        categoryPill.style.backgroundColor = '';
-                        categoryPill.style.boxShadow = '';
-                        categoryPill.style.color = '';
-                    }
-                });
-            }
-        });
         
         requestAnimationFrame(() => {
             const newScrollContainer = modalWrapper.querySelector('#scrollableContent');
