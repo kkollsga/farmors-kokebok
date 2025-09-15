@@ -2702,7 +2702,7 @@ class ModalManager {
             </div>
         `;
         
-        // Add event delegation to handle category pill interaction through the scrollable layer
+        // Industry standard approach: Use elementFromPoint to check actual visibility
         requestAnimationFrame(() => {
             const scrollableContent = modalWrapper.querySelector('#scrollableContent');
             const categoryPill = modalWrapper.querySelector('.absolute.top-4.left-4');
@@ -2710,26 +2710,51 @@ class ModalManager {
             if (scrollableContent && categoryPill) {
                 let isHovering = false;
                 
-                // Handle mouse movement for hover effects
-                scrollableContent.addEventListener('mousemove', (e) => {
+                // Check if the pill is the topmost element at its center point
+                const isPillActuallyVisible = () => {
+                    const rect = categoryPill.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    const topElement = document.elementFromPoint(centerX, centerY);
+                    return categoryPill.contains(topElement) || categoryPill === topElement;
+                };
+                
+                // Handle interactions
+                const handleInteraction = (e, isClick = false) => {
+                    if (!isPillActuallyVisible()) {
+                        if (isHovering) {
+                            isHovering = false;
+                            scrollableContent.style.cursor = '';
+                            categoryPill.style.transform = '';
+                            categoryPill.style.backgroundColor = '';
+                            categoryPill.style.boxShadow = '';
+                            categoryPill.style.color = '';
+                        }
+                        return;
+                    }
+                    
                     const rect = categoryPill.getBoundingClientRect();
                     const x = e.clientX;
                     const y = e.clientY;
-                    const wasHovering = isHovering;
+                    const isOverPill = x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
                     
-                    // Check if mouse is within the category pill bounds
-                    isHovering = x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+                    if (isClick && isOverPill) {
+                        e.stopPropagation();
+                        categoryPill.click();
+                        return;
+                    }
+                    
+                    const wasHovering = isHovering;
+                    isHovering = isOverPill;
                     
                     if (isHovering !== wasHovering) {
                         if (isHovering) {
-                            // Apply hover state with modern subtle effect
                             scrollableContent.style.cursor = 'pointer';
                             categoryPill.style.transform = 'scale(1.05)';
-                            categoryPill.style.backgroundColor = 'rgb(254 243 199 / 0.9)'; // amber-50 with opacity
+                            categoryPill.style.backgroundColor = 'rgb(254 243 199 / 0.9)';
                             categoryPill.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
-                            categoryPill.style.color = 'rgb(146 64 14)'; // amber-800
+                            categoryPill.style.color = 'rgb(146 64 14)';
                         } else {
-                            // Remove hover state
                             scrollableContent.style.cursor = '';
                             categoryPill.style.transform = '';
                             categoryPill.style.backgroundColor = '';
@@ -2739,9 +2764,10 @@ class ModalManager {
                     } else if (isHovering) {
                         scrollableContent.style.cursor = 'pointer';
                     }
-                });
+                };
                 
-                // Handle mouse leave
+                scrollableContent.addEventListener('mousemove', (e) => handleInteraction(e));
+                scrollableContent.addEventListener('click', (e) => handleInteraction(e, true));
                 scrollableContent.addEventListener('mouseleave', () => {
                     if (isHovering) {
                         isHovering = false;
@@ -2750,19 +2776,6 @@ class ModalManager {
                         categoryPill.style.backgroundColor = '';
                         categoryPill.style.boxShadow = '';
                         categoryPill.style.color = '';
-                    }
-                });
-                
-                // Handle clicks
-                scrollableContent.addEventListener('click', (e) => {
-                    const rect = categoryPill.getBoundingClientRect();
-                    const x = e.clientX;
-                    const y = e.clientY;
-                    
-                    // Check if click is within the category pill bounds
-                    if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-                        e.stopPropagation();
-                        categoryPill.click();
                     }
                 });
             }
