@@ -2702,12 +2702,12 @@ class ModalManager {
                 ${this.generateCloseButton()}
 
                 <!-- Scrollable content -->
-                <div id="scrollableContent" class="absolute inset-0 overflow-y-auto z-10 pointer-events-none">
+                <div id="scrollableContent" class="absolute inset-0 overflow-y-auto z-10">
                     <!-- Invisible spacer -->
                     <div class="${isMobileLayout ? 'h-48' : 'h-72'} pointer-events-none"></div>
 
                     <!-- Actual content -->
-                    <div class="min-h-full bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)] pointer-events-auto">
+                    <div class="min-h-full bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
                         ${
                             isMobileLayout 
                                 ? this.generateMobileContent(recipeWithUserData) 
@@ -2716,7 +2716,7 @@ class ModalManager {
                     </div>        
                 </div>
 
-                <!-- Category button BELOW scrollable content -->
+                <!-- Category button (fixed to modal, not screen, and outside scroll flow) -->
                 <div class="absolute top-4 left-4 z-0">
                     ${this.generateCategoryButton(recipeWithUserData)}
                 </div>
@@ -2728,20 +2728,8 @@ class ModalManager {
             if (newScrollContainer && currentScrollTop > 0) {
                 newScrollContainer.scrollTop = currentScrollTop;
             }
-
-            // Simplified pointer-events toggling
-            if (newScrollContainer) {
-                newScrollContainer.addEventListener('touchstart', () => {
-                    newScrollContainer.style.pointerEvents = 'auto';
-                });
-
-                newScrollContainer.addEventListener('touchend', () => {
-                    newScrollContainer.style.pointerEvents = 'none';
-                });
-            }
         });
     }
-
 
     generateMobileContent(recipe) {
         const sourceInfo = this.uiManager.formatSource(recipe);
