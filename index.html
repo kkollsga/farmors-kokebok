@@ -258,12 +258,12 @@ class DummyRecipeGenerator {
             'loff.jpg'
         ];
         
-        // Use taxonomy if available, otherwise use defaults
-        this.categories = TAXONOMY.categories ? Object.values(TAXONOMY.categories) : ['Dessert', 'Kaker', 'Konfekt', 'Rundkaker'];
-        this.meals = TAXONOMY.meals ? Object.values(TAXONOMY.meals) : ['Kaffe', 'Kake', 'Middag', 'Dessert'];
-        this.cuisines = TAXONOMY.cuisines ? Object.values(TAXONOMY.cuisines) : ['Norsk', 'Svensk', 'Tysk', 'Italiensk'];
-        this.providers = ['Farmor', 'Bestemor', 'Tante Kari', 'Mor'];
-        this.references = TAXONOMY.sources ? Object.values(TAXONOMY.sources) : ['Oppskriftsbok', 'Familieoppskrift', 'Gammelt hefte'];
+        // Default values for dummy data generation
+        this.categories = ['Dessert', 'Lagkaker', 'Formkaker', 'Rundkaker', 'Julekaker', 'Småkaker', 'Hovedretter', 'Tilbehør'];
+        this.meals = ['Kaffe', 'Kake', 'Middag', 'Dessert', 'Frokost/Lunsj'];
+        this.cuisines = ['Norsk', 'Svensk', 'Italiensk', 'Amerikansk', 'Russisk', 'Brasiliansk'];
+        this.providers = ['Farmor', 'Bestemor', 'Tante Kari', 'Mor', 'Dagmar', 'Astrid'];
+        this.references = ['Oppskriftsbok', 'Familieoppskrift', 'Gammelt hefte', 'Ukeblad'];
         
         // Extract words and sentences from lorem text
         this.words = this.loremText.toLowerCase()
@@ -362,6 +362,51 @@ class DummyRecipeGenerator {
 }
 
 // ============================================================================
+// TAXONOMY HELPER FUNCTIONS
+// ============================================================================
+
+function extractTaxonomyFromRecipes(recipes) {
+    const taxonomy = {
+        categories: {},
+        meals: {},
+        cuisines: {},
+        sources: {}
+    };
+
+    if (!recipes || !Array.isArray(recipes)) {
+        return taxonomy;
+    }
+
+    recipes.forEach(recipe => {
+        // Extract categories
+        if (recipe.category) {
+            const key = recipe.category.toLowerCase().replace(/[\s-]+/g, '');
+            taxonomy.categories[key] = recipe.category;
+        }
+
+        // Extract meals
+        if (recipe.meal) {
+            const key = recipe.meal.toLowerCase().replace(/[\s-]+/g, '');
+            taxonomy.meals[key] = recipe.meal;
+        }
+
+        // Extract cuisines
+        if (recipe.cuisine) {
+            const key = recipe.cuisine.toLowerCase().replace(/[\s-]+/g, '');
+            taxonomy.cuisines[key] = recipe.cuisine;
+        }
+
+        // Extract sources/references
+        if (recipe.reference) {
+            const key = recipe.reference.toLowerCase().replace(/[\s-]+/g, '');
+            taxonomy.sources[key] = recipe.reference;
+        }
+    });
+
+    return taxonomy;
+}
+
+// ============================================================================
 // LANGUAGE HELPER FUNCTIONS
 // ============================================================================
 
@@ -433,19 +478,14 @@ async function loadAppData() {
         
         // Use hardcoded UI text for local development
         UI_TEXT = {"header":{"title":"Farmors Kokebok"},"search":{"placeholder":"Søk etter oppskrifter eller ingredienser..."},"filter":{"button":"Filter","title":"Velg kategorier","clear":"Tøm filter","categories":{"category":"Kategori","meal":"Måltid","cuisine":"Kjøkken"}},"sort":{"recommendation":"Anbefalt rekkefølge","recipebook":"Oppskriftsbok rekkefølge","alphabetical":"Alfabetisk","madeCount":"Antall ganger laget","rating":"Vurdering"},"copyUrl":{"button":"Kopier URL","buttonShort":"Kopier URL"},"recipe":{"servings":"Porsjoner","page":"s.","ingredients":"Ingredienser","instructions":"Slik gjør du","tip":"Tips:","made":"Laget","mark":"Merk","viewInBook":"Vis oppskrift i kokeboken","noImage":"🍞"},"kokebok":{"loading":"Laster side...","page":"Side","errorLoading":"Kunne ikke laste side"},"loading":{"spinner":"Laster..."},"meta":{"cuisineSuffix":"kjøkken"}};
-        
-        // Minimal taxonomy for local development
-        TAXONOMY = {
-            categories: { "dessert": "Dessert", "layercakes": "Kaker", "confections": "Konfekt", "roundcakes": "Rundkaker", "christmas": "Julekaker", "butchery": "Slakteveiledning" },
-            meals: { "coffee": "Kaffe", "cake": "Kake", "dinner": "Middag", "dessert": "Dessert" },
-            cuisines: { "norwegian": "Norsk", "swedish": "Svensk", "italian": "Italiensk", "european": "Europeisk" },
-            sources: { "recipebook": "Oppskriftsbok" }
-        };
-        
+
         // Generate dummy recipes
         const generator = new DummyRecipeGenerator();
         RECIPES_DATA = generator.generateRecipes(CONFIG.DUMMY_RECIPES_COUNT);
-        
+
+        // Extract taxonomy from generated recipes
+        TAXONOMY = extractTaxonomyFromRecipes(RECIPES_DATA);
+
         updateUIText();
         return true;
     } else {
@@ -457,20 +497,15 @@ async function loadAppData() {
             const uiResponse = await fetch(uiPath);
             UI_TEXT = await uiResponse.json();
             
-            // Load recipes and taxonomy for the selected language
+            // Load recipes for the selected language
             const recipesPath = CONFIG.DATA_PATHS.RECIPES.replace('{lang}', CURRENT_LANGUAGE);
             const recipesResponse = await fetch(recipesPath);
             const recipesData = await recipesResponse.json();
-            
-            // Extract taxonomy
-            TAXONOMY = {
-                categories: recipesData.categories || {},
-                meals: recipesData.meals || {},
-                cuisines: recipesData.cuisines || {},
-                sources: recipesData.sources || {}
-            };
-            
+
             RECIPES_DATA = recipesData.recipes;
+
+            // Extract taxonomy from loaded recipes
+            TAXONOMY = extractTaxonomyFromRecipes(RECIPES_DATA);
             
             updateUIText();
             return true;
@@ -486,17 +521,13 @@ async function loadAppData() {
             
             // If even default language fails, use hardcoded data
             UI_TEXT = {"header":{"title":"Farmors Kokebok"},"search":{"placeholder":"Søk etter oppskrifter eller ingredienser..."},"filter":{"button":"Filter","title":"Velg kategorier","clear":"Tøm filter","categories":{"category":"Kategori","meal":"Måltid","cuisine":"Kjøkken"}},"sort":{"recommendation":"Anbefalt rekkefølge","recipebook":"Oppskriftsbok rekkefølge","alphabetical":"Alfabetisk","madeCount":"Antall ganger laget","rating":"Vurdering"},"copyUrl":{"button":"Kopier URL","buttonShort":"Kopier URL"},"recipe":{"servings":"Porsjoner","page":"s.","ingredients":"Ingredienser","instructions":"Slik gjør du","tip":"Tips:","made":"Laget","mark":"Merk","viewInBook":"Vis oppskrift i kokeboken","noImage":"🍞"},"kokebok":{"loading":"Laster side...","page":"Side","errorLoading":"Kunne ikke laste side"},"loading":{"spinner":"Laster..."},"meta":{"cuisineSuffix":"kjøkken"}};
-            
-            TAXONOMY = {
-                categories: { "dessert": "Dessert", "christmas": "Julekaker", "butchery": "Slakteveiledning" },
-                meals: { "dinner": "Middag", "coffee": "Kaffe" },
-                cuisines: { "norwegian": "Norsk" },
-                sources: { "recipebook": "Oppskriftsbok" }
-            };
-            
+
             const generator = new DummyRecipeGenerator();
             RECIPES_DATA = generator.generateRecipes(5);
-            
+
+            // Extract taxonomy from fallback recipes
+            TAXONOMY = extractTaxonomyFromRecipes(RECIPES_DATA);
+
             updateUIText();
             return false;
         }
