@@ -7,7 +7,7 @@
 <!-- Progressive Web App -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Farmors Oppskrifter">
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -1537,6 +1537,11 @@ class SearchFilterBar {
             this.glassBar.style.margin = '0 auto';
         }
 
+        // Add extra top offset for minimum view on iOS to account for Dynamic Island
+        if (this.isFixed) {
+            this.container.style.top = 'calc(44px + env(safe-area-inset-top, 0px))';
+        }
+
         // Force repaint for iOS while preserving centering
         this.container.style.transform = 'translateX(-50%) translateZ(0)';
         setTimeout(() => {
@@ -1564,6 +1569,11 @@ class SearchFilterBar {
             this.glassBar.style.padding = '';
             this.glassBar.style.width = '';
             this.glassBar.style.margin = '';
+        }
+
+        // Reset to standard top position
+        if (this.isFixed) {
+            this.container.style.top = 'calc(24px + env(safe-area-inset-top, 0px))';
         }
 
         // Force repaint for iOS while preserving centering
