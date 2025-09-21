@@ -77,6 +77,21 @@
     }
     
     /* ============================================
+       MOBILE RESPONSIVE STYLES
+    ============================================ */
+    @media (max-width: 768px) {
+        /* Hide filter button text on mobile */
+        #filterButtonText {
+            display: none;
+        }
+
+        /* Increase minimum width of search input */
+        #searchInputContainer {
+            min-width: 200px;
+        }
+    }
+
+    /* ============================================
        iOS SPECIFIC FIXES
     ============================================ */
     @supports (-webkit-touch-callout: none) {
@@ -144,10 +159,12 @@
                     </button>
                 </div>
 
-                <!-- Filter counter (when only filters applied) -->
-                <div id="filterCounter" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white hidden">
-                    <i class="fas fa-filter text-xs"></i>
-                    <span id="filterCounterText">0</span>
+                <!-- Filter counter (when multiple filters applied) -->
+                <div id="filterCounter" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white hidden cursor-pointer">
+                    <span id="filterCounterText">0 filters</span>
+                    <button id="clearAllFiltersPill" class="ml-1 hover:opacity-70 flex-shrink-0">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1487,17 +1504,19 @@ class SearchFilterBar {
             const searchPillText = this.searchPill.querySelector('#searchPillText');
             if (searchPillText) searchPillText.textContent = this.searchQuery;
         } else if (hasFilters) {
-            // Show only filter pill (not filter button)
+            // Show filter content based on count
             if (filterCount === 1) {
+                // Single filter: show filter name with X to remove
                 const [filterKey] = Array.from(this.filterManager.activeFilters.keys());
                 const [, filterName] = filterKey.split(':');
                 this.filterPill.classList.remove('hidden');
                 const filterPillText = this.filterPill.querySelector('#filterPillText');
                 if (filterPillText) filterPillText.textContent = filterName;
             } else {
+                // Multiple filters: show count with X to clear all
                 this.filterCounter.classList.remove('hidden');
                 const filterCounterText = this.filterCounter.querySelector('#filterCounterText');
-                if (filterCounterText) filterCounterText.textContent = filterCount;
+                if (filterCounterText) filterCounterText.textContent = `${filterCount} filters`;
             }
         }
     }
@@ -1601,6 +1620,20 @@ class SearchFilterBar {
                 this.clearSearch();
             }
             if (e.target.closest('#clearFilterPill')) {
+                this.clearAllFilters();
+            }
+        });
+
+        // Filter counter pill click to show dropdown
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('#filterCounter') && !e.target.closest('#clearAllFiltersPill')) {
+                this.toggleFilterMenu();
+            }
+        });
+
+        // Clear all filters pill button
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('#clearAllFiltersPill')) {
                 this.clearAllFilters();
             }
         });
