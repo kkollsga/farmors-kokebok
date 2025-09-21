@@ -1378,7 +1378,7 @@ class SearchFilterBar {
 
         // Apply fixed positioning
         this.container.style.position = 'fixed';
-        this.container.style.top = '24px';
+        this.container.style.top = 'calc(24px + env(safe-area-inset-top, 0px))';
         this.container.style.left = '50%';
         this.container.style.transform = 'translateX(-50%)';
         this.container.style.width = 'fit-content';
