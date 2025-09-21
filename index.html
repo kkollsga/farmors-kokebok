@@ -1309,19 +1309,29 @@ class SearchFilterBar {
                     const scrollDirection = scrollY > lastScrollY ? 'down' : 'up';
                     const shouldBeFixed = scrollY > this.searchBarTop - 20;
 
-                    // Handle fixed positioning
+                    const hasContent = this.searchQuery.length > 0 || this.filterManager.activeFilters.size > 0;
+
+                    // Handle positioning and content display based on scroll
                     if (shouldBeFixed && !this.isFixed) {
                         this.makeFixed();
+                        // When first becoming fixed while scrolling down, go directly to minimum if we have content
+                        if (scrollDirection === 'down' && hasContent) {
+                            this.showMinimumContent();
+                        } else if (!hasContent) {
+                            this.container.style.opacity = '0';
+                        }
                     } else if (!shouldBeFixed && this.isFixed) {
                         this.makeStandard();
-                    }
-
-                    // Handle minimum/standard content display
-                    if (this.isFixed) {
-                        const hasContent = this.searchQuery.length > 0 || this.filterManager.activeFilters.size > 0;
-                        if (scrollDirection === 'down' && scrollY > 100 && hasContent) {
+                        // Force a repaint for iOS
+                        this.container.style.transform = 'translateZ(0)';
+                        setTimeout(() => {
+                            this.container.style.transform = '';
+                        }, 0);
+                    } else if (this.isFixed) {
+                        // Only handle content switching when already fixed
+                        if (scrollDirection === 'down' && hasContent && !this.isMinimum) {
                             this.showMinimumContent();
-                        } else if (scrollDirection === 'up') {
+                        } else if (scrollDirection === 'up' && this.isMinimum) {
                             this.showStandardContent();
                         } else if (!hasContent) {
                             // Hide the entire container when no content
@@ -1374,7 +1384,7 @@ class SearchFilterBar {
         this.isFixed = false;
         this.isMinimum = false;
 
-        // Reset positioning
+        // Reset positioning and state
         this.container.style.position = '';
         this.container.style.top = '';
         this.container.style.left = '';
@@ -1382,11 +1392,14 @@ class SearchFilterBar {
         this.container.style.width = '';
         this.container.style.maxWidth = '';
         this.container.style.zIndex = '';
+        this.container.style.opacity = '1';
 
         // Reset glass bar styling for standard position
         if (this.glassBar) {
             this.glassBar.className = 'relative w-full rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40';
             this.glassBar.style.padding = '';
+            this.glassBar.style.width = '';
+            this.glassBar.style.margin = '';
         }
 
         // Remove spacer
@@ -1400,48 +1413,52 @@ class SearchFilterBar {
         if (this.isMinimum || !this.standardContent || !this.minimumContent) return;
         this.isMinimum = true;
 
-        // Add smooth transition
-        this.standardContent.style.transition = 'opacity 0.2s ease-in-out';
-        this.minimumContent.style.transition = 'opacity 0.2s ease-in-out';
+        // Instant transition for better scroll performance
+        this.standardContent.classList.add('hidden');
+        this.minimumContent.classList.remove('hidden');
+        this.minimumContent.style.opacity = '1';
 
-        this.standardContent.style.opacity = '0';
+        // Apply pill-like styling for minimum view
+        if (this.glassBar) {
+            this.glassBar.className = 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40';
+            this.glassBar.style.padding = '4px';
+            this.glassBar.style.width = 'fit-content';
+            this.glassBar.style.margin = '0 auto';
+        }
+
+        // Force repaint for iOS while preserving centering
+        this.container.style.transform = 'translateX(-50%) translateZ(0)';
         setTimeout(() => {
-            this.standardContent.classList.add('hidden');
-            this.minimumContent.classList.remove('hidden');
-            this.minimumContent.style.opacity = '1';
+            this.container.style.transform = 'translateX(-50%)';
+        }, 0);
 
-            // Apply pill-like styling for minimum view
-            if (this.glassBar) {
-                this.glassBar.className = 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40';
-                this.glassBar.style.padding = '4px';
-            }
-
-            this.updateMinimumDisplay();
-        }, 200);
+        this.updateMinimumDisplay();
     }
 
     showStandardContent() {
         if (!this.isMinimum || !this.standardContent || !this.minimumContent) return;
         this.isMinimum = false;
 
-        // Add smooth transition
-        this.standardContent.style.transition = 'opacity 0.2s ease-in-out';
-        this.minimumContent.style.transition = 'opacity 0.2s ease-in-out';
+        // Instant transition for better scroll performance
+        this.minimumContent.classList.add('hidden');
+        this.standardContent.classList.remove('hidden');
+        this.standardContent.style.opacity = '1';
 
-        this.minimumContent.style.opacity = '0';
+        // Reset to rectangular styling for standard view
+        if (this.glassBar) {
+            this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40';
+            this.glassBar.style.padding = '';
+            this.glassBar.style.width = '';
+            this.glassBar.style.margin = '';
+        }
+
+        // Force repaint for iOS while preserving centering
+        this.container.style.transform = 'translateX(-50%) translateZ(0)';
         setTimeout(() => {
-            this.minimumContent.classList.add('hidden');
-            this.standardContent.classList.remove('hidden');
-            this.standardContent.style.opacity = '1';
+            this.container.style.transform = 'translateX(-50%)';
+        }, 0);
 
-            // Reset to rectangular styling for standard view
-            if (this.glassBar) {
-                this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40';
-                this.glassBar.style.padding = '';
-            }
-
-            this.updateStandardDisplay();
-        }, 200);
+        this.updateStandardDisplay();
     }
 
     updateMinimumDisplay() {
