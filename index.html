@@ -1288,6 +1288,18 @@ class SearchFilterBar {
         this.lastScrollY = 0;
         this.searchBarTop = 0;
 
+        // Scroll buffer state for smooth behavior
+        this.scrollBuffer = {
+            lastDirection: null,
+            directionStartY: 0,
+            directionStartTime: 0,
+            lastUpdateTime: 0,
+            scrollDistance: 0,
+            scrollVelocity: 0,
+            pendingDirectionChange: null,
+            pendingTimeout: null
+        };
+
         // DOM elements (get references to existing HTML elements)
         this.container = document.getElementById('searchFilterContainer');
         this.glassBar = document.getElementById('unifiedGlassBar');
@@ -1317,46 +1329,76 @@ class SearchFilterBar {
     
     setupScrollListener() {
         let ticking = false;
-        let lastScrollY = 0;
+
+        const SCROLL_BUFFER_DISTANCE = 80; // Minimum scroll distance for direction change
+        const SCROLL_BUFFER_TIME = 180; // Minimum time (ms) before reacting to direction change
+        const VELOCITY_THRESHOLD = 2; // Pixels per ms for fast scroll detection
 
         const handleScroll = () => {
             if (!ticking) {
                 window.requestAnimationFrame(() => {
+                    const now = Date.now();
                     const scrollY = window.pageYOffset;
-                    const scrollDirection = scrollY > lastScrollY ? 'down' : 'up';
-                    const shouldBeFixed = scrollY > this.searchBarTop - 20;
+                    const scrollDelta = scrollY - this.lastScrollY;
+                    const currentDirection = scrollDelta > 0 ? 'down' : scrollDelta < 0 ? 'up' : null;
 
-                    const hasContent = this.searchQuery.length > 0 || this.filterManager.activeFilters.size > 0;
+                    if (!currentDirection) {
+                        ticking = false;
+                        return;
+                    }
 
-                    // Handle positioning and content display based on scroll
-                    if (shouldBeFixed && !this.isFixed) {
-                        this.makeFixed();
-                        // When first becoming fixed while scrolling down, go directly to minimum if we have content
-                        if (scrollDirection === 'down' && hasContent) {
-                            this.showMinimumContent();
-                        } else if (!hasContent) {
-                            this.container.style.opacity = '0';
+                    // Calculate velocity (pixels per ms)
+                    const timeDelta = now - this.scrollBuffer.lastUpdateTime;
+                    this.scrollBuffer.scrollVelocity = timeDelta > 0 ? Math.abs(scrollDelta) / timeDelta : 0;
+                    this.scrollBuffer.lastUpdateTime = now;
+
+                    // Check if direction changed
+                    if (this.scrollBuffer.lastDirection !== currentDirection) {
+                        // Clear any pending direction change
+                        if (this.scrollBuffer.pendingTimeout) {
+                            clearTimeout(this.scrollBuffer.pendingTimeout);
+                            this.scrollBuffer.pendingTimeout = null;
                         }
-                    } else if (!shouldBeFixed && this.isFixed) {
-                        this.makeStandard();
-                        // Force a repaint for iOS
-                        this.container.style.transform = 'translateZ(0)';
-                        setTimeout(() => {
-                            this.container.style.transform = '';
-                        }, 0);
-                    } else if (this.isFixed) {
-                        // Only handle content switching when already fixed
-                        if (scrollDirection === 'down' && hasContent && !this.isMinimum) {
-                            this.showMinimumContent();
-                        } else if (scrollDirection === 'up' && this.isMinimum) {
-                            this.showStandardContent();
-                        } else if (!hasContent) {
-                            // Hide the entire container when no content
-                            this.container.style.opacity = scrollDirection === 'down' ? '0' : '1';
+
+                        // Start tracking new direction
+                        this.scrollBuffer.directionStartY = scrollY;
+                        this.scrollBuffer.directionStartTime = now;
+                        this.scrollBuffer.scrollDistance = 0;
+                        this.scrollBuffer.pendingDirectionChange = currentDirection;
+
+                        // For fast scrolls, reduce buffer requirements
+                        const isHighVelocity = this.scrollBuffer.scrollVelocity > VELOCITY_THRESHOLD;
+                        const requiredDistance = isHighVelocity ? SCROLL_BUFFER_DISTANCE * 0.6 : SCROLL_BUFFER_DISTANCE;
+                        const requiredTime = isHighVelocity ? SCROLL_BUFFER_TIME * 0.7 : SCROLL_BUFFER_TIME;
+
+                        // Set timeout to confirm direction change
+                        this.scrollBuffer.pendingTimeout = setTimeout(() => {
+                            const distanceTraveled = Math.abs(scrollY - this.scrollBuffer.directionStartY);
+
+                            if (distanceTraveled >= requiredDistance ||
+                                (now - this.scrollBuffer.directionStartTime) >= requiredTime) {
+                                this.scrollBuffer.lastDirection = this.scrollBuffer.pendingDirectionChange;
+                                this.handleScrollDirectionChange(scrollY, this.scrollBuffer.lastDirection);
+                            }
+
+                            this.scrollBuffer.pendingTimeout = null;
+                        }, requiredTime);
+
+                    } else {
+                        // Same direction, update distance
+                        this.scrollBuffer.scrollDistance = Math.abs(scrollY - this.scrollBuffer.directionStartY);
+
+                        // If we've traveled enough distance, immediately confirm direction
+                        if (this.scrollBuffer.scrollDistance >= SCROLL_BUFFER_DISTANCE &&
+                            this.scrollBuffer.pendingTimeout) {
+                            clearTimeout(this.scrollBuffer.pendingTimeout);
+                            this.scrollBuffer.pendingTimeout = null;
+                            this.scrollBuffer.lastDirection = currentDirection;
+                            this.handleScrollDirectionChange(scrollY, currentDirection);
                         }
                     }
 
-                    lastScrollY = scrollY;
+                    this.lastScrollY = scrollY;
                     ticking = false;
                 });
                 ticking = true;
@@ -1364,6 +1406,39 @@ class SearchFilterBar {
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
+    }
+
+    handleScrollDirectionChange(scrollY, scrollDirection) {
+        const shouldBeFixed = scrollY > this.searchBarTop - 20;
+        const hasContent = this.searchQuery.length > 0 || this.filterManager.activeFilters.size > 0;
+
+        // Handle positioning and content display based on scroll
+        if (shouldBeFixed && !this.isFixed) {
+            this.makeFixed();
+            // When first becoming fixed while scrolling down, go directly to minimum if we have content
+            if (scrollDirection === 'down' && hasContent) {
+                this.showMinimumContent();
+            } else if (!hasContent) {
+                this.container.style.opacity = '0';
+            }
+        } else if (!shouldBeFixed && this.isFixed) {
+            this.makeStandard();
+            // Force a repaint for iOS
+            this.container.style.transform = 'translateZ(0)';
+            setTimeout(() => {
+                this.container.style.transform = '';
+            }, 0);
+        } else if (this.isFixed) {
+            // Only handle content switching when already fixed
+            if (scrollDirection === 'down' && hasContent && !this.isMinimum) {
+                this.showMinimumContent();
+            } else if (scrollDirection === 'up' && this.isMinimum) {
+                this.showStandardContent();
+            } else if (!hasContent) {
+                // Hide the entire container when no content
+                this.container.style.opacity = scrollDirection === 'down' ? '0' : '1';
+            }
+        }
     }
 
     makeFixed() {
