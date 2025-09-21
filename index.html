@@ -130,9 +130,9 @@
                 </div>
 
                 <!-- Search Input -->
-                <div id="searchInputContainer" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white hover:bg-amber-50/20 transition-colors border-gray-200 border flex-1 min-w-0">
+                <div id="searchInputContainer" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white hover:bg-amber-50/20 transition-all border-gray-200 border flex-1 min-w-0 focus-within:border-amber-400 focus-within:bg-amber-50/10">
                     <i class="fas fa-search text-amber-700 text-sm"></i>
-                    <input type="text" id="unifiedSearchInput" placeholder="Search recipes..." class="bg-transparent outline-none text-amber-700 placeholder-gray-400 text-sm w-full font-normal focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600">
+                    <input type="text" id="unifiedSearchInput" placeholder="Search recipes..." class="bg-transparent outline-none text-amber-700 placeholder-gray-400 text-sm w-full font-normal focus:outline-none">
                     <button id="clearSearchBtn" class="text-amber-700 hover:text-amber-800 transition-colors hidden">
                         <i class="fas fa-times text-sm"></i>
                     </button>
@@ -1349,11 +1349,16 @@ class SearchFilterBar {
                     // Handle fixed/standard positioning immediately
                     if (shouldBeFixed && !this.isFixed) {
                         this.makeFixed();
-                        // When first becoming fixed while scrolling down, go directly to minimum if we have content
-                        if (currentDirection === 'down' && hasContent) {
+                        // Only go to minimum if we have content AND scrolling down
+                        if (hasContent && currentDirection === 'down') {
                             this.showMinimumContent();
-                        } else if (!hasContent) {
+                        } else if (!hasContent && currentDirection === 'down') {
+                            // No content and scrolling down: hide immediately
                             this.container.style.opacity = '0';
+                        } else if (!hasContent && currentDirection === 'up') {
+                            // No content and scrolling up: show standard layout
+                            this.showStandardContent();
+                            this.container.style.opacity = '1';
                         }
                     } else if (!shouldBeFixed && this.isFixed) {
                         this.makeStandard();
@@ -1371,41 +1376,70 @@ class SearchFilterBar {
                     }
 
                     // Handle content switching when fixed
-                    if (this.isFixed && hasContent) {
-                        // Clear existing reset timer
-                        if (resetTimer) {
-                            clearTimeout(resetTimer);
-                        }
-
-                        // Check if direction changed
-                        if (this.scrollBuffer.lastDirection !== currentDirection) {
-                            // Direction changed, reset accumulator
-                            scrollAccumulator = scrollDelta;
-                            this.scrollBuffer.lastDirection = currentDirection;
-                        } else {
-                            // Same direction, accumulate scroll
-                            scrollAccumulator += scrollDelta;
-                        }
-
-                        // Check if we've scrolled enough to trigger transition
-                        if (Math.abs(scrollAccumulator) >= SCROLL_THRESHOLD) {
-                            if (currentDirection === 'down' && !this.isMinimum) {
-                                this.showMinimumContent();
-                                scrollAccumulator = 0; // Reset after transition
-                            } else if (currentDirection === 'up' && this.isMinimum) {
-                                this.showStandardContent();
-                                scrollAccumulator = 0; // Reset after transition
+                    if (this.isFixed) {
+                        if (hasContent) {
+                            // With content: handle minimum/standard transitions
+                            // Clear existing reset timer
+                            if (resetTimer) {
+                                clearTimeout(resetTimer);
                             }
-                        }
 
-                        // Set timer to reset accumulator after inactivity
-                        resetTimer = setTimeout(() => {
-                            scrollAccumulator = 0;
-                            this.scrollBuffer.lastDirection = null;
-                        }, RESET_TIMEOUT);
-                    } else if (this.isFixed && !hasContent) {
-                        // Handle visibility when no content
-                        this.container.style.opacity = currentDirection === 'down' ? '0' : '1';
+                            // Check if direction changed
+                            if (this.scrollBuffer.lastDirection !== currentDirection) {
+                                // Direction changed, reset accumulator
+                                scrollAccumulator = scrollDelta;
+                                this.scrollBuffer.lastDirection = currentDirection;
+                            } else {
+                                // Same direction, accumulate scroll
+                                scrollAccumulator += scrollDelta;
+                            }
+
+                            // Check if we've scrolled enough to trigger transition
+                            if (Math.abs(scrollAccumulator) >= SCROLL_THRESHOLD) {
+                                if (currentDirection === 'down' && !this.isMinimum) {
+                                    this.showMinimumContent();
+                                    scrollAccumulator = 0; // Reset after transition
+                                } else if (currentDirection === 'up' && this.isMinimum) {
+                                    this.showStandardContent();
+                                    scrollAccumulator = 0; // Reset after transition
+                                }
+                            }
+
+                            // Set timer to reset accumulator after inactivity
+                            resetTimer = setTimeout(() => {
+                                scrollAccumulator = 0;
+                                this.scrollBuffer.lastDirection = null;
+                            }, RESET_TIMEOUT);
+                        } else {
+                            // No content: simple hide/show with standard layout
+                            // Always use standard layout when showing (never minimum)
+                            if (this.isMinimum) {
+                                this.showStandardContent();
+                            }
+
+                            // Use same scroll accumulator logic for smooth hide/show
+                            if (resetTimer) {
+                                clearTimeout(resetTimer);
+                            }
+
+                            if (this.scrollBuffer.lastDirection !== currentDirection) {
+                                scrollAccumulator = scrollDelta;
+                                this.scrollBuffer.lastDirection = currentDirection;
+                            } else {
+                                scrollAccumulator += scrollDelta;
+                            }
+
+                            // Hide on down, show on up after threshold
+                            if (Math.abs(scrollAccumulator) >= SCROLL_THRESHOLD) {
+                                this.container.style.opacity = currentDirection === 'down' ? '0' : '1';
+                                scrollAccumulator = 0;
+                            }
+
+                            resetTimer = setTimeout(() => {
+                                scrollAccumulator = 0;
+                                this.scrollBuffer.lastDirection = null;
+                            }, RESET_TIMEOUT);
+                        }
                     }
 
                     this.lastScrollY = scrollY;
@@ -1441,9 +1475,9 @@ class SearchFilterBar {
         this.container.style.width = 'fit-content';
         this.container.style.maxWidth = '90vw';
 
-        // Adjust padding for minimum view to match pills
+        // Remove padding for minimum view for more compact appearance
         if (this.isMinimum) {
-            this.glassBar.style.padding = '4px';
+            this.glassBar.style.padding = '0';
         }
         this.container.style.zIndex = '50';
 
@@ -1495,10 +1529,10 @@ class SearchFilterBar {
         this.minimumContent.classList.remove('hidden');
         this.minimumContent.style.opacity = '1';
 
-        // Apply pill-like styling for minimum view
+        // Apply pill-like styling for minimum view with no padding
         if (this.glassBar) {
             this.glassBar.className = 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40';
-            this.glassBar.style.padding = '4px';
+            this.glassBar.style.padding = '0';
             this.glassBar.style.width = 'fit-content';
             this.glassBar.style.margin = '0 auto';
         }
