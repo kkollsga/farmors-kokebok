@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Farmors Kokebok</title>
-<!-- iOS Web App -->
+<!-- Progressive Web App -->
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Farmors Oppskrifter">
@@ -93,67 +94,80 @@
     </div>
 </header>
 
-<!-- Search Bar -->
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-    <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg border border-gray-200 p-1.5">
-        <div class="relative">
-            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <input type="text" id="searchInput" placeholder="" 
-                   class="modern-input w-full pl-12 pr-4 py-3 bg-gray-50/50 border-0 rounded-xl focus:outline-none focus:bg-white transition-all text-gray-700 placeholder-gray-400">
+<!-- Unified Search/Filter Bar -->
+<div id="searchFilterContainer" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 relative z-30">
+    <div id="unifiedGlassBar" class="relative rounded-xl bg-white border border-gray-200 overflow-visible w-full z-40" style="height: 48px;">
+
+        <!-- Content container -->
+        <div class="relative h-full flex items-center gap-2 px-3">
+            <!-- Standard content -->
+            <div id="standardContent" class="flex items-center gap-2 w-full min-w-0">
+                <!-- Filter Button -->
+                <button id="unifiedFilterBtn" class="flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-white text-gray-700 hover:text-amber-600 border border-gray-200">
+                    <i class="fas fa-filter transition-transform duration-200 active:scale-90"></i>
+                    <span id="filterButtonText">Filter</span>
+                    <span id="filterCount" class="bg-white/30 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold hidden">0</span>
+                </button>
+
+                <!-- Filter Pills Container -->
+                <div id="filterPillsContainer" class="flex gap-2 overflow-hidden whitespace-nowrap shrink-0">
+                    <!-- Filter pills will be inserted here -->
+                </div>
+
+                <!-- Search Input -->
+                <div id="searchInputContainer" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white hover:bg-amber-50/20 transition-colors border-gray-200 border flex-1 min-w-0">
+                    <i class="fas fa-search text-amber-700 text-sm"></i>
+                    <input type="text" id="unifiedSearchInput" placeholder="Search recipes..." class="bg-transparent outline-none text-amber-700 placeholder-gray-400 text-sm w-full font-normal focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600">
+                    <button id="clearSearchBtn" class="text-amber-700 hover:text-amber-800 transition-colors hidden">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Minimum content (hidden by default) -->
+            <div id="minimumContent" class="flex items-center gap-2 w-full hidden">
+                <!-- Search pill -->
+                <div id="searchPill" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white hidden">
+                    <i class="fas fa-search text-xs"></i>
+                    <span id="searchPillText"></span>
+                    <button id="clearSearchPill" class="ml-1 hover:opacity-70 flex-shrink-0">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- Filter pill -->
+                <div id="filterPill" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white hidden">
+                    <i class="fas fa-filter text-xs"></i>
+                    <span id="filterPillText"></span>
+                    <button id="clearFilterPill" class="ml-1 hover:opacity-70 flex-shrink-0">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- Filter counter (when only filters applied) -->
+                <div id="filterCounter" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white hidden">
+                    <i class="fas fa-filter text-xs"></i>
+                    <span id="filterCounterText">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter dropdown menu -->
+        <div id="unifiedFilterMenu" class="absolute top-full left-0 mt-2 hidden z-50">
+            <!-- Filter menu content will be inserted here -->
+        </div>
+
+        <!-- Active filters dropdown -->
+        <div id="unifiedActiveFiltersMenu" class="absolute top-full left-0 mt-2 hidden z-50">
+            <!-- Active filters menu content will be inserted here -->
         </div>
     </div>
 </div>
 
-<!-- Filter Bar -->
+<!-- Sort Selector (moved to separate section) -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-    <div class="relative">
-        <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg border border-gray-200 p-4">
-            <div class="flex items-center gap-3">
-                <!-- Filter Button -->
-                <button id="filterToggle" onclick="recipeApp.filterManager.toggleFilterMenu()" 
-                        class="flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 text-sm font-medium shrink-0 shadow-sm hover:shadow-md">
-                    <i class="fas fa-filter transition-transform duration-200 active:scale-90"></i>
-                    <span id="filterButtonText"></span>
-                    <span id="filterCount" class="hidden bg-white/30 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">0</span>
-                </button>
-                
-                <!-- Filter Pills Container -->
-                <div id="filterPillsContainer" class="flex gap-2 flex-1 overflow-hidden transition-[max-width,opacity] duration-300 ease-out whitespace-nowrap">
-                    <!-- Filter pills will be inserted here -->
-                </div>
-            </div>
-        </div>
-        
-        <!-- Buttons Container -->
-        <div class="absolute -bottom-7 inset-x-0 flex justify-end gap-2">
-            <!-- Copy URL Button -->
-            <button id="copyURLButton" onclick="recipeApp.urlManager.copyToClipboard(recipeApp.urlManager.getShareableURL(), this)" 
-                    class="text-xs text-gray-500 hover:text-amber-600 transition-all duration-200 font-medium px-3 py-1 rounded-lg">
-                <i class="fas fa-copy sm:mr-1"></i>
-                <span id="copyURLText" class="hidden sm:inline"></span>
-            </button>
-            
-            <!-- Clear Filters Button -->
-            <button id="clearFilters" onclick="recipeApp.filterManager.clearAllFilters()" 
-                    class="hidden text-xs text-gray-500 hover:text-amber-600 transition-all duration-200 font-medium px-3 py-1 rounded-lg">
-                <i class="fas fa-times sm:mr-1"></i>
-                <span id="clearFiltersText" class="hidden sm:inline"></span>
-            </button>
-        </div>
-        
-        <!-- Filter Dropdown Menu -->
-        <div id="filterMenu" class="absolute left-4 top-full mt-2 z-50">
-            <div class="bg-white rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] border border-gray-100 hidden min-w-[280px] max-h-[400px] flex flex-col">
-                <div id="filterMenuTitle" class="text-sm font-semibold text-gray-700 px-4 pt-4 pb-2 border-b border-gray-100 flex-shrink-0"></div>
-                <div id="filterOptions" class="px-4 py-2 overflow-y-auto flex-1 recipe-scroll">
-                    <!-- Filter options will be inserted here -->
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Sort Selector -->
-    <div class="flex items-center gap-4 ml-8 mt-4">
+    <div class="flex items-center gap-4">
+        <span class="text-sm font-medium text-gray-600">Sort:</span>
         <button data-sort="recommendation" 
                 onclick="recipeApp.filterManager.changeSortOrder('recommendation')"
                 class="p-2 rounded-lg bg-amber-500 text-white transition-all duration-200"
@@ -184,17 +198,25 @@
                 title="">
             <i class="fas fa-star"></i>
         </button>
+        
+        <!-- Copy URL Button (moved here from old filter bar) -->
+        <button id="copyURLButton" 
+                onclick="recipeApp.urlManager.copyToClipboard(recipeApp.urlManager.getShareableURL(), this)" 
+                class="ml-auto text-xs text-gray-500 hover:text-amber-600 transition-all duration-200 font-medium px-3 py-1 rounded-lg">
+            <i class="fas fa-copy sm:mr-1"></i>
+            <span id="copyURLText" class="hidden sm:inline"></span>
+        </button>
     </div>
 </div>
 
 <!-- Main Recipe Grid -->
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 pb-12 safe-bottom">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 pb-12 safe-bottom">
     <div id="recipeGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Recipe cards will be inserted here -->
     </div>
 </div>
 
-<!-- Recipe Modal -->
+<!-- Recipe Modal (unchanged) -->
 <div id="recipeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
     <div class="flex items-start justify-center min-h-screen sm:pt-8">
         <div class="bg-red sm:rounded-3xl max-w-5xl w-full sm:h-[92vh] modal-height-mobile flex flex-col overflow-hidden modal-content-mobile">
@@ -938,7 +960,7 @@ class URLManager {
 }
 
 // ============================================================================
-// FILTER MANAGER CLASS
+// FILTER MANAGER CLASS (Updated for unified search/filter bar)
 // ============================================================================
 
 class FilterManager {
@@ -948,81 +970,13 @@ class FilterManager {
         this.recommendationEngine = recommendationEngine;
         this.userDataManager = userDataManager;
         this.activeFilters = new Map();
-        this.filterMenuOpen = false;
         this.searchQuery = '';
-        this.collapsedSections = new Set(['category', 'meal', 'cuisine']);
         this.sortOrder = 'recommendation';
         this.urlManager = null;
     }
 
     setURLManager(urlManager) {
         this.urlManager = urlManager;
-    }
-
-    setupEventListeners() {
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            this.searchQuery = e.target.value.toLowerCase();
-            this.applyFilters();
-        });
-
-        document.addEventListener('click', (e) => {
-            const menu = document.getElementById('filterMenu');
-            const toggle = document.getElementById('filterToggle');
-            
-            if (this.filterMenuOpen && 
-                !menu.contains(e.target) && 
-                !toggle.contains(e.target)) {
-                this.toggleFilterMenu();
-            }
-        });
-
-        const filterMenu = document.getElementById('filterMenu');
-        
-        filterMenu.addEventListener('wheel', (e) => {
-            const dropdown = filterMenu.querySelector('.bg-white');
-            if (dropdown && !dropdown.classList.contains('hidden')) {
-                const filterOptions = document.getElementById('filterOptions');
-                const isScrollable = filterOptions.scrollHeight > filterOptions.clientHeight;
-                
-                if (isScrollable) {
-                    const isAtTop = filterOptions.scrollTop === 0;
-                    const isAtBottom = Math.abs(filterOptions.scrollTop + filterOptions.clientHeight - filterOptions.scrollHeight) < 1;
-                    
-                    if ((e.deltaY < 0 && isAtTop) || (e.deltaY > 0 && isAtBottom)) {
-                        e.preventDefault();
-                    } else {
-                        e.stopPropagation();
-                    }
-                } else {
-                    e.preventDefault();
-                }
-            }
-        }, { passive: false });
-
-        let touchStartY = 0;
-        
-        filterMenu.addEventListener('touchstart', (e) => {
-            const dropdown = filterMenu.querySelector('.bg-white');
-            if (dropdown && !dropdown.classList.contains('hidden')) {
-                touchStartY = e.touches[0].clientY;
-            }
-        }, { passive: true });
-
-        filterMenu.addEventListener('touchmove', (e) => {
-            const dropdown = filterMenu.querySelector('.bg-white');
-            if (dropdown && !dropdown.classList.contains('hidden')) {
-                const filterOptions = document.getElementById('filterOptions');
-                const touchY = e.touches[0].clientY;
-                const deltaY = touchStartY - touchY;
-                
-                const isAtTop = filterOptions.scrollTop === 0;
-                const isAtBottom = Math.abs(filterOptions.scrollTop + filterOptions.clientHeight - filterOptions.scrollHeight) < 1;
-                
-                if ((deltaY < 0 && isAtTop) || (deltaY > 0 && isAtBottom)) {
-                    e.preventDefault();
-                }
-            }
-        }, { passive: false });
     }
 
     hasActiveSearchOrFilters() {
@@ -1068,14 +1022,15 @@ class FilterManager {
         // Add the filter if it's not already active
         if (!this.activeFilters.has(filterKey)) {
             this.activeFilters.set(filterKey, true);
-            this.renderFilterPills();
-            this.updateFilterButton();
+            
+            // Update the search filter bar display
+            if (recipeApp.searchFilterBar) {
+                recipeApp.searchFilterBar.updateDisplay();
+            }
             
             // Use requestAnimationFrame to ensure the DOM updates are complete
-            // This is especially important when coming from the modal
             requestAnimationFrame(() => {
                 this.applyFilters();
-                this.renderFilterOptions();
                 
                 // Scroll to top if we came from the modal
                 if (wasModalOpen) {
@@ -1085,49 +1040,22 @@ class FilterManager {
         }
     }
 
-    toggleFilterSection(section, event) {
-        if (event) {
-            event.stopPropagation();
-        }
-        
-        if (this.collapsedSections.has(section)) {
-            this.collapsedSections.delete(section);
-        } else {
-            this.collapsedSections.add(section);
-        }
-        this.renderFilterOptions();
-    }
-
     toggleFilterType(type) {
         if (this.activeFilters.has(type)) {
             this.activeFilters.delete(type);
         } else {
             this.activeFilters.set(type, true);
         }
-        this.renderFilterPills();
-        this.updateFilterButton();
         this.applyFilters();
-        this.renderFilterOptions();
         
         if (this.urlManager) {
             this.urlManager.updateURL();
         }
     }
 
-    togglePillActive(type) {
-        if (this.activeFilters.has(type)) {
-            this.activeFilters.set(type, !this.activeFilters.get(type));
-            this.renderFilterPills();
-            this.applyFilters();
-        }
-    }
-
     removeFilter(type) {
         this.activeFilters.delete(type);
-        this.renderFilterPills();
-        this.updateFilterButton();
         this.applyFilters();
-        this.renderFilterOptions();
         
         if (this.urlManager) {
             this.urlManager.updateURL();
@@ -1136,224 +1064,10 @@ class FilterManager {
 
     clearAllFilters() {
         this.activeFilters.clear();
-        this.renderFilterPills();
-        this.updateFilterButton();
         this.applyFilters();
-        this.renderFilterOptions();
         
         if (this.urlManager) {
             this.urlManager.updateURL();
-        }
-    }
-
-    toggleFilterMenu() {
-        const menu = document.querySelector('#filterMenu > div');
-        
-        if (!this.filterMenuOpen) {
-            this.renderFilterOptions();
-            menu.classList.remove('hidden');
-            this.filterMenuOpen = true;
-        } else {
-            menu.classList.add('hidden');
-            this.filterMenuOpen = false;
-        }
-    }
-
-    renderFilterOptions() {
-        const container = document.getElementById('filterOptions');
-        const filters = this.recipeDatabase.getFilters();
-        
-        container.innerHTML = '';
-        
-        if (filters.categories.length > 0) {
-            const isCollapsed = this.collapsedSections.has('category');
-            const categorySection = document.createElement('div');
-            categorySection.className = 'mb-2';
-            
-            const categoryHeader = document.createElement('button');
-            categoryHeader.className = 'w-full flex items-center justify-between text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 py-2 hover:bg-gray-50 rounded transition-colors';
-            categoryHeader.onclick = (e) => {
-                e.stopPropagation();
-                this.toggleFilterSection('category', e);
-            };
-            categoryHeader.innerHTML = `
-                <span>${UI_TEXT.filter.categories.category}</span>
-                <i class="fas fa-chevron-${isCollapsed ? 'down' : 'up'} text-gray-400 text-xs transition-transform duration-200"></i>
-            `;
-            categorySection.appendChild(categoryHeader);
-            
-            if (!isCollapsed) {
-                const categoryContent = document.createElement('div');
-                categoryContent.className = 'mt-1';
-                
-                filters.categories.forEach(category => {
-                    const isSelected = this.activeFilters.has(`category:${category}`);
-                    const option = document.createElement('label');
-                    option.className = 'flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors';
-                    option.innerHTML = `
-                        <span class="text-sm text-gray-700">${category}</span>
-                        <input type="checkbox" 
-                            ${isSelected ? 'checked' : ''} 
-                            onchange="recipeApp.filterManager.toggleFilterType('category:${category}')"
-                            onclick="event.stopPropagation()"
-                            class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer checked:bg-amber-600 checked:border-amber-600">
-                    `;
-                    categoryContent.appendChild(option);
-                });
-                
-                categorySection.appendChild(categoryContent);
-            }
-            
-            container.appendChild(categorySection);
-        }
-        
-        if (filters.meals.length > 0) {
-            const isCollapsed = this.collapsedSections.has('meal');
-            const mealSection = document.createElement('div');
-            mealSection.className = 'mb-2';
-            
-            const mealHeader = document.createElement('button');
-            mealHeader.className = 'w-full flex items-center justify-between text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 py-2 hover:bg-gray-50 rounded transition-colors';
-            mealHeader.onclick = (e) => {
-                e.stopPropagation();
-                this.toggleFilterSection('meal', e);
-            };
-            mealHeader.innerHTML = `
-                <span>${UI_TEXT.filter.categories.meal}</span>
-                <i class="fas fa-chevron-${isCollapsed ? 'down' : 'up'} text-gray-400 text-xs transition-transform duration-200"></i>
-            `;
-            mealSection.appendChild(mealHeader);
-            
-            if (!isCollapsed) {
-                const mealContent = document.createElement('div');
-                mealContent.className = 'mt-1';
-                
-                filters.meals.forEach(meal => {
-                    const isSelected = this.activeFilters.has(`meal:${meal}`);
-                    const option = document.createElement('label');
-                    option.className = 'flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors';
-                    option.innerHTML = `
-                        <span class="text-sm text-gray-700">${meal}</span>
-                        <input type="checkbox" 
-                            ${isSelected ? 'checked' : ''} 
-                            onchange="recipeApp.filterManager.toggleFilterType('meal:${meal}')"
-                            onclick="event.stopPropagation()"
-                            class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer checked:bg-amber-600 checked:border-amber-600">
-                    `;
-                    mealContent.appendChild(option);
-                });
-                
-                mealSection.appendChild(mealContent);
-            }
-            
-            container.appendChild(mealSection);
-        }
-        
-        if (filters.cuisines.length > 0) {
-            const isCollapsed = this.collapsedSections.has('cuisine');
-            const cuisineSection = document.createElement('div');
-            cuisineSection.className = 'mb-2';
-            
-            const cuisineHeader = document.createElement('button');
-            cuisineHeader.className = 'w-full flex items-center justify-between text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 py-2 hover:bg-gray-50 rounded transition-colors';
-            cuisineHeader.onclick = (e) => {
-                e.stopPropagation();
-                this.toggleFilterSection('cuisine', e);
-            };
-            cuisineHeader.innerHTML = `
-                <span>${UI_TEXT.filter.categories.cuisine}</span>
-                <i class="fas fa-chevron-${isCollapsed ? 'down' : 'up'} text-gray-400 text-xs transition-transform duration-200"></i>
-            `;
-            cuisineSection.appendChild(cuisineHeader);
-            
-            if (!isCollapsed) {
-                const cuisineContent = document.createElement('div');
-                cuisineContent.className = 'mt-1';
-                
-                filters.cuisines.forEach(cuisine => {
-                    const isSelected = this.activeFilters.has(`cuisine:${cuisine}`);
-                    const option = document.createElement('label');
-                    option.className = 'flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors';
-                    option.innerHTML = `
-                        <span class="text-sm text-gray-700">${cuisine}</span>
-                        <input type="checkbox" 
-                            ${isSelected ? 'checked' : ''} 
-                            onchange="recipeApp.filterManager.toggleFilterType('cuisine:${cuisine}')"
-                            onclick="event.stopPropagation()"
-                            class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer checked:bg-amber-600 checked:border-amber-600">
-                    `;
-                    cuisineContent.appendChild(option);
-                });
-                
-                cuisineSection.appendChild(cuisineContent);
-            }
-            
-            container.appendChild(cuisineSection);
-        }
-    }
-
-    renderFilterPills() {
-        const container = document.getElementById('filterPillsContainer');
-        const hasFilters = this.activeFilters.size > 0;
-        
-        container.innerHTML = '';
-        
-        if (this.activeFilters.size > 3) {
-            container.style.maxWidth = '0';
-            container.style.opacity = '0';
-        } else {
-            container.style.maxWidth = hasFilters ? '100%' : '0';
-            container.style.opacity = hasFilters ? '1' : '0';
-            
-            let pillCount = 0;
-            this.activeFilters.forEach((isActive, filterKey) => {
-                if (pillCount >= 3) return;
-                
-                const [filterType, filterValue] = filterKey.split(':');
-                const displayName = filterValue || filterKey;
-                
-                const pill = document.createElement('div');
-                pill.className = `inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm max-w-[150px] ${
-                    isActive 
-                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white' 
-                        : 'bg-gray-200 text-gray-500 opacity-60'
-                }`;
-                pill.innerHTML = `
-                    <span class="cursor-pointer font-medium overflow-hidden text-ellipsis whitespace-nowrap max-w-[120px]" 
-                            onclick="recipeApp.filterManager.togglePillActive('${filterKey}')">${displayName}</span>
-                    <button onclick="recipeApp.filterManager.removeFilter('${filterKey}')" class="ml-1 hover:opacity-70 flex-shrink-0">
-                        <i class="fas fa-times text-xs"></i>
-                    </button>
-                `;
-                container.appendChild(pill);
-                pillCount++;
-            });
-        }
-        
-        const clearBtn = document.getElementById('clearFilters');
-        
-        if (hasFilters) {
-            clearBtn.classList.remove('hidden');
-        } else {
-            clearBtn.classList.add('hidden');
-        }
-    }
-
-    updateFilterButton() {
-        const btn = document.getElementById('filterToggle');
-        const count = document.getElementById('filterCount');
-        const hasFilters = this.activeFilters.size > 0;
-        
-        btn.className = 'flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md';
-        
-        if (hasFilters) {
-            btn.classList.add('bg-gradient-to-r', 'from-amber-500', 'to-amber-600', 'text-white', 'hover:from-amber-600', 'hover:to-amber-700');
-            count.textContent = this.activeFilters.size;
-            count.classList.remove('hidden');
-            count.classList.add('bg-white/30');
-        } else {
-            btn.classList.add('bg-white', 'text-gray-700', 'hover:text-amber-600', 'border', 'border-gray-200');
-            count.classList.add('hidden');
         }
     }
 
@@ -1520,6 +1234,989 @@ class FilterManager {
         
         const filteredIds = finalFiltered.map(recipe => recipe.id);
         this.uiManager.renderRecipes(filteredIds, false);
+    }
+
+    renderFilterPills() {
+        // This method is called by URLManager but the filter pills are now handled by SearchFilterBar
+        // Update the search filter bar display to show the current filters
+        if (recipeApp && recipeApp.searchFilterBar) {
+            recipeApp.searchFilterBar.updateDisplay();
+        }
+    }
+
+    updateFilterButton() {
+        // This method is called by URLManager but the filter button is now handled by SearchFilterBar
+        // Update the search filter bar display to show the current filter state
+        if (recipeApp && recipeApp.searchFilterBar) {
+            recipeApp.searchFilterBar.updateDisplay();
+        }
+    }
+}
+
+// ============================================================================
+// SEARCH FILTER BAR CLASS (iOS-style unified component)
+// ============================================================================
+
+class SearchFilterBar {
+    constructor(filterManager, recipeDatabase) {
+        this.filterManager = filterManager;
+        this.recipeDatabase = recipeDatabase;
+
+        // State
+        this.searchQuery = '';
+        this.showFilterMenu = false;
+        this.showActiveFiltersMenu = false;
+        this.isMinimum = false;
+        this.isFixed = false;
+        this.lastScrollY = 0;
+        this.searchBarTop = 0;
+
+        // DOM elements (get references to existing HTML elements)
+        this.container = document.getElementById('searchFilterContainer');
+        this.glassBar = document.getElementById('unifiedGlassBar');
+        this.standardContent = document.getElementById('standardContent');
+        this.minimumContent = document.getElementById('minimumContent');
+        this.filterButton = document.getElementById('unifiedFilterBtn');
+        this.searchInput = document.getElementById('unifiedSearchInput');
+        this.clearSearchBtn = document.getElementById('clearSearchBtn');
+        this.filterPillsContainer = document.getElementById('filterPillsContainer');
+        this.searchPill = document.getElementById('searchPill');
+        this.filterPill = document.getElementById('filterPill');
+        this.filterCounter = document.getElementById('filterCounter');
+
+        this.initialize();
+    }
+
+    initialize() {
+        // Get initial position
+        setTimeout(() => {
+            this.searchBarTop = this.container.offsetTop;
+        }, 100);
+
+        this.setupEventListeners();
+        this.setupScrollListener();
+        this.updateDisplay();
+    }
+    
+    setupScrollListener() {
+        let ticking = false;
+        let lastScrollY = 0;
+
+        const handleScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const scrollY = window.pageYOffset;
+                    const scrollDirection = scrollY > lastScrollY ? 'down' : 'up';
+                    const shouldBeFixed = scrollY > this.searchBarTop - 20;
+
+                    // Handle fixed positioning
+                    if (shouldBeFixed && !this.isFixed) {
+                        this.makeFixed();
+                    } else if (!shouldBeFixed && this.isFixed) {
+                        this.makeStandard();
+                    }
+
+                    // Handle minimum/standard content display
+                    if (this.isFixed) {
+                        const hasContent = this.searchQuery.length > 0 || this.filterManager.activeFilters.size > 0;
+                        if (scrollDirection === 'down' && scrollY > 100 && hasContent) {
+                            this.showMinimumContent();
+                        } else if (scrollDirection === 'up') {
+                            this.showStandardContent();
+                        } else if (!hasContent) {
+                            // Hide the entire container when no content
+                            this.container.style.opacity = scrollDirection === 'down' ? '0' : '1';
+                        }
+                    }
+
+                    lastScrollY = scrollY;
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+    }
+
+    makeFixed() {
+        if (this.isFixed) return;
+        this.isFixed = true;
+
+        // Add spacer to prevent layout jump
+        const spacer = document.createElement('div');
+        spacer.id = 'searchBarSpacer';
+        spacer.style.height = this.container.offsetHeight + 'px';
+        this.container.parentNode.insertBefore(spacer, this.container);
+
+        // Apply fixed positioning
+        this.container.style.position = 'fixed';
+        this.container.style.top = '24px';
+        this.container.style.left = '50%';
+        this.container.style.transform = 'translateX(-50%)';
+        this.container.style.width = 'fit-content';
+        this.container.style.maxWidth = '90vw';
+
+        // Adjust padding for minimum view to match pills
+        if (this.isMinimum) {
+            this.glassBar.style.padding = '4px';
+        }
+        this.container.style.zIndex = '50';
+
+        // Update glass bar styling for fixed position
+        if (this.glassBar) {
+            this.glassBar.className = 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40';
+        }
+    }
+
+    makeStandard() {
+        if (!this.isFixed) return;
+        this.isFixed = false;
+        this.isMinimum = false;
+
+        // Reset positioning
+        this.container.style.position = '';
+        this.container.style.top = '';
+        this.container.style.left = '';
+        this.container.style.transform = '';
+        this.container.style.width = '';
+        this.container.style.maxWidth = '';
+        this.container.style.zIndex = '';
+
+        // Reset glass bar styling for standard position
+        if (this.glassBar) {
+            this.glassBar.className = 'relative w-full rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40';
+            this.glassBar.style.padding = '';
+        }
+
+        // Remove spacer
+        const spacer = document.getElementById('searchBarSpacer');
+        if (spacer) spacer.remove();
+
+        this.showStandardContent();
+    }
+
+    showMinimumContent() {
+        if (this.isMinimum || !this.standardContent || !this.minimumContent) return;
+        this.isMinimum = true;
+
+        // Add smooth transition
+        this.standardContent.style.transition = 'opacity 0.2s ease-in-out';
+        this.minimumContent.style.transition = 'opacity 0.2s ease-in-out';
+
+        this.standardContent.style.opacity = '0';
+        setTimeout(() => {
+            this.standardContent.classList.add('hidden');
+            this.minimumContent.classList.remove('hidden');
+            this.minimumContent.style.opacity = '1';
+
+            // Apply pill-like styling for minimum view
+            if (this.glassBar) {
+                this.glassBar.className = 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40';
+                this.glassBar.style.padding = '4px';
+            }
+
+            this.updateMinimumDisplay();
+        }, 200);
+    }
+
+    showStandardContent() {
+        if (!this.isMinimum || !this.standardContent || !this.minimumContent) return;
+        this.isMinimum = false;
+
+        // Add smooth transition
+        this.standardContent.style.transition = 'opacity 0.2s ease-in-out';
+        this.minimumContent.style.transition = 'opacity 0.2s ease-in-out';
+
+        this.minimumContent.style.opacity = '0';
+        setTimeout(() => {
+            this.minimumContent.classList.add('hidden');
+            this.standardContent.classList.remove('hidden');
+            this.standardContent.style.opacity = '1';
+
+            // Reset to rectangular styling for standard view
+            if (this.glassBar) {
+                this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40';
+                this.glassBar.style.padding = '';
+            }
+
+            this.updateStandardDisplay();
+        }, 200);
+    }
+
+    updateMinimumDisplay() {
+        if (!this.searchPill || !this.filterPill || !this.filterCounter) return;
+
+        const hasSearch = this.searchQuery.length > 0;
+        const hasFilters = this.filterManager.activeFilters.size > 0;
+        const filterCount = this.filterManager.activeFilters.size;
+
+        // Hide all pills first
+        this.searchPill.classList.add('hidden');
+        this.filterPill.classList.add('hidden');
+        this.filterCounter.classList.add('hidden');
+
+        if (hasSearch && hasFilters) {
+            // Show search pill and filter counter
+            this.searchPill.classList.remove('hidden');
+            const searchPillText = this.searchPill.querySelector('#searchPillText');
+            if (searchPillText) searchPillText.textContent = this.searchQuery;
+            this.filterCounter.classList.remove('hidden');
+            const filterCounterText = this.filterCounter.querySelector('#filterCounterText');
+            if (filterCounterText) filterCounterText.textContent = filterCount;
+        } else if (hasSearch) {
+            // Show only search pill
+            this.searchPill.classList.remove('hidden');
+            const searchPillText = this.searchPill.querySelector('#searchPillText');
+            if (searchPillText) searchPillText.textContent = this.searchQuery;
+        } else if (hasFilters) {
+            // Show only filter pill (not filter button)
+            if (filterCount === 1) {
+                const [filterKey] = Array.from(this.filterManager.activeFilters.keys());
+                const [, filterName] = filterKey.split(':');
+                this.filterPill.classList.remove('hidden');
+                const filterPillText = this.filterPill.querySelector('#filterPillText');
+                if (filterPillText) filterPillText.textContent = filterName;
+            } else {
+                this.filterCounter.classList.remove('hidden');
+                const filterCounterText = this.filterCounter.querySelector('#filterCounterText');
+                if (filterCounterText) filterCounterText.textContent = filterCount;
+            }
+        }
+    }
+
+    updateStandardDisplay() {
+        const hasFilters = this.filterManager.activeFilters.size > 0;
+        const filterCount = this.filterManager.activeFilters.size;
+        const hasSearch = this.searchQuery.length > 0;
+
+        // Update filter button
+        this.updateFilterButton(hasFilters, filterCount);
+
+        // Update filter pills
+        this.updateFilterPills();
+
+        // Update search input
+        if (this.searchInput) {
+            this.searchInput.value = this.searchQuery;
+        }
+        if (this.clearSearchBtn) {
+            this.clearSearchBtn.classList.toggle('hidden', !hasSearch);
+        }
+    }
+
+    updateFilterButton(hasFilters, filterCount) {
+        if (!this.filterButton) return;
+
+        const countSpan = this.filterButton.querySelector('#filterCount');
+
+        if (hasFilters) {
+            this.filterButton.className = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700";
+            if (countSpan) {
+                countSpan.textContent = filterCount;
+                countSpan.classList.remove('hidden');
+            }
+        } else {
+            this.filterButton.className = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-white text-gray-700 hover:text-amber-600 border border-gray-200";
+            if (countSpan) {
+                countSpan.classList.add('hidden');
+            }
+        }
+    }
+
+    updateFilterPills() {
+        if (!this.filterPillsContainer) return;
+
+        this.filterPillsContainer.innerHTML = '';
+
+        if (this.filterManager.activeFilters.size > 0 && !this.searchQuery) {
+            this.filterManager.activeFilters.forEach((_, filterKey) => {
+                const [, filterName] = filterKey.split(':');
+                const pill = document.createElement('div');
+                pill.className = "inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm max-w-[150px] bg-gradient-to-r from-amber-500 to-amber-600 text-white";
+                pill.innerHTML = `
+                    <span class="cursor-pointer font-medium overflow-hidden text-ellipsis whitespace-nowrap max-w-[120px]" onclick="recipeApp.searchFilterBar.togglePillActive('${filterKey}')">${filterName}</span>
+                    <button onclick="recipeApp.searchFilterBar.removeFilter('${filterKey}')" class="ml-1 hover:opacity-70 flex-shrink-0">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                `;
+                this.filterPillsContainer.appendChild(pill);
+            });
+        }
+    }
+
+    updateDisplay() {
+        if (this.isMinimum) {
+            this.updateMinimumDisplay();
+        } else {
+            this.updateStandardDisplay();
+        }
+    }
+    
+    setupEventListeners() {
+        // Search input
+        if (this.searchInput) {
+            this.searchInput.addEventListener('input', (e) => {
+                this.searchQuery = e.target.value;
+                this.filterManager.searchQuery = e.target.value.toLowerCase();
+                this.filterManager.applyFilters();
+                this.updateDisplay();
+            });
+        }
+
+        // Clear search button
+        if (this.clearSearchBtn) {
+            this.clearSearchBtn.addEventListener('click', () => {
+                this.clearSearch();
+            });
+        }
+
+        // Filter button
+        if (this.filterButton) {
+            this.filterButton.addEventListener('click', () => {
+                this.toggleFilterMenu();
+            });
+        }
+
+        // Clear search pill
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('#clearSearchPill')) {
+                this.clearSearch();
+            }
+            if (e.target.closest('#clearFilterPill')) {
+                this.clearAllFilters();
+            }
+        });
+
+        // Click outside to close menus
+        document.addEventListener('click', (e) => {
+            if (!this.container?.contains(e.target)) {
+                this.closeAllMenus();
+            }
+        });
+    }
+
+    clearSearch() {
+        this.searchQuery = '';
+        this.filterManager.searchQuery = '';
+        this.filterManager.applyFilters();
+        this.updateDisplay();
+    }
+
+    clearAllFilters() {
+        this.filterManager.clearAllFilters();
+        this.updateDisplay();
+    }
+
+    toggleFilterMenu() {
+        const menu = document.getElementById('unifiedFilterMenu');
+        const activeMenu = document.getElementById('unifiedActiveFiltersMenu');
+
+        if (menu) {
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.innerHTML = this.getFilterMenuHTML();
+                activeMenu?.classList.add('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+    }
+
+    closeAllMenus() {
+        document.getElementById('unifiedFilterMenu')?.classList.add('hidden');
+        document.getElementById('unifiedActiveFiltersMenu')?.classList.add('hidden');
+    }
+
+    toggleFilter(filterKey) {
+        this.filterManager.toggleFilterType(filterKey);
+        this.updateDisplay();
+    }
+
+    removeFilter(filterKey) {
+        this.filterManager.removeFilter(filterKey);
+        this.updateDisplay();
+    }
+
+    togglePillActive(filterKey) {
+        this.toggleFilterMenu();
+    }
+
+    getFilterMenuHTML() {
+        const filters = this.recipeDatabase.getFilters();
+        let html = `
+            <div class="bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-100 min-w-[280px] max-h-[400px] overflow-y-auto">
+                <div class="text-sm font-semibold text-gray-700 px-4 pt-4 pb-2 border-b border-gray-100">
+                    ${UI_TEXT.filter.title}
+                </div>
+                <div class="p-2">
+        `;
+
+        // Categories
+        if (filters.categories && filters.categories.length > 0) {
+            html += `<div class="mb-3">
+                <button onclick="this.parentNode.querySelector('.filter-section-content').classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
+                        class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:bg-gray-50 rounded-lg transition-colors">
+                    <span>${UI_TEXT.filter.categories.category}</span>
+                    <i class="fas fa-chevron-down text-xs chevron transition-transform duration-200"></i>
+                </button>
+                <div class="filter-section-content hidden">`;
+            filters.categories.forEach(category => {
+                const isActive = this.filterManager.activeFilters.has(`category:${category}`);
+                html += `
+                    <label class="flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors ml-2">
+                        <span class="text-sm text-gray-700">${category}</span>
+                        <input type="checkbox"
+                               ${isActive ? 'checked' : ''}
+                               onchange="recipeApp.searchFilterBar.toggleFilter('category:${category}')"
+                               class="rounded border-gray-300 text-amber-600 focus:ring-amber-500">
+                    </label>`;
+            });
+            html += `</div></div>`;
+        }
+
+        // Meals
+        if (filters.meals && filters.meals.length > 0) {
+            html += `<div class="mb-3">
+                <button onclick="this.parentNode.querySelector('.filter-section-content').classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
+                        class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:bg-gray-50 rounded-lg transition-colors">
+                    <span>${UI_TEXT.filter.meals?.meal || 'Meals'}</span>
+                    <i class="fas fa-chevron-down text-xs chevron transition-transform duration-200"></i>
+                </button>
+                <div class="filter-section-content hidden">`;
+            filters.meals.forEach(meal => {
+                const isActive = this.filterManager.activeFilters.has(`meal:${meal}`);
+                html += `
+                    <label class="flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors ml-2">
+                        <span class="text-sm text-gray-700">${meal}</span>
+                        <input type="checkbox"
+                               ${isActive ? 'checked' : ''}
+                               onchange="recipeApp.searchFilterBar.toggleFilter('meal:${meal}')"
+                               class="rounded border-gray-300 text-amber-600 focus:ring-amber-500">
+                    </label>`;
+            });
+            html += `</div></div>`;
+        }
+
+        // Cuisines
+        if (filters.cuisines && filters.cuisines.length > 0) {
+            html += `<div class="mb-3">
+                <button onclick="this.parentNode.querySelector('.filter-section-content').classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
+                        class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:bg-gray-50 rounded-lg transition-colors">
+                    <span>${UI_TEXT.filter.cuisines?.cuisine || 'Cuisines'}</span>
+                    <i class="fas fa-chevron-down text-xs chevron transition-transform duration-200"></i>
+                </button>
+                <div class="filter-section-content hidden">`;
+            filters.cuisines.forEach(cuisine => {
+                const isActive = this.filterManager.activeFilters.has(`cuisine:${cuisine}`);
+                html += `
+                    <label class="flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors ml-2">
+                        <span class="text-sm text-gray-700">${cuisine}</span>
+                        <input type="checkbox"
+                               ${isActive ? 'checked' : ''}
+                               onchange="recipeApp.searchFilterBar.toggleFilter('cuisine:${cuisine}')"
+                               class="rounded border-gray-300 text-amber-600 focus:ring-amber-500">
+                    </label>`;
+            });
+            html += `</div></div>`;
+        }
+
+        html += `</div></div>`;
+        return html;
+    }
+
+    getStandardContent(hasSearch, hasActiveFilters, filterCount) {
+        const filterButtonClasses = hasActiveFilters
+            ? "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700"
+            : "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-white text-gray-700 hover:text-amber-600 border border-gray-200";
+
+        let filterPillsHTML = '';
+        if (hasActiveFilters && !hasSearch) {
+            this.filterManager.activeFilters.forEach((_, filterKey) => {
+                const [, filterName] = filterKey.split(':');
+                filterPillsHTML += `
+                    <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm max-w-[150px] bg-gradient-to-r from-amber-500 to-amber-600 text-white">
+                        <span class="cursor-pointer font-medium overflow-hidden text-ellipsis whitespace-nowrap max-w-[120px]">${filterName}</span>
+                        <button data-filter-key="${filterKey}" class="remove-filter ml-1 hover:opacity-70 flex-shrink-0">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>`;
+            });
+        }
+
+        return `
+            <button id="unifiedFilterBtn" class="${filterButtonClasses}">
+                <i class="fas fa-filter transition-transform duration-200 active:scale-90"></i>
+                <span>Filter</span>
+                ${hasActiveFilters ? `<span class="bg-white/30 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">${filterCount}</span>` : ''}
+            </button>
+            <div class="flex gap-2 flex-1 overflow-hidden">${filterPillsHTML}</div>
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white hover:bg-amber-50/20 transition-colors border-gray-200 border flex-1">
+                <i class="fas fa-search text-amber-700 text-sm"></i>
+                <input type="text" id="unifiedSearchInput" value="${this.searchQuery}" placeholder="Search recipes..." class="bg-transparent outline-none text-amber-700 placeholder-gray-400 text-sm w-full font-normal">
+                ${hasSearch ? `<button id="clearSearchBtn" class="text-amber-700 hover:text-amber-800 transition-colors"><i class="fas fa-times text-sm"></i></button>` : ''}
+            </div>`;
+    }
+
+    getMinimumContent(hasSearch, hasActiveFilters, filterCount) {
+        let html = '';
+
+        if (hasSearch && hasActiveFilters) {
+            // Show search pill and filter counter
+            html = `
+                <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white">
+                    <i class="fas fa-search text-xs"></i>
+                    <span>${this.searchQuery}</span>
+                    <button id="clearSearchMin" class="ml-1 hover:opacity-70 flex-shrink-0"><i class="fas fa-times text-xs"></i></button>
+                </div>
+                <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white">
+                    <i class="fas fa-filter text-xs"></i>
+                    <span>${filterCount}</span>
+                </div>`;
+        } else if (hasSearch) {
+            // Show only search pill
+            html = `
+                <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white">
+                    <i class="fas fa-search text-xs"></i>
+                    <span>${this.searchQuery}</span>
+                    <button id="clearSearchMin" class="ml-1 hover:opacity-70 flex-shrink-0"><i class="fas fa-times text-xs"></i></button>
+                </div>`;
+        } else if (hasActiveFilters) {
+            // Show only filter pill
+            if (filterCount === 1) {
+                const [filterKey] = Array.from(this.filterManager.activeFilters.keys());
+                const [, filterName] = filterKey.split(':');
+                html = `
+                    <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white">
+                        <i class="fas fa-filter text-xs"></i>
+                        <span>${filterName}</span>
+                        <button data-filter-key="${filterKey}" class="remove-filter ml-1 hover:opacity-70 flex-shrink-0"><i class="fas fa-times text-xs"></i></button>
+                    </div>`;
+            } else {
+                html = `
+                    <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white">
+                        <i class="fas fa-filter text-xs"></i>
+                        <span>${filterCount}</span>
+                    </div>`;
+            }
+        }
+
+        return html;
+    }
+
+    attachDynamicListeners() {
+        // Re-attach listeners for dynamically created elements
+        const searchInput = document.getElementById('unifiedSearchInput');
+        if (searchInput && !searchInput.hasAttribute('data-listener')) {
+            searchInput.setAttribute('data-listener', 'true');
+            searchInput.addEventListener('input', (e) => {
+                this.searchQuery = e.target.value;
+                this.filterManager.searchQuery = e.target.value.toLowerCase();
+                this.filterManager.applyFilters();
+                this.updateDisplay();
+            });
+        }
+
+        // Clear search buttons
+        const clearBtns = document.querySelectorAll('#clearSearchBtn, #clearSearchMin');
+        clearBtns.forEach(btn => {
+            if (!btn.hasAttribute('data-listener')) {
+                btn.setAttribute('data-listener', 'true');
+                btn.addEventListener('click', () => this.clearSearch());
+            }
+        });
+
+        // Remove filter buttons
+        const removeFilterBtns = document.querySelectorAll('.remove-filter');
+        removeFilterBtns.forEach(btn => {
+            if (!btn.hasAttribute('data-listener')) {
+                btn.setAttribute('data-listener', 'true');
+                const filterKey = btn.getAttribute('data-filter-key');
+                btn.addEventListener('click', () => this.removeFilter(filterKey));
+            }
+        });
+
+        // Filter button
+        const filterBtn = document.getElementById('unifiedFilterBtn');
+        if (filterBtn && !filterBtn.hasAttribute('data-listener')) {
+            filterBtn.setAttribute('data-listener', 'true');
+            filterBtn.addEventListener('click', () => this.toggleFilterMenu());
+        }
+    }
+
+    getHTML() {
+        const hasActiveFilters = this.filterManager.activeFilters.size > 0;
+        const filterCount = this.filterManager.activeFilters.size;
+
+        return `
+            <div id="unifiedGlassBar"
+                 class="relative rounded-xl bg-white border border-gray-200 overflow-visible w-full z-40"
+                 style="height: 48px; transition: all 0.3s ease-out;">
+                
+                <!-- Content container -->
+                <div class="relative h-full flex items-center gap-2 px-3">
+                    <!-- Expanded content -->
+                    <div id="expandedContent" class="flex items-center gap-2">
+                        ${this.getExpandedContent()}
+                    </div>
+
+                    <!-- Collapsed content -->
+                    <div id="collapsedContent" class="flex items-center gap-2 text-sm hidden">
+                        ${this.getCollapsedContent()}
+                    </div>
+                </div>
+                
+                <!-- Filter dropdown menu -->
+                <div id="unifiedFilterMenu" class="absolute top-full left-0 mt-2 hidden z-50">
+                    ${this.getFilterMenuHTML()}
+                </div>
+
+                <!-- Active filters dropdown -->
+                <div id="unifiedActiveFiltersMenu" class="absolute top-full left-0 mt-2 hidden z-50">
+                    ${this.getActiveFiltersMenuHTML()}
+                </div>
+            </div>
+        `;
+    }
+    
+    getExpandedContent() {
+        const hasActiveFilters = this.filterManager.activeFilters.size > 0;
+        const filterCount = this.filterManager.activeFilters.size;
+        const hasSearch = this.searchQuery.length > 0;
+        const isCompact = hasSearch && hasActiveFilters;
+        
+        // Build filter button
+        const isCollapsedInFixed = this.isFixed && hasActiveFilters;
+
+        let filterButtonClasses, iconClasses;
+
+        if (isCollapsedInFixed) {
+            // Collapsed state: no background, just colored icon
+            filterButtonClasses = "flex items-center p-2 rounded-xl transition-all shrink-0 hover:bg-amber-50/30";
+            iconClasses = "fas fa-filter transition-transform duration-200 active:scale-90 text-amber-600 text-lg";
+        } else if (hasActiveFilters) {
+            // Active state with background
+            filterButtonClasses = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700";
+            iconClasses = "fas fa-filter transition-transform duration-200 active:scale-90";
+        } else {
+            // Default state
+            filterButtonClasses = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-white text-gray-700 hover:text-amber-600 border border-gray-200";
+            iconClasses = "fas fa-filter transition-transform duration-200 active:scale-90";
+        }
+
+        let filterButtonHTML = `
+            <button id="unifiedFilterBtn"
+                    class="${filterButtonClasses}">
+                <i class="${iconClasses}"></i>
+                ${!isCompact && !isCollapsedInFixed ? `<span>${UI_TEXT.filter.button}</span>` : ''}
+                ${hasActiveFilters && !isCollapsedInFixed ? `<span class="bg-white/30 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">${filterCount}</span>` : `<span class="bg-white/30 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold hidden">${filterCount}</span>`}
+            </button>
+        `;
+        
+        // Build filter pills
+        let filterPillsHTML = '';
+        if (hasActiveFilters && !hasSearch) {
+            if (filterCount === 1) {
+                const [filterKey, filterValue] = Array.from(this.filterManager.activeFilters)[0];
+                const [filterType, filterName] = filterKey.split(':');
+                filterPillsHTML = `
+                    <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm max-w-[150px] bg-gradient-to-r from-amber-500 to-amber-600 text-white">
+                        <span class="cursor-pointer font-medium overflow-hidden text-ellipsis whitespace-nowrap max-w-[120px]" onclick="recipeApp.searchFilterBar.togglePillActive('${filterKey}')">${filterName}</span>
+                        <button onclick="recipeApp.searchFilterBar.removeFilter('${filterKey}')"
+                                class="ml-1 hover:opacity-70 flex-shrink-0">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                `;
+            } else {
+                filterPillsHTML = `
+                    <button onclick="recipeApp.searchFilterBar.toggleActiveFiltersMenu()"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700">
+                        <span class="font-medium">${filterCount} filters</span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    <button onclick="recipeApp.searchFilterBar.clearAllFilters()"
+                            class="p-1.5 ${this.styles.iconColor} hover:text-amber-800 hover:bg-amber-100/50 rounded-lg transition-all">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+            }
+        }
+        
+        // Clear filters button when search is active
+        let clearFiltersHTML = '';
+        if (hasActiveFilters && hasSearch) {
+            clearFiltersHTML = `
+                <button onclick="recipeApp.searchFilterBar.clearAllFilters()"
+                        class="p-1.5 ${this.styles.iconColor} hover:text-amber-800 hover:bg-amber-100/50 rounded-lg transition-all"
+                        title="Clear filters">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+        }
+        
+        // Search input
+        const searchWidth = this.isFixed ? (hasSearch ? 'auto' : '200px') : '100%';
+        const searchHTML = `
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl ${this.styles.inputBgColor} ${this.styles.hoverBgColor} transition-colors ${this.styles.borderColor} border"
+                 style="width: ${searchWidth}; ${this.isFixed ? 'min-width: 150px; max-width: 260px;' : ''}">
+                <i class="fas fa-search ${this.styles.iconColor} text-sm"></i>
+                <input type="text"
+                       id="unifiedSearchInput"
+                       value="${this.searchQuery}"
+                       placeholder="${UI_TEXT.search.placeholder}"
+                       class="bg-transparent outline-none ${this.styles.textColor} ${this.styles.placeholderColor} text-sm w-full font-normal ${this.styles.focusBorderColor} ${this.styles.outlineColor}">
+                ${hasSearch ? `
+                    <button onclick="recipeApp.searchFilterBar.clearSearch()"
+                            class="${this.styles.iconColor} hover:text-amber-800 transition-colors">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                ` : ''}
+            </div>
+        `;
+        
+        return filterButtonHTML + filterPillsHTML + clearFiltersHTML + searchHTML;
+    }
+    
+    getCollapsedContent() {
+        const hasActiveFilters = this.filterManager.activeFilters.size > 0;
+        const filterCount = this.filterManager.activeFilters.size;
+        const hasSearch = this.searchQuery.length > 0;
+        
+        let html = '';
+        
+        // Filters display
+        if (hasActiveFilters) {
+            if (filterCount === 1 && !hasSearch) {
+                // Single filter, no search - show full label
+                const [filterKey, filterValue] = Array.from(this.filterManager.activeFilters)[0];
+                const [filterType, filterName] = filterKey.split(':');
+                html += `
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100/60 text-amber-700">
+                            <i class="fas fa-filter text-xs"></i>
+                            <span class="font-medium text-xs">${filterName}</span>
+                        </div>
+                        <button onclick="recipeApp.searchFilterBar.removeFilter('${filterKey}')"
+                                class="text-amber-400 hover:text-amber-600 transition-colors">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                `;
+            } else if (filterCount > 1 && !hasSearch) {
+                // Multiple filters, no search - show count
+                html += `
+                    <div class="flex items-center gap-2">
+                        <button onclick="recipeApp.searchFilterBar.expand()"
+                                class="flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-100/60 text-amber-700 hover:bg-amber-100 transition-colors">
+                            <i class="fas fa-filter text-xs"></i>
+                            <span class="font-medium text-xs">${filterCount} filters active</span>
+                        </button>
+                        <button onclick="recipeApp.searchFilterBar.clearAllFilters()"
+                                class="text-amber-400 hover:text-amber-600 transition-colors">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                `;
+            } else if (hasSearch) {
+                // Compact filter display with search
+                html += `
+                    <button onclick="recipeApp.searchFilterBar.expand()"
+                            class="flex items-center gap-1 px-2 py-0.5 rounded-lg text-amber-700 hover:bg-amber-100/50 transition-colors">
+                        <i class="fas fa-filter text-xs"></i>
+                        <span class="text-xs font-medium">${filterCount}</span>
+                    </button>
+                    <button onclick="recipeApp.searchFilterBar.clearAllFilters()"
+                            class="text-amber-400 hover:text-amber-600 transition-colors">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                `;
+            }
+        }
+        
+        // Search display
+        if (hasSearch) {
+            html += `
+                <div class="flex items-center gap-2">
+                    <button onclick="recipeApp.searchFilterBar.expand()" 
+                            class="flex items-center gap-1.5 text-gray-700 hover:bg-gray-100/30 px-2 py-0.5 rounded-lg transition-colors">
+                        <i class="fas fa-search text-xs"></i>
+                        <span class="truncate max-w-[120px] text-xs">${this.searchQuery}</span>
+                    </button>
+                    <button onclick="recipeApp.searchFilterBar.clearSearch()" 
+                            class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+            `;
+        }
+        
+        return html;
+    }
+    
+    getFilterMenuHTML() {
+        const filters = this.recipeDatabase.getFilters();
+        let html = `
+            <div class="bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-100 min-w-[280px] max-h-[400px] overflow-y-auto">
+                <div class="text-sm font-semibold text-gray-700 px-4 pt-4 pb-2 border-b border-gray-100">
+                    ${UI_TEXT.filter.title}
+                </div>
+                <div class="p-2">
+        `;
+
+        // Categories
+        if (filters.categories.length > 0) {
+            html += `<div class="mb-3">
+                <button onclick="this.parentNode.querySelector('.filter-section-content').classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
+                        class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:bg-gray-50 rounded-lg transition-colors">
+                    <span>${UI_TEXT.filter.categories.category}</span>
+                    <i class="fas fa-chevron-down text-xs chevron transition-transform duration-200"></i>
+                </button>
+                <div class="filter-section-content hidden">`;
+            filters.categories.forEach(category => {
+                const isActive = this.filterManager.activeFilters.has(`category:${category}`);
+                html += `
+                    <label class="flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors ml-2">
+                        <span class="text-sm text-gray-700">${category}</span>
+                        <input type="checkbox"
+                               ${isActive ? 'checked' : ''}
+                               onchange="recipeApp.searchFilterBar.toggleFilter('category:${category}')"
+                               class="rounded border-gray-300 text-amber-600 focus:ring-amber-500">
+                    </label>`;
+            });
+            html += `</div></div>`;
+        }
+
+        // Meals
+        if (filters.meals.length > 0) {
+            html += `<div class="mb-3">
+                <button onclick="this.parentNode.querySelector('.filter-section-content').classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
+                        class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:bg-gray-50 rounded-lg transition-colors">
+                    <span>${UI_TEXT.filter.categories.meal}</span>
+                    <i class="fas fa-chevron-down text-xs chevron transition-transform duration-200"></i>
+                </button>
+                <div class="filter-section-content hidden">`;
+            filters.meals.forEach(meal => {
+                const isActive = this.filterManager.activeFilters.has(`meal:${meal}`);
+                html += `
+                    <label class="flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors ml-2">
+                        <span class="text-sm text-gray-700">${meal}</span>
+                        <input type="checkbox"
+                               ${isActive ? 'checked' : ''}
+                               onchange="recipeApp.searchFilterBar.toggleFilter('meal:${meal}')"
+                               class="rounded border-gray-300 text-amber-600 focus:ring-amber-500">
+                    </label>`;
+            });
+            html += `</div></div>`;
+        }
+
+        // Cuisines
+        if (filters.cuisines.length > 0) {
+            html += `<div class="mb-3">
+                <button onclick="this.parentNode.querySelector('.filter-section-content').classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
+                        class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:bg-gray-50 rounded-lg transition-colors">
+                    <span>${UI_TEXT.filter.categories.cuisine}</span>
+                    <i class="fas fa-chevron-down text-xs chevron transition-transform duration-200"></i>
+                </button>
+                <div class="filter-section-content hidden">`;
+            filters.cuisines.forEach(cuisine => {
+                const isActive = this.filterManager.activeFilters.has(`cuisine:${cuisine}`);
+                html += `
+                    <label class="flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors ml-2">
+                        <span class="text-sm text-gray-700">${cuisine}</span>
+                        <input type="checkbox"
+                               ${isActive ? 'checked' : ''}
+                               onchange="recipeApp.searchFilterBar.toggleFilter('cuisine:${cuisine}')"
+                               class="rounded border-gray-300 text-amber-600 focus:ring-amber-500">
+                    </label>`;
+            });
+            html += `</div></div>`;
+        }
+
+        html += `</div></div>`;
+        return html;
+    }
+    
+    getActiveFiltersMenuHTML() {
+        let html = `
+            <div class="bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-100 min-w-[250px]">
+                <div class="text-sm font-semibold text-gray-700 px-4 pt-4 pb-2 border-b border-gray-100">
+                    Active Filters
+                </div>
+                <div class="p-2">
+        `;
+        
+        this.filterManager.activeFilters.forEach((value, key) => {
+            const [filterType, filterName] = key.split(':');
+            html += `
+                <div class="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg group transition-colors">
+                    <span class="text-sm text-gray-700">${filterName}</span>
+                    <button onclick="recipeApp.searchFilterBar.removeFilter('${key}')" 
+                            class="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-500 transition-all">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+            `;
+        });
+        
+        html += `
+                    <button onclick="recipeApp.searchFilterBar.clearAllFilters()" 
+                            class="w-full mt-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                        Clear All Filters
+                    </button>
+                </div>
+            </div>
+        `;
+        return html;
+    }
+    
+
+
+
+
+    
+    
+    
+    toggleFilterMenu() {
+        const menu = document.getElementById('unifiedFilterMenu');
+        const activeMenu = document.getElementById('unifiedActiveFiltersMenu');
+        
+        if (menu) {
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.innerHTML = this.getFilterMenuHTML();
+                activeMenu?.classList.add('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+    }
+    
+    toggleActiveFiltersMenu() {
+        const menu = document.getElementById('unifiedActiveFiltersMenu');
+        const filterMenu = document.getElementById('unifiedFilterMenu');
+        
+        if (menu) {
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.innerHTML = this.getActiveFiltersMenuHTML();
+                filterMenu?.classList.add('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+    }
+    
+    closeAllMenus() {
+        document.getElementById('unifiedFilterMenu')?.classList.add('hidden');
+        document.getElementById('unifiedActiveFiltersMenu')?.classList.add('hidden');
+    }
+    
+    destroy() {
+        // Clean up if needed
+        if (this.container) {
+            this.container.remove();
+        }
     }
 }
 
@@ -3495,6 +4192,10 @@ class RecipeApp {
             this.recommendationEngine,
             this.userDataManager
         );
+        
+        // Initialize the new unified search/filter bar
+        this.searchFilterBar = new SearchFilterBar(this.filterManager, this.recipeDatabase);
+        
         this.kokebokViewer = new KokebokViewer();
         this.modalManager = new ModalManager(
             this.recipeDatabase, 
@@ -3519,8 +4220,7 @@ class RecipeApp {
             this.modalManager.showRecipe(recipeId);
         });
         
-        // Setup event listeners
-        this.filterManager.setupEventListeners();
+        // Setup event listeners (remove filter manager's search listener since it's now in searchFilterBar)
         this.urlManager.setupHistoryListener();
         
         // Calculate initial recommendation scores
@@ -3530,7 +4230,6 @@ class RecipeApp {
         this.urlManager.initializeFromURL();
         
         // Initial render with recommendation sorting
-        this.filterManager.updateFilterButton();
         this.filterManager.applyFilters();
         this.uiManager.setupLazyLoading();
         
