@@ -1353,144 +1353,232 @@ class SearchFilterBar {
         this.updateDisplay();
     }
     
+    // ============================================
+    // SIMPLIFIED SCROLL HANDLING
+    // ============================================
     setupScrollListener() {
-        let ticking = false;
-
-        const SCROLL_THRESHOLD = 50; // Pixels to scroll before triggering transition
-        const RESET_TIMEOUT = 300; // MS of inactivity before resetting scroll accumulator
-        let scrollAccumulator = 0;
-        let resetTimer = null;
-
-        const handleScroll = () => {
-            if (!ticking) {
-                window.requestAnimationFrame(() => {
-                    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
-                    const scrollDelta = scrollY - this.lastScrollY;
-                    const currentDirection = scrollDelta > 0 ? 'down' : scrollDelta < 0 ? 'up' : null;
-
-                    // Always check if should be fixed/standard (immediate, no buffer)
-                    const shouldBeFixed = scrollY > this.searchBarTop - 20;
-                    const hasContent = this.searchQuery.length > 0 || this.filterManager.activeFilters.size > 0;
-
-                    // Handle fixed/standard positioning immediately
-                    if (shouldBeFixed && !this.isFixed) {
-                        this.makeFixed();
-                        // Only go to minimum if we have content AND scrolling down
-                        if (hasContent && currentDirection === 'down') {
-                            this.showMinimumContent();
-                        } else if (!hasContent && currentDirection === 'down') {
-                            // No content and scrolling down: hide immediately
-                            this.container.style.opacity = '0';
-                        } else if (!hasContent && currentDirection === 'up') {
-                            // No content and scrolling up: show standard layout
-                            this.showStandardContent();
-                            this.container.style.opacity = '1';
-                        }
-                    } else if (!shouldBeFixed && this.isFixed) {
-                        this.makeStandard();
-                        // Force a repaint for iOS
-                        this.container.style.transform = 'translateZ(0)';
-                        setTimeout(() => {
-                            this.container.style.transform = '';
-                        }, 0);
-                    }
-
-                    if (!currentDirection) {
-                        this.lastScrollY = scrollY;
-                        ticking = false;
-                        return;
-                    }
-
-                    // Handle content switching when fixed
-                    if (this.isFixed) {
-                        if (hasContent) {
-                            // With content: handle minimum/standard transitions
-                            // Clear existing reset timer
-                            if (resetTimer) {
-                                clearTimeout(resetTimer);
-                            }
-
-                            // Check if direction changed
-                            if (this.scrollBuffer.lastDirection !== currentDirection) {
-                                // Direction changed, reset accumulator
-                                scrollAccumulator = scrollDelta;
-                                this.scrollBuffer.lastDirection = currentDirection;
-                            } else {
-                                // Same direction, accumulate scroll
-                                scrollAccumulator += scrollDelta;
-                            }
-
-                            // Check if we've scrolled enough to trigger transition
-                            if (Math.abs(scrollAccumulator) >= SCROLL_THRESHOLD) {
-                                if (currentDirection === 'down' && !this.isMinimum) {
-                                    this.showMinimumContent();
-                                    scrollAccumulator = 0; // Reset after transition
-                                } else if (currentDirection === 'up' && this.isMinimum) {
-                                    this.showStandardContent();
-                                    scrollAccumulator = 0; // Reset after transition
-                                }
-                            }
-
-                            // Set timer to reset accumulator after inactivity
-                            resetTimer = setTimeout(() => {
-                                scrollAccumulator = 0;
-                                this.scrollBuffer.lastDirection = null;
-                            }, RESET_TIMEOUT);
-                        } else {
-                            // No content: simple hide/show with standard layout
-                            // Always use standard layout when showing (never minimum)
-                            if (this.isMinimum) {
-                                this.showStandardContent();
-                            }
-
-                            // Use same scroll accumulator logic for smooth hide/show
-                            if (resetTimer) {
-                                clearTimeout(resetTimer);
-                            }
-
-                            if (this.scrollBuffer.lastDirection !== currentDirection) {
-                                scrollAccumulator = scrollDelta;
-                                this.scrollBuffer.lastDirection = currentDirection;
-                            } else {
-                                scrollAccumulator += scrollDelta;
-                            }
-
-                            // Hide on down, show on up after threshold
-                            if (Math.abs(scrollAccumulator) >= SCROLL_THRESHOLD) {
-                                this.container.style.opacity = currentDirection === 'down' ? '0' : '1';
-                                scrollAccumulator = 0;
-                            }
-
-                            resetTimer = setTimeout(() => {
-                                scrollAccumulator = 0;
-                                this.scrollBuffer.lastDirection = null;
-                            }, RESET_TIMEOUT);
-                        }
-                    }
-
-                    this.lastScrollY = scrollY;
-                    ticking = false;
-                });
-                ticking = true;
-            }
+        // Configuration
+        const CONFIG = {
+            SCROLL_THRESHOLD: 50,  // Pixels before triggering transition
+            DEBOUNCE_DELAY: 10,    // Debounce scroll events
+            POSITION_OFFSET: 20    // Offset for fixed positioning
         };
 
+        // Scroll state - create shared state object
+        const scrollState = {
+            accumulator: 0,
+            lastDirection: null,
+            isProcessing: false,
+            debounceTimer: null
+        };
+
+        const handleScroll = () => {
+            // Debounce for performance
+            clearTimeout(scrollState.debounceTimer);
+            scrollState.debounceTimer = setTimeout(() => {
+                if (!scrollState.isProcessing) {
+                    scrollState.isProcessing = true;
+                    window.requestAnimationFrame(() => {
+                        this.processScroll(CONFIG, scrollState);
+                        scrollState.isProcessing = false;
+                    });
+                }
+            }, CONFIG.DEBOUNCE_DELAY);
+        };
+
+        // Register listeners
         window.addEventListener('scroll', handleScroll, { passive: true });
 
-        // iOS-specific: also listen to touch events for better scroll detection
-        if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-            let touchStartY = 0;
-            document.addEventListener('touchstart', (e) => {
-                touchStartY = e.touches[0].clientY;
-            }, { passive: true });
-
-            document.addEventListener('touchend', (e) => {
-                const touchEndY = e.changedTouches[0].clientY;
-                if (Math.abs(touchEndY - touchStartY) > 10) {
-                    handleScroll();
-                }
-            }, { passive: true });
+        // iOS-specific handling
+        if (this.isIOSDevice()) {
+            this.setupIOSScrollHandlers(handleScroll);
         }
+    }
+
+    // Clear state machine for scroll processing
+    processScroll(config, state) {
+        try {
+            const metrics = this.getScrollMetrics();
+            const context = this.getScrollContext();
+
+            // GATE 1: Determine if bar should be fixed or standard
+            const shouldBeFixed = metrics.scrollY > (this.searchBarTop - config.POSITION_OFFSET);
+
+            // GATE 2: Handle position changes (fixed vs standard)
+            if (shouldBeFixed !== this.isFixed) {
+                this.handlePositionChange(shouldBeFixed, context);
+            }
+
+            // GATE 3: Handle view transitions when fixed
+            if (this.isFixed && context.hasContent) {
+                this.handleViewTransition(metrics, context, config, state);
+            }
+
+            // GATE 4: Handle visibility when no content
+            if (this.isFixed && !context.hasContent) {
+                this.handleVisibility(metrics, config, state);
+            }
+
+            // Update last scroll position
+            this.lastScrollY = metrics.scrollY;
+        } catch (error) {
+            console.warn('Error processing scroll:', error);
+            // Reset state on error to prevent stuck states
+            state.accumulator = 0;
+            state.lastDirection = null;
+        }
+    }
+
+    // Get current scroll metrics
+    getScrollMetrics() {
+        const scrollY = window.pageYOffset ||
+                       document.documentElement.scrollTop ||
+                       document.body.scrollTop || 0;
+
+        const scrollDelta = scrollY - this.lastScrollY;
+        const direction = scrollDelta > 0 ? 'down' :
+                         scrollDelta < 0 ? 'up' : null;
+
+        return { scrollY, scrollDelta, direction };
+    }
+
+    // Get current context
+    getScrollContext() {
+        return {
+            hasContent: this.searchQuery.length > 0 ||
+                       this.filterManager.activeFilters.size > 0,
+            hasSearch: this.searchQuery.length > 0,
+            hasFilters: this.filterManager.activeFilters.size > 0,
+            filterCount: this.filterManager.activeFilters.size
+        };
+    }
+
+    // Handle position changes (fixed/standard)
+    handlePositionChange(shouldBeFixed, context) {
+        if (shouldBeFixed) {
+            this.transitionToFixed();
+            // Set initial view state when becoming fixed
+            if (context.hasContent) {
+                // Start with standard view, let scroll determine minimum
+                if (!this.isMinimum) {
+                    this.setStandardView();
+                }
+            }
+        } else {
+            this.transitionToStandard();
+        }
+    }
+
+    // Handle view transitions (minimum/standard) when fixed
+    handleViewTransition(metrics, context, config, state) {
+        if (!metrics.direction) return;
+
+        // Update scroll accumulator
+        if (state.lastDirection !== metrics.direction) {
+            state.accumulator = metrics.scrollDelta;
+            state.lastDirection = metrics.direction;
+        } else {
+            state.accumulator += metrics.scrollDelta;
+        }
+
+        // Check threshold for transition
+        if (Math.abs(state.accumulator) >= config.SCROLL_THRESHOLD) {
+            if (metrics.direction === 'down' && !this.isMinimum) {
+                this.transitionToMinimum();
+            } else if (metrics.direction === 'up' && this.isMinimum) {
+                this.setStandardView();
+            }
+            state.accumulator = 0;
+        }
+    }
+
+    // Handle visibility when no content
+    handleVisibility(metrics, config, state) {
+        if (!metrics.direction) return;
+
+        // Always use standard view when visible
+        if (this.isMinimum) {
+            this.setStandardView();
+        }
+
+        // Update scroll accumulator
+        if (state.lastDirection !== metrics.direction) {
+            state.accumulator = metrics.scrollDelta;
+            state.lastDirection = metrics.direction;
+        } else {
+            state.accumulator += metrics.scrollDelta;
+        }
+
+        // Check threshold for visibility
+        if (Math.abs(state.accumulator) >= config.SCROLL_THRESHOLD) {
+            this.container.style.opacity = metrics.direction === 'down' ? '0' : '1';
+            state.accumulator = 0;
+        }
+    }
+
+    // ============================================
+    // STANDARDIZED TRANSITION FUNCTIONS
+    // ============================================
+
+    transitionToFixed() {
+        try {
+            this.makeFixed();
+            this.isFixed = true;
+        } catch (error) {
+            console.warn('Failed to transition to fixed:', error);
+        }
+    }
+
+    transitionToStandard() {
+        try {
+            this.makeStandard();
+            this.isFixed = false;
+            this.isMinimum = false;
+        } catch (error) {
+            console.warn('Failed to transition to standard:', error);
+        }
+    }
+
+    transitionToMinimum() {
+        try {
+            this.showMinimumContent();
+            this.isMinimum = true;
+        } catch (error) {
+            console.warn('Failed to transition to minimum:', error);
+        }
+    }
+
+    setStandardView() {
+        try {
+            this.showStandardContent();
+            this.isMinimum = false;
+        } catch (error) {
+            console.warn('Failed to set standard view:', error);
+        }
+    }
+
+    // ============================================
+    // PLATFORM DETECTION
+    // ============================================
+
+    isIOSDevice() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    }
+
+    setupIOSScrollHandlers(scrollHandler) {
+        let touchStartY = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            const touchEndY = e.changedTouches[0].clientY;
+            if (Math.abs(touchEndY - touchStartY) > 10) {
+                scrollHandler();
+            }
+        }, { passive: true });
     }
 
     // Deprecated - logic moved inline to setupScrollListener for better control
