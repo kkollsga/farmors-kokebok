@@ -102,26 +102,19 @@
        iOS PWA SAFE AREA PADDING (Portrait Mode)
     ============================================ */
     @media screen and (max-width: 900px) and (orientation: portrait) {
-        /* Add padding for iOS status bar and Dynamic Island in PWA mode */
-        #recipeModal > div > div {
-            padding-top: env(safe-area-inset-top, 20px);
-            padding-top: max(env(safe-area-inset-top, 20px), 20px);
-        }
-
-        /* Adjust the modal content container */
-        #modalContent {
-            max-height: calc(100vh - env(safe-area-inset-top, 20px));
+        /* Minimal padding only for iOS status bar */
+        #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div {
+            /* Only for fullscreen modal */
+            padding-top: env(safe-area-inset-top, 0);
         }
     }
 
     /* Specific iOS standalone mode (PWA) detection */
     @media (display-mode: standalone) and (max-width: 900px) and (orientation: portrait) {
-        #recipeModal > div > div {
-            padding-top: max(env(safe-area-inset-top, 44px), 44px);
-        }
-
-        #modalContent {
-            max-height: calc(100vh - max(env(safe-area-inset-top, 44px), 44px));
+        #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div {
+            /* Just enough for status bar */
+            padding-top: env(safe-area-inset-top, 20px);
+            padding-top: max(env(safe-area-inset-top), 20px);
         }
     }
 </style>
@@ -1363,7 +1356,7 @@ class SearchFilterBar {
         const handleScroll = () => {
             if (!ticking) {
                 window.requestAnimationFrame(() => {
-                    const scrollY = window.pageYOffset;
+                    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
                     const scrollDelta = scrollY - this.lastScrollY;
                     const currentDirection = scrollDelta > 0 ? 'down' : scrollDelta < 0 ? 'up' : null;
 
@@ -1475,6 +1468,21 @@ class SearchFilterBar {
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
+
+        // iOS-specific: also listen to touch events for better scroll detection
+        if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+            let touchStartY = 0;
+            document.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                const touchEndY = e.changedTouches[0].clientY;
+                if (Math.abs(touchEndY - touchStartY) > 10) {
+                    handleScroll();
+                }
+            }, { passive: true });
+        }
     }
 
     // Deprecated - logic moved inline to setupScrollListener for better control
@@ -3546,9 +3554,9 @@ class ModalManager {
             modal.className = 'fixed inset-0 z-50 bg-gradient-to-br from-amber-100 to-orange-100';
             if (flexContainer) {
                 flexContainer.className = 'h-full';
-                // Add safe area padding for iOS in portrait mode
+                // Add minimal safe area padding for iOS in portrait mode (just status bar)
                 if (isIOS && isPortrait) {
-                    flexContainer.style.paddingTop = 'env(safe-area-inset-top, 20px)';
+                    flexContainer.style.paddingTop = 'env(safe-area-inset-top, 0)';
                 } else {
                     flexContainer.style.paddingTop = '';
                 }
