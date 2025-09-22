@@ -1517,15 +1517,23 @@ class SearchFilterBar {
         this.container.style.width = 'fit-content';
         this.container.style.maxWidth = '90vw';
 
-        // Remove padding for minimum view for more compact appearance
-        if (this.isMinimum) {
-            this.glassBar.style.padding = '0';
-        }
         this.container.style.zIndex = '50';
 
-        // Update glass bar styling for fixed position
+        // Update glass bar styling based on current view
         if (this.glassBar) {
-            this.glassBar.className = 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40';
+            if (this.isMinimum) {
+                // Pill shape for minimum view
+                this.glassBar.className = 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40';
+                this.glassBar.style.padding = '0';
+                this.glassBar.style.width = 'fit-content';
+                // Don't set margin here - let container handle centering
+            } else {
+                // Rounded rectangle for standard view
+                this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40';
+                this.glassBar.style.padding = '';
+                this.glassBar.style.width = '';
+            }
+            this.glassBar.style.margin = ''; // Remove any margin - centering is handled by container
         }
     }
 
@@ -1571,25 +1579,33 @@ class SearchFilterBar {
         this.minimumContent.classList.remove('hidden');
         this.minimumContent.style.opacity = '1';
 
-        // Apply pill-like styling for minimum view with no padding
+        // Apply pill-like styling for minimum view
         if (this.glassBar) {
             this.glassBar.className = 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40';
             this.glassBar.style.padding = '0';
             this.glassBar.style.width = 'fit-content';
-            this.glassBar.style.margin = '0 auto';
+            // Don't set margin - centering is handled by container's transform
+            this.glassBar.style.margin = '';
         }
 
-        // Add extra top offset for minimum view on iOS to account for Dynamic Island
-        if (this.isFixed) {
-            // Position below the safe area (notch/Dynamic Island) with some padding
-            this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 10px)';
-        }
+        // Position is already set by makeFixed() - no need to adjust here
 
-        // Force repaint for iOS while preserving centering
-        this.container.style.transform = 'translateX(-50%) translateZ(0)';
-        setTimeout(() => {
-            this.container.style.transform = 'translateX(-50%)';
-        }, 0);
+        // Force repaint for iOS - don't change transform if already fixed
+        if (!this.isFixed) {
+            this.container.style.transform = 'translateZ(0)';
+            setTimeout(() => {
+                this.container.style.transform = '';
+            }, 0);
+        }
+        // If fixed, maintain the centering transform
+        else {
+            // Transform is already set by makeFixed(), just trigger repaint
+            const currentTransform = this.container.style.transform;
+            this.container.style.transform = currentTransform + ' translateZ(0)';
+            setTimeout(() => {
+                this.container.style.transform = currentTransform;
+            }, 0);
+        }
 
         this.updateMinimumDisplay();
     }
@@ -1611,20 +1627,28 @@ class SearchFilterBar {
             this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40';
             this.glassBar.style.padding = '';
             this.glassBar.style.width = '';
+            // Ensure no margin - centering is handled by container's transform
             this.glassBar.style.margin = '';
         }
 
-        // Reset to standard top position
-        if (this.isFixed) {
-            // Keep consistent position below safe area
-            this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 10px)';
-        }
+        // Position is already set by makeFixed() - no need to adjust here
 
-        // Force repaint for iOS while preserving centering
-        this.container.style.transform = 'translateX(-50%) translateZ(0)';
-        setTimeout(() => {
-            this.container.style.transform = 'translateX(-50%)';
-        }, 0);
+        // Force repaint for iOS - don't change transform if already fixed
+        if (!this.isFixed) {
+            this.container.style.transform = 'translateZ(0)';
+            setTimeout(() => {
+                this.container.style.transform = '';
+            }, 0);
+        }
+        // If fixed, maintain the centering transform
+        else {
+            // Transform is already set by makeFixed(), just trigger repaint
+            const currentTransform = this.container.style.transform;
+            this.container.style.transform = currentTransform + ' translateZ(0)';
+            setTimeout(() => {
+                this.container.style.transform = currentTransform;
+            }, 0);
+        }
 
         this.updateStandardDisplay();
     }
@@ -1696,18 +1720,33 @@ class SearchFilterBar {
         if (!this.filterButton) return;
 
         const countSpan = this.filterButton.querySelector('#filterCount');
+        const textSpan = this.filterButton.querySelector('#filterButtonText');
+        const hasSearch = this.searchQuery.length > 0;
 
-        if (hasFilters) {
+        // When search is active with filters, show simple filter icon only
+        if (hasSearch && hasFilters) {
+            this.filterButton.className = "flex items-center p-2 rounded-xl transition-all text-sm font-medium shrink-0 text-amber-700 hover:text-amber-800 hover:bg-amber-50";
+            // Hide both text and count when search is active
+            if (countSpan) countSpan.classList.add('hidden');
+            if (textSpan) textSpan.classList.add('hidden');
+        } else if (hasSearch && !hasFilters) {
+            // Search active but no filters, show normal filter button
+            this.filterButton.className = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-white text-gray-700 hover:text-amber-600 border border-gray-200";
+            if (countSpan) countSpan.classList.add('hidden');
+            if (textSpan) textSpan.classList.remove('hidden');
+        } else if (hasFilters) {
+            // No search, show colored button with text and count
             this.filterButton.className = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700";
             if (countSpan) {
                 countSpan.textContent = filterCount;
                 countSpan.classList.remove('hidden');
             }
+            if (textSpan) textSpan.classList.remove('hidden');
         } else {
+            // No filters, show default button with text
             this.filterButton.className = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-white text-gray-700 hover:text-amber-600 border border-gray-200";
-            if (countSpan) {
-                countSpan.classList.add('hidden');
-            }
+            if (countSpan) countSpan.classList.add('hidden');
+            if (textSpan) textSpan.classList.remove('hidden');
         }
     }
 
@@ -1716,8 +1755,15 @@ class SearchFilterBar {
 
         this.filterPillsContainer.innerHTML = '';
 
-        if (this.filterManager.activeFilters.size > 0 && !this.searchQuery) {
-            this.filterManager.activeFilters.forEach((_, filterKey) => {
+        const hasFilters = this.filterManager.activeFilters.size > 0;
+        const hasSearch = this.searchQuery.length > 0;
+        const filterCount = this.filterManager.activeFilters.size;
+
+        if (hasFilters) {
+            // In medium view, always show filter pills even with search
+            if (filterCount === 1) {
+                // Single filter: show filter name pill with X
+                const [filterKey] = Array.from(this.filterManager.activeFilters.keys());
                 const [, filterName] = filterKey.split(':');
                 const pill = document.createElement('div');
                 pill.className = "inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm max-w-[150px] bg-gradient-to-r from-amber-500 to-amber-600 text-white";
@@ -1728,7 +1774,18 @@ class SearchFilterBar {
                     </button>
                 `;
                 this.filterPillsContainer.appendChild(pill);
-            });
+            } else {
+                // Multiple filters: show count pill that triggers dropdown
+                const pill = document.createElement('div');
+                pill.className = "inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white cursor-pointer";
+                pill.innerHTML = `
+                    <span class="font-medium" onclick="recipeApp.searchFilterBar.toggleActiveFiltersMenu()">${filterCount} filters</span>
+                    <button onclick="recipeApp.searchFilterBar.clearAllFilters()" class="ml-1 hover:opacity-70 flex-shrink-0">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                `;
+                this.filterPillsContainer.appendChild(pill);
+            }
         }
     }
 
