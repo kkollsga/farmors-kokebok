@@ -102,16 +102,8 @@
         }
         /* Ensure search bar stays below notch/Dynamic Island when fixed */
         #unifiedSearchBar.fixed {
-            /* Fallback positioning - overridden by JS for different view modes */
-            top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
-        }
-        /* Minimum view gets more margin */
-        #unifiedSearchBar.fixed.minimum {
-            top: calc(env(safe-area-inset-top, 0px) + 20px) !important;
-        }
-        /* Standard view gets less margin */
-        #unifiedSearchBar.fixed.standard {
-            top: calc(env(safe-area-inset-top, 0px) + 5px) !important;
+            /* Consistent positioning for both minimum and standard views */
+            top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
         }
     }
 
@@ -1553,7 +1545,7 @@ class SearchFilterBar {
     transitionToMinimum() {
         try {
             this.showMinimumContent();
-            this.isMinimum = true;
+            // isMinimum is set inside showMinimumContent()
         } catch (error) {
             console.warn('Failed to transition to minimum:', error);
         }
@@ -1562,7 +1554,7 @@ class SearchFilterBar {
     setStandardView() {
         try {
             this.showStandardContent();
-            this.isMinimum = false;
+            // isMinimum is set inside showStandardContent()
         } catch (error) {
             console.warn('Failed to set standard view:', error);
         }
@@ -1576,25 +1568,21 @@ class SearchFilterBar {
         // Remove existing view classes
         this.container.classList.remove('minimum', 'standard');
 
-        // Different margins for minimum vs medium views
+        // Use consistent margin for both views to avoid visual jump
+        const margin = 'calc(env(safe-area-inset-top, 0px) + 12px)';
+        this.container.style.top = margin;
+
+        // Add appropriate class for styling
         if (this.isMinimum) {
-            // More space for minimum view (pill needs more clearance)
-            this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 20px)';
             this.container.classList.add('minimum');
         } else {
-            // Less space for medium view (compact positioning)
-            this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 5px)';
             this.container.classList.add('standard');
         }
 
         // Extra positioning assurance for iOS
         if (this.isIOSDevice()) {
             setTimeout(() => {
-                if (this.isMinimum) {
-                    this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 20px)';
-                } else {
-                    this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 5px)';
-                }
+                this.container.style.top = margin;
             }, 0);
         }
     }
@@ -1703,12 +1691,18 @@ class SearchFilterBar {
     }
 
     showMinimumContent() {
-        if (this.isMinimum || !this.standardContent || !this.minimumContent) return;
-        this.isMinimum = true;
+        // Always allow position updates, even if already in minimum
+        if (!this.standardContent || !this.minimumContent) return;
 
-        // Update position for minimum view
+        // Update position for minimum view BEFORE changing isMinimum
         if (this.isFixed) {
+            const wasMinimum = this.isMinimum;
+            this.isMinimum = true;
             this.setFixedPosition();
+            // If we were already minimum, no need to do DOM changes
+            if (wasMinimum) return;
+        } else {
+            this.isMinimum = true;
         }
 
         // Ensure container is visible
@@ -1751,12 +1745,18 @@ class SearchFilterBar {
     }
 
     showStandardContent() {
-        if (!this.isMinimum || !this.standardContent || !this.minimumContent) return;
-        this.isMinimum = false;
+        // Always allow position updates, even if already in standard
+        if (!this.standardContent || !this.minimumContent) return;
 
-        // Update position for standard view
+        // Update position for standard view BEFORE changing isMinimum
         if (this.isFixed) {
+            const wasMinimum = this.isMinimum;
+            this.isMinimum = false;
             this.setFixedPosition();
+            // If we were already standard, no need to do DOM changes
+            if (!wasMinimum) return;
+        } else {
+            this.isMinimum = false;
         }
 
         // Ensure container is visible
