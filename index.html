@@ -7,7 +7,7 @@
 <!-- Progressive Web App -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Farmors Oppskrifter">
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -97,6 +97,33 @@
     @supports (-webkit-touch-callout: none) {
         #recipeModal .absolute.inset-0 { -webkit-overflow-scrolling: touch; }
     }
+
+    /* ============================================
+       iOS PWA SAFE AREA PADDING (Portrait Mode)
+    ============================================ */
+    @media screen and (max-width: 900px) and (orientation: portrait) {
+        /* Add padding for iOS status bar and Dynamic Island in PWA mode */
+        #recipeModal > div > div {
+            padding-top: env(safe-area-inset-top, 20px);
+            padding-top: max(env(safe-area-inset-top, 20px), 20px);
+        }
+
+        /* Adjust the modal content container */
+        #modalContent {
+            max-height: calc(100vh - env(safe-area-inset-top, 20px));
+        }
+    }
+
+    /* Specific iOS standalone mode (PWA) detection */
+    @media (display-mode: standalone) and (max-width: 900px) and (orientation: portrait) {
+        #recipeModal > div > div {
+            padding-top: max(env(safe-area-inset-top, 44px), 44px);
+        }
+
+        #modalContent {
+            max-height: calc(100vh - max(env(safe-area-inset-top, 44px), 44px));
+        }
+    }
 </style>
 </head>
 <body class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 min-h-screen">
@@ -141,11 +168,17 @@
 
             <!-- Minimum content (hidden by default) -->
             <div id="minimumContent" class="flex items-center gap-2 w-full hidden">
+                <!-- Filter counter (when search and filters are both active) -->
+                <div id="filterCounter" class="inline-flex items-center gap-1 text-amber-700 text-sm hidden cursor-pointer hover:text-amber-800 transition-colors mr-1">
+                    <i class="fas fa-filter text-xs"></i>
+                    <span id="filterCounterText" class="font-medium text-xs">0</span>
+                </div>
+
                 <!-- Search pill -->
-                <div id="searchPill" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white hidden">
+                <div id="searchPill" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-white text-amber-700 border border-gray-200 hidden">
                     <i class="fas fa-search text-xs"></i>
                     <span id="searchPillText"></span>
-                    <button id="clearSearchPill" class="ml-1 hover:opacity-70 flex-shrink-0">
+                    <button id="clearSearchPill" class="ml-1 hover:text-amber-800 flex-shrink-0">
                         <i class="fas fa-times text-xs"></i>
                     </button>
                 </div>
@@ -155,14 +188,6 @@
                     <i class="fas fa-filter text-xs"></i>
                     <span id="filterPillText"></span>
                     <button id="clearFilterPill" class="ml-1 hover:opacity-70 flex-shrink-0">
-                        <i class="fas fa-times text-xs"></i>
-                    </button>
-                </div>
-
-                <!-- Filter counter (when multiple filters applied) -->
-                <div id="filterCounter" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white hidden cursor-pointer">
-                    <span id="filterCounterText">0 filters</span>
-                    <button id="clearAllFiltersPill" class="ml-1 hover:opacity-70 flex-shrink-0">
                         <i class="fas fa-times text-xs"></i>
                     </button>
                 </div>
@@ -1598,13 +1623,13 @@ class SearchFilterBar {
         this.filterCounter.classList.add('hidden');
 
         if (hasSearch && hasFilters) {
-            // Show search pill and filter counter
+            // Show filter icon with count and search pill
+            this.filterCounter.classList.remove('hidden');
+            const filterCounterText = document.getElementById('filterCounterText');
+            if (filterCounterText) filterCounterText.textContent = filterCount;
             this.searchPill.classList.remove('hidden');
             const searchPillText = document.getElementById('searchPillText');
             if (searchPillText) searchPillText.textContent = this.searchQuery;
-            this.filterCounter.classList.remove('hidden');
-            const filterCounterText = document.getElementById('filterCounterText');
-            if (filterCounterText) filterCounterText.textContent = `${filterCount} filters`;
         } else if (hasSearch) {
             // Show only search pill
             this.searchPill.classList.remove('hidden');
@@ -1620,10 +1645,10 @@ class SearchFilterBar {
                 const filterPillText = document.getElementById('filterPillText');
                 if (filterPillText) filterPillText.textContent = filterName;
             } else {
-                // Multiple filters: show count with X to clear all
-                this.filterCounter.classList.remove('hidden');
-                const filterCounterText = document.getElementById('filterCounterText');
-                if (filterCounterText) filterCounterText.textContent = `${filterCount} filters`;
+                // Multiple filters: show as filter pill with count
+                this.filterPill.classList.remove('hidden');
+                const filterPillText = document.getElementById('filterPillText');
+                if (filterPillText) filterPillText.textContent = `${filterCount} filters`;
             }
         }
     }
@@ -1731,10 +1756,10 @@ class SearchFilterBar {
             }
         });
 
-        // Filter counter pill click to show dropdown
+        // Filter counter click to show dropdown
         document.addEventListener('click', (e) => {
-            if (e.target.closest('#filterCounter') && !e.target.closest('#clearAllFiltersPill')) {
-                this.toggleFilterMenu();
+            if (e.target.closest('#filterCounter')) {
+                this.toggleActiveFiltersMenu();
             }
         });
 
@@ -1756,6 +1781,18 @@ class SearchFilterBar {
     clearSearch() {
         this.searchQuery = '';
         this.filterManager.searchQuery = '';
+
+        // Always update the search input value directly
+        if (this.searchInput) {
+            this.searchInput.value = '';
+        }
+
+        // Also update any dynamically created search inputs
+        const allSearchInputs = document.querySelectorAll('#unifiedSearchInput');
+        allSearchInputs.forEach(input => {
+            input.value = '';
+        });
+
         this.filterManager.applyFilters();
         this.updateDisplay();
     }
@@ -1792,6 +1829,18 @@ class SearchFilterBar {
 
     removeFilter(filterKey) {
         this.filterManager.removeFilter(filterKey);
+
+        // Ensure search input is updated if we're switching between states
+        if (this.searchInput) {
+            this.searchInput.value = this.searchQuery;
+        }
+
+        // Also update any dynamically created search inputs
+        const allSearchInputs = document.querySelectorAll('#unifiedSearchInput');
+        allSearchInputs.forEach(input => {
+            input.value = this.searchQuery;
+        });
+
         this.updateDisplay();
     }
 
@@ -3486,14 +3535,23 @@ class ModalManager {
         const modal = document.getElementById('recipeModal');
         const flexContainer = modal.firstElementChild;
         const modalWrapper = flexContainer ? flexContainer.firstElementChild : null;
-        
+
         const windowWidth = window.innerWidth;
         this.isFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
-        
+        const isPortrait = window.innerHeight > window.innerWidth;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
         if (this.isFullscreen) {
             modal.className = 'fixed inset-0 z-50 bg-gradient-to-br from-amber-100 to-orange-100';
             if (flexContainer) {
                 flexContainer.className = 'h-full';
+                // Add safe area padding for iOS in portrait mode
+                if (isIOS && isPortrait) {
+                    flexContainer.style.paddingTop = 'env(safe-area-inset-top, 20px)';
+                } else {
+                    flexContainer.style.paddingTop = '';
+                }
             }
             if (modalWrapper) {
                 modalWrapper.className = 'h-full w-full flex flex-col relative';
@@ -3502,6 +3560,7 @@ class ModalManager {
             modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50';
             if (flexContainer) {
                 flexContainer.className = 'flex items-center justify-center min-h-screen p-4';
+                flexContainer.style.paddingTop = ''; // Reset padding for desktop
             }
             if (modalWrapper) {
                 modalWrapper.className = 'bg-gradient-to-br from-amber-100 to-orange-100 rounded-3xl max-w-5xl w-full h-[92vh] flex flex-col shadow-2xl relative overflow-hidden';
