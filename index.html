@@ -102,7 +102,16 @@
         }
         /* Ensure search bar stays below notch/Dynamic Island when fixed */
         #unifiedSearchBar.fixed {
+            /* Fallback positioning - overridden by JS for different view modes */
             top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
+        }
+        /* Minimum view gets more margin */
+        #unifiedSearchBar.fixed.minimum {
+            top: calc(env(safe-area-inset-top, 0px) + 20px) !important;
+        }
+        /* Standard view gets less margin */
+        #unifiedSearchBar.fixed.standard {
+            top: calc(env(safe-area-inset-top, 0px) + 5px) !important;
         }
     }
 
@@ -1560,6 +1569,37 @@ class SearchFilterBar {
     }
 
     // ============================================
+    // POSITIONING UTILITIES
+    // ============================================
+
+    setFixedPosition() {
+        // Remove existing view classes
+        this.container.classList.remove('minimum', 'standard');
+
+        // Different margins for minimum vs medium views
+        if (this.isMinimum) {
+            // More space for minimum view (pill needs more clearance)
+            this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 20px)';
+            this.container.classList.add('minimum');
+        } else {
+            // Less space for medium view (compact positioning)
+            this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 5px)';
+            this.container.classList.add('standard');
+        }
+
+        // Extra positioning assurance for iOS
+        if (this.isIOSDevice()) {
+            setTimeout(() => {
+                if (this.isMinimum) {
+                    this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 20px)';
+                } else {
+                    this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 5px)';
+                }
+            }, 0);
+        }
+    }
+
+    // ============================================
     // PLATFORM DETECTION
     // ============================================
 
@@ -1600,8 +1640,8 @@ class SearchFilterBar {
 
         // Apply fixed positioning
         this.container.style.position = 'fixed';
-        // Position below iOS safe area (notch/Dynamic Island)
-        this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 10px)';
+        // Initial position - will be adjusted based on view mode
+        this.setFixedPosition();
         this.container.style.left = '50%';
         this.container.style.transform = 'translateX(-50%)';
         this.container.style.width = 'fit-content';
@@ -1610,14 +1650,6 @@ class SearchFilterBar {
 
         // Add class for CSS targeting
         this.container.classList.add('fixed');
-
-        // Extra iOS positioning assurance
-        if (this.isIOSDevice()) {
-            // Force positioning update for iOS
-            setTimeout(() => {
-                this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 10px)';
-            }, 0);
-        }
 
         // Update glass bar styling based on current view
         if (this.glassBar) {
@@ -1642,8 +1674,8 @@ class SearchFilterBar {
         this.isFixed = false;
         this.isMinimum = false;
 
-        // Remove fixed class
-        this.container.classList.remove('fixed');
+        // Remove fixed and view classes
+        this.container.classList.remove('fixed', 'minimum', 'standard');
 
         // Reset positioning and state
         this.container.style.position = '';
@@ -1673,6 +1705,11 @@ class SearchFilterBar {
     showMinimumContent() {
         if (this.isMinimum || !this.standardContent || !this.minimumContent) return;
         this.isMinimum = true;
+
+        // Update position for minimum view
+        if (this.isFixed) {
+            this.setFixedPosition();
+        }
 
         // Ensure container is visible
         this.container.style.opacity = '1';
@@ -1716,6 +1753,11 @@ class SearchFilterBar {
     showStandardContent() {
         if (!this.isMinimum || !this.standardContent || !this.minimumContent) return;
         this.isMinimum = false;
+
+        // Update position for standard view
+        if (this.isFixed) {
+            this.setFixedPosition();
+        }
 
         // Ensure container is visible
         this.container.style.opacity = '1';
