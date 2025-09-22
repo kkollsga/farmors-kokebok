@@ -100,6 +100,10 @@
         input[type="text"], input[type="search"], textarea, select {
             font-size: 16px !important;
         }
+        /* Ensure search bar stays below notch/Dynamic Island when fixed */
+        #unifiedSearchBar.fixed {
+            top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
+        }
     }
 
     /* ============================================
@@ -1506,7 +1510,8 @@ class SearchFilterBar {
 
         // Apply fixed positioning
         this.container.style.position = 'fixed';
-        this.container.style.top = 'env(safe-area-inset-top, 0px)';
+        // Position below iOS safe area (notch/Dynamic Island)
+        this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 10px)';
         this.container.style.left = '50%';
         this.container.style.transform = 'translateX(-50%)';
         this.container.style.width = 'fit-content';
@@ -1576,7 +1581,8 @@ class SearchFilterBar {
 
         // Add extra top offset for minimum view on iOS to account for Dynamic Island
         if (this.isFixed) {
-            this.container.style.top = 'env(safe-area-inset-top, 0px)';
+            // Position below the safe area (notch/Dynamic Island) with some padding
+            this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 10px)';
         }
 
         // Force repaint for iOS while preserving centering
@@ -1610,7 +1616,8 @@ class SearchFilterBar {
 
         // Reset to standard top position
         if (this.isFixed) {
-            this.container.style.top = 'env(safe-area-inset-top, 0px)';
+            // Keep consistent position below safe area
+            this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 10px)';
         }
 
         // Force repaint for iOS while preserving centering
