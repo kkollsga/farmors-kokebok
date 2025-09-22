@@ -1522,8 +1522,10 @@ class SearchFilterBar {
 
     transitionToFixed() {
         try {
-            this.makeFixed();
-            this.isFixed = true;
+            if (!this.isFixed) {
+                this.makeFixed();
+                // isFixed is set inside makeFixed()
+            }
         } catch (error) {
             console.warn('Failed to transition to fixed:', error);
         }
@@ -1604,8 +1606,18 @@ class SearchFilterBar {
         this.container.style.transform = 'translateX(-50%)';
         this.container.style.width = 'fit-content';
         this.container.style.maxWidth = '90vw';
-
         this.container.style.zIndex = '50';
+
+        // Add class for CSS targeting
+        this.container.classList.add('fixed');
+
+        // Extra iOS positioning assurance
+        if (this.isIOSDevice()) {
+            // Force positioning update for iOS
+            setTimeout(() => {
+                this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 10px)';
+            }, 0);
+        }
 
         // Update glass bar styling based on current view
         if (this.glassBar) {
@@ -1629,6 +1641,9 @@ class SearchFilterBar {
         if (!this.isFixed) return;
         this.isFixed = false;
         this.isMinimum = false;
+
+        // Remove fixed class
+        this.container.classList.remove('fixed');
 
         // Reset positioning and state
         this.container.style.position = '';
