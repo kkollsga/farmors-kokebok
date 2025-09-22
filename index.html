@@ -100,11 +100,7 @@
         input[type="text"], input[type="search"], textarea, select {
             font-size: 16px !important;
         }
-        /* Ensure search bar stays below notch/Dynamic Island when fixed */
-        #unifiedSearchBar.fixed {
-            /* Consistent positioning for both minimum and standard views */
-            top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
-        }
+        /* Note: Fixed positioning is now handled entirely in JavaScript via this.config.positioning.safeAreaOffset */
     }
 
     /* ============================================
@@ -1306,6 +1302,35 @@ class SearchFilterBar {
         this.filterManager = filterManager;
         this.recipeDatabase = recipeDatabase;
 
+        // ============================================
+        // POSITIONING CONFIGURATION - Easy to customize
+        // ============================================
+        this.config = {
+            positioning: {
+                // iOS safe area offset - easily customizable
+                safeAreaOffset: '12px',
+                // Scroll thresholds
+                scrollThreshold: 50,
+                positionOffset: 20,
+                // Debounce settings
+                debounceDelay: 10
+            },
+            styles: {
+                // Standard view styling
+                standard: {
+                    glassBar: 'relative rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40',
+                    padding: '',
+                    width: ''
+                },
+                // Minimum view styling
+                minimum: {
+                    glassBar: 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40',
+                    padding: '0',
+                    width: 'fit-content'
+                }
+            }
+        };
+
         // State
         this.searchQuery = '';
         this.showFilterMenu = false;
@@ -1358,11 +1383,11 @@ class SearchFilterBar {
     // SIMPLIFIED SCROLL HANDLING
     // ============================================
     setupScrollListener() {
-        // Configuration
+        // Use centralized configuration
         const CONFIG = {
-            SCROLL_THRESHOLD: 50,  // Pixels before triggering transition
-            DEBOUNCE_DELAY: 10,    // Debounce scroll events
-            POSITION_OFFSET: 20    // Offset for fixed positioning
+            SCROLL_THRESHOLD: this.config.positioning.scrollThreshold,
+            DEBOUNCE_DELAY: this.config.positioning.debounceDelay,
+            POSITION_OFFSET: this.config.positioning.positionOffset
         };
 
         // Scroll state - create shared state object
@@ -1564,12 +1589,27 @@ class SearchFilterBar {
     // POSITIONING UTILITIES
     // ============================================
 
+    // Helper method to easily customize positioning
+    updateConfig(newConfig) {
+        this.config = {
+            ...this.config,
+            ...newConfig,
+            positioning: { ...this.config.positioning, ...newConfig.positioning },
+            styles: {
+                ...this.config.styles,
+                ...newConfig.styles,
+                standard: { ...this.config.styles.standard, ...newConfig.styles?.standard },
+                minimum: { ...this.config.styles.minimum, ...newConfig.styles?.minimum }
+            }
+        };
+    }
+
     setFixedPosition() {
         // Remove existing view classes
         this.container.classList.remove('minimum', 'standard');
 
-        // Use consistent margin for both views to avoid visual jump
-        const margin = 'calc(env(safe-area-inset-top, 0px) + 12px)';
+        // Use centralized configuration for positioning
+        const margin = `calc(env(safe-area-inset-top, 0px) + ${this.config.positioning.safeAreaOffset})`;
         this.container.style.top = margin;
 
         // Add appropriate class for styling
@@ -1639,20 +1679,12 @@ class SearchFilterBar {
         // Add class for CSS targeting
         this.container.classList.add('fixed');
 
-        // Update glass bar styling based on current view
+        // Update glass bar styling based on current view using config
         if (this.glassBar) {
-            if (this.isMinimum) {
-                // Pill shape for minimum view
-                this.glassBar.className = 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40';
-                this.glassBar.style.padding = '0';
-                this.glassBar.style.width = 'fit-content';
-                // Don't set margin here - let container handle centering
-            } else {
-                // Rounded rectangle for standard view
-                this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40';
-                this.glassBar.style.padding = '';
-                this.glassBar.style.width = '';
-            }
+            const styleConfig = this.isMinimum ? this.config.styles.minimum : this.config.styles.standard;
+            this.glassBar.className = styleConfig.glassBar;
+            this.glassBar.style.padding = styleConfig.padding;
+            this.glassBar.style.width = styleConfig.width;
             this.glassBar.style.margin = ''; // Remove any margin - centering is handled by container
         }
     }
@@ -1713,13 +1745,13 @@ class SearchFilterBar {
         this.minimumContent.classList.remove('hidden');
         this.minimumContent.style.opacity = '1';
 
-        // Apply pill-like styling for minimum view
+        // Apply styling for minimum view using config
         if (this.glassBar) {
-            this.glassBar.className = 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40';
-            this.glassBar.style.padding = '0';
-            this.glassBar.style.width = 'fit-content';
-            // Don't set margin - centering is handled by container's transform
-            this.glassBar.style.margin = '';
+            const styleConfig = this.config.styles.minimum;
+            this.glassBar.className = styleConfig.glassBar;
+            this.glassBar.style.padding = styleConfig.padding;
+            this.glassBar.style.width = styleConfig.width;
+            this.glassBar.style.margin = ''; // Centering handled by container
         }
 
         // Position is already set by makeFixed() - no need to adjust here
@@ -1767,13 +1799,13 @@ class SearchFilterBar {
         this.standardContent.classList.remove('hidden');
         this.standardContent.style.opacity = '1';
 
-        // Reset to rectangular styling for standard view
+        // Apply styling for standard view using config
         if (this.glassBar) {
-            this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40';
-            this.glassBar.style.padding = '';
-            this.glassBar.style.width = '';
-            // Ensure no margin - centering is handled by container's transform
-            this.glassBar.style.margin = '';
+            const styleConfig = this.config.styles.standard;
+            this.glassBar.className = styleConfig.glassBar;
+            this.glassBar.style.padding = styleConfig.padding;
+            this.glassBar.style.width = styleConfig.width;
+            this.glassBar.style.margin = ''; // Centering handled by container
         }
 
         // Position is already set by makeFixed() - no need to adjust here
