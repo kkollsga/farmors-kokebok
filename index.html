@@ -31,18 +31,14 @@
     .recipe-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
     
     /* SEARCH FILTER BAR - POSITIONING */
-    #searchFilterContainer.fixed { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 50%; transform: translateX(-50%); width: fit-content; max-width: 90vw; z-index: 50; transition: opacity 0.3s ease; }
-    #searchFilterContainer.fixed.collapsed { width: auto !important; }
+    #searchFilterContainer.fixed { width: auto !important; padding: 0 !important; margin: 0 !important; }
     #unifiedGlassBar { transition: all 0.3s ease-out; }
     #searchFilterContainer:not(.fixed) #unifiedGlassBar { width: 100%; height: 48px; }
+    #searchFilterContainer.fixed #unifiedGlassBar { width: auto; }
     #searchFilterContainer.fixed:not(.collapsed) #unifiedGlassBar { min-width: 320px; height: 48px; }
-    #searchFilterContainer.fixed.collapsed #unifiedGlassBar { width: auto !important; display: inline-block; min-width: unset; height: auto; min-height: 36px; padding: 0; }
-    #searchFilterContainer.fixed.collapsed .relative.h-full { width: auto !important; min-width: 0 !important; }
-    #searchFilterContainer.fixed.collapsed .content-container { padding: 0 4px; }
-    #standardContent, #minimumContent { transition: opacity 0.2s ease-out; }
-    #standardContent.hidden { display: none !important; }
-    #minimumContent.hidden { display: none !important; }
-    #minimumContent { min-height: 28px; align-items: center; padding: 2px 6px; }
+    #searchFilterContainer.fixed.collapsed #unifiedGlassBar { width: auto; min-width: unset; height: auto; min-height: 36px; padding: 0; }
+    #standardContent.hidden, #minimumContent.hidden { display: none !important; }
+    #minimumContent { padding: 2px 6px; }
     #minimumContent .inline-flex { padding: 0.25rem 0.75rem; font-size: 0.8125rem; }
     .content-container { padding: 0 0.75rem; }
     
@@ -1323,7 +1319,8 @@ class SearchFilterBar {
         this.searchPill = document.getElementById('searchPill');
         this.filterPill = document.getElementById('filterPill');
         this.filterCounter = document.getElementById('filterCounter');
-
+        // Store original container classes
+        this.originalContainerClasses = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 relative z-30';
         this.initialize();
     }
 
@@ -1413,29 +1410,37 @@ class SearchFilterBar {
         spacer.style.height = this.container.offsetHeight + 'px';
         this.container.parentNode.insertBefore(spacer, this.container);
 
-        // Apply fixed positioning with consistent top value
+        // Remove Tailwind classes that prevent collapsing
+        this.container.className = 'fixed';
+        
+        // Apply fixed positioning with proper collapsing behavior
         this.container.style.position = 'fixed';
         this.container.style.top = `calc(env(safe-area-inset-top, 0px) + ${this.config.fixedTopOffset}px)`;
         this.container.style.left = '50%';
         this.container.style.transform = 'translateX(-50%)';
-        this.container.style.width = 'fit-content';
-        this.container.style.maxWidth = '90vw';
+        this.container.style.width = 'auto';  // Key: auto width for collapsing
+        this.container.style.maxWidth = '90vw'; // Safety max-width
         this.container.style.zIndex = '50';
-        this.container.classList.add('fixed');
+        this.container.style.padding = '0'; // Remove all padding
+        this.container.style.margin = '0';  // Remove all margin
 
         this.state.position = 'fixed';
-        this.state.view = 'expanded'; // Start expanded when becoming fixed
+        this.state.view = 'expanded';
         this.scrollState.accumulator = 0;
 
         this.updateViewStyles();
         this.state.isTransitioning = false;
     }
 
+    // Update transitionToStandard() to restore Tailwind classes
     transitionToStandard() {
         if (this.state.position === 'standard' || this.state.isTransitioning) return;
         this.state.isTransitioning = true;
 
-        // Reset all positioning styles
+        // Restore original Tailwind classes
+        this.container.className = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 relative z-30';
+        
+        // Clear all inline styles
         this.container.style.position = '';
         this.container.style.top = '';
         this.container.style.left = '';
@@ -1443,8 +1448,9 @@ class SearchFilterBar {
         this.container.style.width = '';
         this.container.style.maxWidth = '';
         this.container.style.zIndex = '';
+        this.container.style.padding = '';
+        this.container.style.margin = '';
         this.container.style.opacity = '1';
-        this.container.classList.remove('fixed');
 
         // Reset glass bar styling
         this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 overflow-visible w-full z-40';
@@ -1458,7 +1464,6 @@ class SearchFilterBar {
         this.state.view = 'expanded';
         this.scrollState.accumulator = 0;
 
-        // Show standard content
         this.showStandardContent();
         this.state.isTransitioning = false;
     }
