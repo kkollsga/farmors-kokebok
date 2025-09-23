@@ -1316,17 +1316,21 @@ class SearchFilterBar {
                 debounceDelay: 10
             },
             styles: {
-                // Standard view styling
+                // Standard/Medium view styling
                 standard: {
                     glassBar: 'relative rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40',
                     padding: '',
-                    width: ''
+                    width: '',
+                    // iOS safe area offset for medium layout - less space for compact feel
+                    safeAreaOffset: '8px'
                 },
                 // Minimum view styling
                 minimum: {
                     glassBar: 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40',
                     padding: '0',
-                    width: 'fit-content'
+                    width: 'fit-content',
+                    // iOS safe area offset for mini layout - more space for better visibility
+                    safeAreaOffset: '16px'
                 }
             }
         };
@@ -1608,8 +1612,9 @@ class SearchFilterBar {
         // Remove existing view classes
         this.container.classList.remove('minimum', 'standard');
 
-        // Use centralized configuration for positioning
-        const margin = `calc(env(safe-area-inset-top, 0px) + ${this.config.positioning.safeAreaOffset})`;
+        // Get view-specific safe area offset
+        const styleConfig = this.isMinimum ? this.config.styles.minimum : this.config.styles.standard;
+        const margin = `calc(env(safe-area-inset-top, 0px) + ${styleConfig.safeAreaOffset})`;
         this.container.style.top = margin;
 
         // Add appropriate class for styling
