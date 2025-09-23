@@ -15,112 +15,93 @@
 <!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-    /* ============================================
-       BASE STYLES
-    ============================================ */
+    /* BASE STYLES */
     body { font-family: 'Inter', sans-serif; }
     body.modal-open { overflow: hidden; position: relative; touch-action: none; }
     .font-display { font-family: 'Playfair Display', serif; }
     
-    /* ============================================
-       SAFE AREA (iOS)
-    ============================================ */
+    /* SAFE AREA (iOS) */
     .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0); }
     .safe-top { padding-top: env(safe-area-inset-top, 0); }
     
-    /* ============================================
-       SCROLLBAR STYLES
-    ============================================ */
+    /* SCROLLBAR STYLES */
     .recipe-scroll::-webkit-scrollbar { width: 6px; }
     .recipe-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
     .recipe-scroll::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 3px; }
     .recipe-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
     
-    /* ============================================
-       FILTER DROPDOWN
-    ============================================ */
+    /* SEARCH FILTER BAR - POSITIONING */
+    #searchFilterContainer.fixed { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 50%; transform: translateX(-50%); width: fit-content; max-width: 90vw; z-index: 50; transition: opacity 0.3s ease; }
+    #searchFilterContainer.fixed.collapsed { width: auto !important; }
+    #unifiedGlassBar { transition: all 0.3s ease-out; }
+    #searchFilterContainer:not(.fixed) #unifiedGlassBar { width: 100%; height: 48px; }
+    #searchFilterContainer.fixed:not(.collapsed) #unifiedGlassBar { min-width: 320px; height: 48px; }
+    #searchFilterContainer.fixed.collapsed #unifiedGlassBar { width: auto !important; display: inline-block; min-width: unset; height: auto; min-height: 36px; padding: 0; }
+    #searchFilterContainer.fixed.collapsed .relative.h-full { width: auto !important; min-width: 0 !important; }
+    #searchFilterContainer.fixed.collapsed .content-container { padding: 0 4px; }
+    #standardContent, #minimumContent { transition: opacity 0.2s ease-out; }
+    #standardContent.hidden { display: none !important; }
+    #minimumContent.hidden { display: none !important; }
+    #minimumContent { min-height: 28px; align-items: center; padding: 2px 6px; }
+    #minimumContent .inline-flex { padding: 0.25rem 0.75rem; font-size: 0.8125rem; }
+    .content-container { padding: 0 0.75rem; }
+    
+    /* FILTER DROPDOWN */
     #filterOptions { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
     #filterOptions { background: linear-gradient(white 30%, rgba(255,255,255,0)) center top, linear-gradient(rgba(255,255,255,0), white 70%) center bottom, linear-gradient(white, white) center; background-size: 100% 40px, 100% 40px, 100% 100%; background-attachment: local, local, scroll; background-repeat: no-repeat; }
     
-    /* ============================================
-       ANIMATIONS
-    ============================================ */
+    /* ANIMATIONS */
     @keyframes tipHighlight { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
     
-    /* ============================================
-       CARD TRANSITIONS
-    ============================================ */
+    /* CARD TRANSITIONS */
     [data-recipe-id] { transition: opacity 0.3s ease-out; }
     .recipe-counter { transition: transform 0.2s ease-out; }
     .recipe-stars i { transition: color 0.2s ease-out, transform 0.2s ease-out; }
     
-    /* ============================================
-       RECOMMENDATIONS CONTAINER
-    ============================================ */
+    /* RECOMMENDATIONS CONTAINER */
     #recommendedRecipes { transition: min-height 0.3s ease-out; position: relative; }
     #recommendedRecipes > div { transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
     
-    /* ============================================
-       MODAL SCROLLING
-    ============================================ */
+    /* MODAL SCROLLING */
     #recipeModal .absolute.inset-0 { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
     #recipeModal .fixed.top-4.right-4 { transition: transform 0.2s ease-out; }
     #recipeModal .fixed.top-4.right-4:active { transform: scale(0.95); }
     #recipeModal .rounded-t-3xl { box-shadow: 0 -20px 40px rgba(0,0,0,0.3), 0 -10px 20px rgba(0,0,0,0.2); }
     
-    /* ============================================
-       DESKTOP MODAL
-    ============================================ */
+    /* DESKTOP MODAL */
     @media (min-width: 901px) {
         #recipeModal .absolute.inset-0 { max-width: 1280px; margin: 0 auto; }
     }
     
-    /* ============================================
-       MOBILE RESPONSIVE STYLES
-    ============================================ */
+    /* MOBILE RESPONSIVE */
     @media (max-width: 768px) {
-        /* Hide filter button text on mobile */
-        #filterButtonText {
-            display: none;
-        }
-
-        /* Increase minimum width of search input */
-        #searchInputContainer {
-            min-width: 200px;
-        }
+        #filterButtonText { display: none; }
+        #searchInputContainer { min-width: 200px; }
+        #searchFilterContainer.fixed { max-width: calc(100vw - 20px); }
+        #searchFilterContainer.fixed.collapsed #unifiedGlassBar { padding: 2px 4px; min-height: 32px; }
     }
 
-    /* ============================================
-       iOS SPECIFIC FIXES
-    ============================================ */
+    /* iOS SPECIFIC */
     @supports (-webkit-touch-callout: none) {
         #recipeModal .absolute.inset-0 { -webkit-overflow-scrolling: touch; }
-        /* Prevent iOS zoom on input focus */
-        input[type="text"], input[type="search"], textarea, select {
-            font-size: 16px !important;
-        }
-        /* Note: Fixed positioning is now handled entirely in JavaScript via this.config.positioning.safeAreaOffset */
+        input[type="text"], input[type="search"], textarea, select { font-size: 16px !important; }
     }
 
-    /* ============================================
-       iOS PWA SAFE AREA PADDING (Portrait Mode)
-    ============================================ */
+    /* iOS PWA SAFE AREA */
     @media screen and (max-width: 900px) and (orientation: portrait) {
-        /* Minimal padding only for iOS status bar */
-        #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div {
-            /* Only for fullscreen modal */
-            padding-top: env(safe-area-inset-top, 0);
-        }
+        #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div { padding-top: env(safe-area-inset-top, 0); }
     }
 
-    /* Specific iOS standalone mode (PWA) detection */
-    @media (display-mode: standalone) and (max-width: 900px) and (orientation: portrait) {
-        #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div {
-            /* Just enough for status bar */
-            padding-top: env(safe-area-inset-top, 20px);
-            padding-top: max(env(safe-area-inset-top), 20px);
-        }
+    /* iOS STANDALONE MODE */
+    @media (display-mode: standalone) {
+        #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div { padding-top: max(env(safe-area-inset-top), 20px); }
+    }
+
+    /* LANDSCAPE ADJUSTMENTS */
+    @media (orientation: landscape) and (max-width: 900px) {
+        #searchFilterContainer.fixed { top: calc(env(safe-area-inset-top, 0px) + 8px); }
+        #searchFilterContainer.fixed.collapsed #unifiedGlassBar { min-height: 32px; }
     }
 </style>
 </head>
@@ -165,7 +146,7 @@
             </div>
 
             <!-- Minimum content (hidden by default) -->
-            <div id="minimumContent" class="flex items-center gap-2 w-full hidden">
+            <div id="minimumContent" class="flex items-center gap-1.5 hidden">
                 <!-- Filter counter (when search and filters are both active) -->
                 <div id="filterCounter" class="inline-flex items-center gap-1 text-amber-700 text-sm hidden cursor-pointer hover:text-amber-800 transition-colors mr-1">
                     <i class="fas fa-filter text-xs"></i>
@@ -1302,61 +1283,35 @@ class SearchFilterBar {
         this.filterManager = filterManager;
         this.recipeDatabase = recipeDatabase;
 
-        // ============================================
-        // POSITIONING CONFIGURATION - Easy to customize
-        // ============================================
+        // Simplified configuration
         this.config = {
-            positioning: {
-                // iOS safe area offset - easily customizable
-                safeAreaOffset: '0px',
-                // Scroll thresholds
-                scrollThreshold: 50,
-                positionOffset: 20,
-                // Debounce settings
-                debounceDelay: 10
-            },
-            styles: {
-                // Standard/Medium view styling
-                standard: {
-                    glassBar: 'relative rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40',
-                    padding: '',
-                    width: '',
-                    // iOS safe area offset for medium layout - less space for compact feel
-                    safeAreaOffset: '8px'
-                },
-                // Minimum view styling
-                minimum: {
-                    glassBar: 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40',
-                    padding: '0',
-                    width: 'fit-content',
-                    // iOS safe area offset for mini layout - more space for better visibility
-                    safeAreaOffset: '24px'
-                }
-            }
+            fixedTopOffset: 12, // Pixels below safe area (same for all views)
+            scrollThreshold: 50, // Pixels to trigger collapse/expand
+            triggerOffset: 20, // Pixels before bar top to trigger fixed
+            debounceDelay: 10
         };
 
-        // State
+        // State management - cleaner state machine
+        this.state = {
+            position: 'standard', // 'standard' | 'fixed'
+            view: 'expanded',     // 'expanded' | 'collapsed'
+            isTransitioning: false
+        };
+
+        // Search and filter state
         this.searchQuery = '';
         this.showFilterMenu = false;
         this.showActiveFiltersMenu = false;
-        this.isMinimum = false;
-        this.isFixed = false;
-        this.lastScrollY = 0;
-        this.searchBarTop = 0;
 
-        // Scroll buffer state for smooth behavior
-        this.scrollBuffer = {
-            lastDirection: null,
-            directionStartY: 0,
-            directionStartTime: 0,
-            lastUpdateTime: 0,
-            scrollDistance: 0,
-            scrollVelocity: 0,
-            pendingDirectionChange: null,
-            pendingTimeout: null
+        // Scroll tracking
+        this.scrollState = {
+            lastY: 0,
+            accumulator: 0,
+            triggerPoint: 0, // Will be set on init
+            debounceTimer: null
         };
 
-        // DOM elements (get references to existing HTML elements)
+        // DOM element references
         this.container = document.getElementById('searchFilterContainer');
         this.glassBar = document.getElementById('unifiedGlassBar');
         this.standardContent = document.getElementById('standardContent');
@@ -1373,297 +1328,84 @@ class SearchFilterBar {
     }
 
     initialize() {
-        // Get initial position
+        // Calculate trigger point after DOM loads
         setTimeout(() => {
-            this.searchBarTop = this.container.offsetTop;
+            this.scrollState.triggerPoint = this.container.offsetTop - this.config.triggerOffset;
         }, 100);
 
         this.setupEventListeners();
         this.setupScrollListener();
         this.updateDisplay();
     }
-    
+
     // ============================================
     // SIMPLIFIED SCROLL HANDLING
     // ============================================
     setupScrollListener() {
-        // Use centralized configuration
-        const CONFIG = {
-            SCROLL_THRESHOLD: this.config.positioning.scrollThreshold,
-            DEBOUNCE_DELAY: this.config.positioning.debounceDelay,
-            POSITION_OFFSET: this.config.positioning.positionOffset
-        };
-
-        // Scroll state - create shared state object
-        const scrollState = {
-            accumulator: 0,
-            lastDirection: null,
-            isProcessing: false,
-            debounceTimer: null
-        };
-
         const handleScroll = () => {
-            // Debounce for performance
-            clearTimeout(scrollState.debounceTimer);
-            scrollState.debounceTimer = setTimeout(() => {
-                if (!scrollState.isProcessing) {
-                    scrollState.isProcessing = true;
-                    window.requestAnimationFrame(() => {
-                        this.processScroll(CONFIG, scrollState);
-                        scrollState.isProcessing = false;
-                    });
-                }
-            }, CONFIG.DEBOUNCE_DELAY);
+            clearTimeout(this.scrollState.debounceTimer);
+            this.scrollState.debounceTimer = setTimeout(() => {
+                requestAnimationFrame(() => this.processScroll());
+            }, this.config.debounceDelay);
         };
 
-        // Register listeners
         window.addEventListener('scroll', handleScroll, { passive: true });
 
-        // iOS-specific handling
+        // iOS-specific touch handling
         if (this.isIOSDevice()) {
-            this.setupIOSScrollHandlers(handleScroll);
+            this.setupIOSTouchHandlers(handleScroll);
         }
     }
 
-    // Clear state machine for scroll processing
-    processScroll(config, state) {
-        try {
-            const metrics = this.getScrollMetrics();
-            const context = this.getScrollContext();
+    processScroll() {
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+        const scrollDelta = scrollY - this.scrollState.lastY;
 
-            // GATE 1: Determine if bar should be fixed or standard
-            const shouldBeFixed = metrics.scrollY > (this.searchBarTop - config.POSITION_OFFSET);
-
-            // GATE 2: Handle position changes (fixed vs standard)
-            if (shouldBeFixed !== this.isFixed) {
-                this.handlePositionChange(shouldBeFixed, context);
-            }
-
-            // GATE 3: Handle view transitions when fixed
-            if (this.isFixed && context.hasContent) {
-                this.handleViewTransition(metrics, context, config, state);
-            }
-
-            // GATE 4: Handle visibility when no content
-            if (this.isFixed && !context.hasContent) {
-                this.handleVisibility(metrics, config, state);
-            }
-
-            // Update last scroll position
-            this.lastScrollY = metrics.scrollY;
-        } catch (error) {
-            console.warn('Error processing scroll:', error);
-            // Reset state on error to prevent stuck states
-            state.accumulator = 0;
-            state.lastDirection = null;
-        }
-    }
-
-    // Get current scroll metrics
-    getScrollMetrics() {
-        const scrollY = window.pageYOffset ||
-                       document.documentElement.scrollTop ||
-                       document.body.scrollTop || 0;
-
-        const scrollDelta = scrollY - this.lastScrollY;
-        const direction = scrollDelta > 0 ? 'down' :
-                         scrollDelta < 0 ? 'up' : null;
-
-        return { scrollY, scrollDelta, direction };
-    }
-
-    // Get current context
-    getScrollContext() {
-        return {
-            hasContent: this.searchQuery.length > 0 ||
-                       this.filterManager.activeFilters.size > 0,
-            hasSearch: this.searchQuery.length > 0,
-            hasFilters: this.filterManager.activeFilters.size > 0,
-            filterCount: this.filterManager.activeFilters.size
-        };
-    }
-
-    // Handle position changes (fixed/standard)
-    handlePositionChange(shouldBeFixed, context) {
-        if (shouldBeFixed) {
+        // Handle position changes (standard <-> fixed)
+        if (this.state.position === 'standard' && scrollY > this.scrollState.triggerPoint) {
             this.transitionToFixed();
-            // Set initial view state when becoming fixed
-            if (context.hasContent) {
-                // Start with standard view, let scroll determine minimum
-                if (!this.isMinimum) {
-                    this.setStandardView();
-                }
-            }
-        } else {
+        } else if (this.state.position === 'fixed' && scrollY <= this.scrollState.triggerPoint) {
             this.transitionToStandard();
         }
-    }
 
-    // Handle view transitions (minimum/standard) when fixed
-    handleViewTransition(metrics, context, config, state) {
-        if (!metrics.direction) return;
+        // Handle view changes when fixed (expanded <-> collapsed)
+        if (this.state.position === 'fixed' && this.hasActiveContent()) {
+            // Accumulate scroll for view changes
+            this.scrollState.accumulator += scrollDelta;
 
-        // Update scroll accumulator
-        if (state.lastDirection !== metrics.direction) {
-            state.accumulator = metrics.scrollDelta;
-            state.lastDirection = metrics.direction;
-        } else {
-            state.accumulator += metrics.scrollDelta;
-        }
-
-        // Check threshold for transition
-        if (Math.abs(state.accumulator) >= config.SCROLL_THRESHOLD) {
-            if (metrics.direction === 'down' && !this.isMinimum) {
-                this.transitionToMinimum();
-            } else if (metrics.direction === 'up' && this.isMinimum) {
-                this.setStandardView();
+            // Check for view transitions
+            if (this.state.view === 'expanded' && this.scrollState.accumulator > this.config.scrollThreshold) {
+                this.setCollapsedView();
+                this.scrollState.accumulator = 0;
+            } else if (this.state.view === 'collapsed' && this.scrollState.accumulator < -this.config.scrollThreshold) {
+                this.setExpandedView();
+                this.scrollState.accumulator = 0;
             }
-            state.accumulator = 0;
-        }
-    }
 
-    // Handle visibility when no content
-    handleVisibility(metrics, config, state) {
-        if (!metrics.direction) return;
-
-        // Always use standard view when visible
-        if (this.isMinimum) {
-            this.setStandardView();
+            // Reset accumulator on direction change
+            if ((scrollDelta > 0 && this.scrollState.accumulator < 0) || 
+                (scrollDelta < 0 && this.scrollState.accumulator > 0)) {
+                this.scrollState.accumulator = scrollDelta;
+            }
         }
 
-        // Update scroll accumulator
-        if (state.lastDirection !== metrics.direction) {
-            state.accumulator = metrics.scrollDelta;
-            state.lastDirection = metrics.direction;
-        } else {
-            state.accumulator += metrics.scrollDelta;
+        // Handle visibility when fixed with no content
+        if (this.state.position === 'fixed' && !this.hasActiveContent()) {
+            this.container.style.opacity = '1'; // Always visible when empty
+            if (this.state.view !== 'expanded') {
+                this.setExpandedView(); // Always expanded when no content
+            }
         }
 
-        // Check threshold for visibility
-        if (Math.abs(state.accumulator) >= config.SCROLL_THRESHOLD) {
-            this.container.style.opacity = metrics.direction === 'down' ? '0' : '1';
-            state.accumulator = 0;
-        }
+        this.scrollState.lastY = scrollY;
     }
 
     // ============================================
-    // STANDARDIZED TRANSITION FUNCTIONS
+    // STATE TRANSITIONS
     // ============================================
-
     transitionToFixed() {
-        try {
-            if (!this.isFixed) {
-                this.makeFixed();
-                // isFixed is set inside makeFixed()
-            }
-        } catch (error) {
-            console.warn('Failed to transition to fixed:', error);
-        }
-    }
-
-    transitionToStandard() {
-        try {
-            this.makeStandard();
-            this.isFixed = false;
-            this.isMinimum = false;
-        } catch (error) {
-            console.warn('Failed to transition to standard:', error);
-        }
-    }
-
-    transitionToMinimum() {
-        try {
-            this.showMinimumContent();
-            // isMinimum is set inside showMinimumContent()
-        } catch (error) {
-            console.warn('Failed to transition to minimum:', error);
-        }
-    }
-
-    setStandardView() {
-        try {
-            this.showStandardContent();
-            // isMinimum is set inside showStandardContent()
-        } catch (error) {
-            console.warn('Failed to set standard view:', error);
-        }
-    }
-
-    // ============================================
-    // POSITIONING UTILITIES
-    // ============================================
-
-    // Helper method to easily customize positioning
-    updateConfig(newConfig) {
-        this.config = {
-            ...this.config,
-            ...newConfig,
-            positioning: { ...this.config.positioning, ...newConfig.positioning },
-            styles: {
-                ...this.config.styles,
-                ...newConfig.styles,
-                standard: { ...this.config.styles.standard, ...newConfig.styles?.standard },
-                minimum: { ...this.config.styles.minimum, ...newConfig.styles?.minimum }
-            }
-        };
-    }
-
-    setFixedPosition() {
-        // Remove existing view classes
-        this.container.classList.remove('minimum', 'standard');
-
-        // Get view-specific safe area offset
-        const styleConfig = this.isMinimum ? this.config.styles.minimum : this.config.styles.standard;
-        const margin = `calc(env(safe-area-inset-top, 0px) + ${styleConfig.safeAreaOffset})`;
-        this.container.style.top = margin;
-
-        // Add appropriate class for styling
-        if (this.isMinimum) {
-            this.container.classList.add('minimum');
-        } else {
-            this.container.classList.add('standard');
-        }
-
-        // Extra positioning assurance for iOS
-        if (this.isIOSDevice()) {
-            setTimeout(() => {
-                this.container.style.top = margin;
-            }, 0);
-        }
-    }
-
-    // ============================================
-    // PLATFORM DETECTION
-    // ============================================
-
-    isIOSDevice() {
-        return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    }
-
-    setupIOSScrollHandlers(scrollHandler) {
-        let touchStartY = 0;
-
-        document.addEventListener('touchstart', (e) => {
-            touchStartY = e.touches[0].clientY;
-        }, { passive: true });
-
-        document.addEventListener('touchend', (e) => {
-            const touchEndY = e.changedTouches[0].clientY;
-            if (Math.abs(touchEndY - touchStartY) > 10) {
-                scrollHandler();
-            }
-        }, { passive: true });
-    }
-
-    // Deprecated - logic moved inline to setupScrollListener for better control
-    handleScrollDirectionChange(scrollY, scrollDirection) {
-        // This method is no longer used but kept for backwards compatibility
-    }
-
-    makeFixed() {
-        if (this.isFixed) return;
-        this.isFixed = true;
+        if (this.state.position === 'fixed' || this.state.isTransitioning) return;
+        this.state.isTransitioning = true;
 
         // Add spacer to prevent layout jump
         const spacer = document.createElement('div');
@@ -1671,38 +1413,29 @@ class SearchFilterBar {
         spacer.style.height = this.container.offsetHeight + 'px';
         this.container.parentNode.insertBefore(spacer, this.container);
 
-        // Apply fixed positioning
+        // Apply fixed positioning with consistent top value
         this.container.style.position = 'fixed';
-        // Initial position - will be adjusted based on view mode
-        this.setFixedPosition();
+        this.container.style.top = `calc(env(safe-area-inset-top, 0px) + ${this.config.fixedTopOffset}px)`;
         this.container.style.left = '50%';
         this.container.style.transform = 'translateX(-50%)';
         this.container.style.width = 'fit-content';
         this.container.style.maxWidth = '90vw';
         this.container.style.zIndex = '50';
-
-        // Add class for CSS targeting
         this.container.classList.add('fixed');
 
-        // Update glass bar styling based on current view using config
-        if (this.glassBar) {
-            const styleConfig = this.isMinimum ? this.config.styles.minimum : this.config.styles.standard;
-            this.glassBar.className = styleConfig.glassBar;
-            this.glassBar.style.padding = styleConfig.padding;
-            this.glassBar.style.width = styleConfig.width;
-            this.glassBar.style.margin = ''; // Remove any margin - centering is handled by container
-        }
+        this.state.position = 'fixed';
+        this.state.view = 'expanded'; // Start expanded when becoming fixed
+        this.scrollState.accumulator = 0;
+
+        this.updateViewStyles();
+        this.state.isTransitioning = false;
     }
 
-    makeStandard() {
-        if (!this.isFixed) return;
-        this.isFixed = false;
-        this.isMinimum = false;
+    transitionToStandard() {
+        if (this.state.position === 'standard' || this.state.isTransitioning) return;
+        this.state.isTransitioning = true;
 
-        // Remove fixed and view classes
-        this.container.classList.remove('fixed', 'minimum', 'standard');
-
-        // Reset positioning and state
+        // Reset all positioning styles
         this.container.style.position = '';
         this.container.style.top = '';
         this.container.style.left = '';
@@ -1711,128 +1444,142 @@ class SearchFilterBar {
         this.container.style.maxWidth = '';
         this.container.style.zIndex = '';
         this.container.style.opacity = '1';
+        this.container.classList.remove('fixed');
 
-        // Reset glass bar styling for standard position
-        if (this.glassBar) {
-            this.glassBar.className = 'relative w-full rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40';
-            this.glassBar.style.padding = '';
-            this.glassBar.style.width = '';
-            this.glassBar.style.margin = '';
-        }
+        // Reset glass bar styling
+        this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 overflow-visible w-full z-40';
+        this.glassBar.style.height = '48px';
 
         // Remove spacer
         const spacer = document.getElementById('searchBarSpacer');
         if (spacer) spacer.remove();
 
+        this.state.position = 'standard';
+        this.state.view = 'expanded';
+        this.scrollState.accumulator = 0;
+
+        // Show standard content
         this.showStandardContent();
+        this.state.isTransitioning = false;
     }
 
-    showMinimumContent() {
-        // Always allow position updates, even if already in minimum
-        if (!this.standardContent || !this.minimumContent) return;
+    setCollapsedView() {
+        if (this.state.view === 'collapsed' || this.state.isTransitioning) return;
+        this.state.isTransitioning = true;
+        this.state.view = 'collapsed';
 
-        // Update position for minimum view BEFORE changing isMinimum
-        if (this.isFixed) {
-            const wasMinimum = this.isMinimum;
-            this.isMinimum = true;
-            this.setFixedPosition();
-            // If we were already minimum, no need to do DOM changes
-            if (wasMinimum) return;
+        // Update container for tight wrapping
+        if (this.container) {
+            this.container.style.width = 'auto'; // Allow natural width
+            this.container.style.maxWidth = '90vw'; // Keep max width constraint
+        }
+
+        this.updateViewStyles();
+        this.showMinimumContent();
+        
+        this.state.isTransitioning = false;
+    }
+
+    setExpandedView() {
+        if (this.state.view === 'expanded' || this.state.isTransitioning) return;
+        this.state.isTransitioning = true;
+        this.state.view = 'expanded';
+
+        // Reset container width
+        if (this.container) {
+            this.container.style.width = 'fit-content';
+            this.container.style.maxWidth = '90vw';
+        }
+
+        this.updateViewStyles();
+        this.showStandardContent();
+        
+        this.state.isTransitioning = false;
+    }
+
+    // ============================================
+    // VIEW STYLING (content only, not position)
+    // ============================================
+    updateViewStyles() {
+        if (this.state.position === 'standard') {
+            return;
+        }
+
+        // Get the content container
+        const contentContainer = this.glassBar?.querySelector('.relative.h-full');
+
+        if (this.state.view === 'collapsed') {
+            // Collapsed view - tight wrapping
+            this.glassBar.className = 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40';
+            this.glassBar.style.padding = '0';
+            this.glassBar.style.width = 'auto'; // Changed from fit-content to auto
+            this.glassBar.style.height = 'auto';
+            this.glassBar.style.minHeight = '36px';
+            
+            // Force content container to shrink
+            if (contentContainer) {
+                contentContainer.style.width = 'auto';
+                contentContainer.style.minWidth = 'unset';
+            }
         } else {
-            this.isMinimum = true;
+            // Expanded view
+            this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40';
+            this.glassBar.style.padding = '';
+            this.glassBar.style.width = '';
+            this.glassBar.style.height = '48px';
+            this.glassBar.style.minHeight = '';
+            
+            // Reset content container
+            if (contentContainer) {
+                contentContainer.style.width = '';
+                contentContainer.style.minWidth = '';
+            }
         }
-
-        // Ensure container is visible
-        this.container.style.opacity = '1';
-
-        // Instant transition for better scroll performance
-        this.standardContent.classList.add('hidden');
-        this.minimumContent.classList.remove('hidden');
-        this.minimumContent.style.opacity = '1';
-
-        // Apply styling for minimum view using config
-        if (this.glassBar) {
-            const styleConfig = this.config.styles.minimum;
-            this.glassBar.className = styleConfig.glassBar;
-            this.glassBar.style.padding = styleConfig.padding;
-            this.glassBar.style.width = styleConfig.width;
-            this.glassBar.style.margin = ''; // Centering handled by container
-        }
-
-        // Position is already set by makeFixed() - no need to adjust here
-
-        // Force repaint for iOS - don't change transform if already fixed
-        if (!this.isFixed) {
-            this.container.style.transform = 'translateZ(0)';
-            setTimeout(() => {
-                this.container.style.transform = '';
-            }, 0);
-        }
-        // If fixed, maintain the centering transform
-        else {
-            // Transform is already set by makeFixed(), just trigger repaint
-            const currentTransform = this.container.style.transform;
-            this.container.style.transform = currentTransform + ' translateZ(0)';
-            setTimeout(() => {
-                this.container.style.transform = currentTransform;
-            }, 0);
-        }
-
-        this.updateMinimumDisplay();
     }
 
     showStandardContent() {
-        // Always allow position updates, even if already in standard
         if (!this.standardContent || !this.minimumContent) return;
 
-        // Update position for standard view BEFORE changing isMinimum
-        if (this.isFixed) {
-            const wasMinimum = this.isMinimum;
-            this.isMinimum = false;
-            this.setFixedPosition();
-            // If we were already standard, no need to do DOM changes
-            if (!wasMinimum) return;
-        } else {
-            this.isMinimum = false;
-        }
-
-        // Ensure container is visible
-        this.container.style.opacity = '1';
-
-        // Instant transition for better scroll performance
         this.minimumContent.classList.add('hidden');
         this.standardContent.classList.remove('hidden');
-        this.standardContent.style.opacity = '1';
-
-        // Apply styling for standard view using config
-        if (this.glassBar) {
-            const styleConfig = this.config.styles.standard;
-            this.glassBar.className = styleConfig.glassBar;
-            this.glassBar.style.padding = styleConfig.padding;
-            this.glassBar.style.width = styleConfig.width;
-            this.glassBar.style.margin = ''; // Centering handled by container
-        }
-
-        // Position is already set by makeFixed() - no need to adjust here
-
-        // Force repaint for iOS - don't change transform if already fixed
-        if (!this.isFixed) {
-            this.container.style.transform = 'translateZ(0)';
-            setTimeout(() => {
-                this.container.style.transform = '';
-            }, 0);
-        }
-        // If fixed, maintain the centering transform
-        else {
-            // Transform is already set by makeFixed(), just trigger repaint
-            const currentTransform = this.container.style.transform;
-            this.container.style.transform = currentTransform + ' translateZ(0)';
-            setTimeout(() => {
-                this.container.style.transform = currentTransform;
-            }, 0);
-        }
-
+        
         this.updateStandardDisplay();
+    }
+
+    showMinimumContent() {
+        if (!this.standardContent || !this.minimumContent) return;
+
+        this.standardContent.classList.add('hidden');
+        this.minimumContent.classList.remove('hidden');
+        
+        this.updateMinimumDisplay();
+    }
+
+    // ============================================
+    // DISPLAY UPDATES
+    // ============================================
+    updateDisplay() {
+        if (this.state.view === 'collapsed') {
+            this.updateMinimumDisplay();
+        } else {
+            this.updateStandardDisplay();
+        }
+    }
+
+    updateStandardDisplay() {
+        const hasFilters = this.filterManager.activeFilters.size > 0;
+        const filterCount = this.filterManager.activeFilters.size;
+        const hasSearch = this.searchQuery.length > 0;
+
+        this.updateFilterButton(hasFilters, filterCount);
+        this.updateFilterPills();
+
+        if (this.searchInput) {
+            this.searchInput.value = this.searchQuery;
+        }
+        if (this.clearSearchBtn) {
+            this.clearSearchBtn.classList.toggle('hidden', !hasSearch);
+        }
     }
 
     updateMinimumDisplay() {
@@ -1848,53 +1595,26 @@ class SearchFilterBar {
         this.filterCounter.classList.add('hidden');
 
         if (hasSearch && hasFilters) {
-            // Show filter icon with count and search pill
+            // Show counter and search pill
             this.filterCounter.classList.remove('hidden');
-            const filterCounterText = document.getElementById('filterCounterText');
-            if (filterCounterText) filterCounterText.textContent = filterCount;
+            document.getElementById('filterCounterText').textContent = filterCount;
             this.searchPill.classList.remove('hidden');
-            const searchPillText = document.getElementById('searchPillText');
-            if (searchPillText) searchPillText.textContent = this.searchQuery;
+            document.getElementById('searchPillText').textContent = this.searchQuery;
         } else if (hasSearch) {
             // Show only search pill
             this.searchPill.classList.remove('hidden');
-            const searchPillText = document.getElementById('searchPillText');
-            if (searchPillText) searchPillText.textContent = this.searchQuery;
+            document.getElementById('searchPillText').textContent = this.searchQuery;
         } else if (hasFilters) {
-            // Show filter content based on count
+            // Show filter pill
+            this.filterPill.classList.remove('hidden');
+            const filterPillText = document.getElementById('filterPillText');
             if (filterCount === 1) {
-                // Single filter: show filter name with X to remove
                 const [filterKey] = Array.from(this.filterManager.activeFilters.keys());
                 const [, filterName] = filterKey.split(':');
-                this.filterPill.classList.remove('hidden');
-                const filterPillText = document.getElementById('filterPillText');
-                if (filterPillText) filterPillText.textContent = filterName;
+                filterPillText.textContent = filterName;
             } else {
-                // Multiple filters: show as filter pill with count
-                this.filterPill.classList.remove('hidden');
-                const filterPillText = document.getElementById('filterPillText');
-                if (filterPillText) filterPillText.textContent = `${filterCount} filters`;
+                filterPillText.textContent = `${filterCount} filters`;
             }
-        }
-    }
-
-    updateStandardDisplay() {
-        const hasFilters = this.filterManager.activeFilters.size > 0;
-        const filterCount = this.filterManager.activeFilters.size;
-        const hasSearch = this.searchQuery.length > 0;
-
-        // Update filter button
-        this.updateFilterButton(hasFilters, filterCount);
-
-        // Update filter pills
-        this.updateFilterPills();
-
-        // Update search input
-        if (this.searchInput) {
-            this.searchInput.value = this.searchQuery;
-        }
-        if (this.clearSearchBtn) {
-            this.clearSearchBtn.classList.toggle('hidden', !hasSearch);
         }
     }
 
@@ -1905,19 +1625,15 @@ class SearchFilterBar {
         const textSpan = this.filterButton.querySelector('#filterButtonText');
         const hasSearch = this.searchQuery.length > 0;
 
-        // When search is active with filters, show simple filter icon only
         if (hasSearch && hasFilters) {
             this.filterButton.className = "flex items-center p-2 rounded-xl transition-all text-sm font-medium shrink-0 text-amber-700 hover:text-amber-800 hover:bg-amber-50";
-            // Hide both text and count when search is active
             if (countSpan) countSpan.classList.add('hidden');
             if (textSpan) textSpan.classList.add('hidden');
         } else if (hasSearch && !hasFilters) {
-            // Search active but no filters, show normal filter button
             this.filterButton.className = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-white text-gray-700 hover:text-amber-600 border border-gray-200";
             if (countSpan) countSpan.classList.add('hidden');
             if (textSpan) textSpan.classList.remove('hidden');
         } else if (hasFilters) {
-            // No search, show colored button with text and count
             this.filterButton.className = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700";
             if (countSpan) {
                 countSpan.textContent = filterCount;
@@ -1925,7 +1641,6 @@ class SearchFilterBar {
             }
             if (textSpan) textSpan.classList.remove('hidden');
         } else {
-            // No filters, show default button with text
             this.filterButton.className = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-white text-gray-700 hover:text-amber-600 border border-gray-200";
             if (countSpan) countSpan.classList.add('hidden');
             if (textSpan) textSpan.classList.remove('hidden');
@@ -1938,13 +1653,10 @@ class SearchFilterBar {
         this.filterPillsContainer.innerHTML = '';
 
         const hasFilters = this.filterManager.activeFilters.size > 0;
-        const hasSearch = this.searchQuery.length > 0;
         const filterCount = this.filterManager.activeFilters.size;
 
         if (hasFilters) {
-            // In medium view, always show filter pills even with search
             if (filterCount === 1) {
-                // Single filter: show filter name pill with X
                 const [filterKey] = Array.from(this.filterManager.activeFilters.keys());
                 const [, filterName] = filterKey.split(':');
                 const pill = document.createElement('div');
@@ -1957,7 +1669,6 @@ class SearchFilterBar {
                 `;
                 this.filterPillsContainer.appendChild(pill);
             } else {
-                // Multiple filters: show count pill that triggers dropdown
                 const pill = document.createElement('div');
                 pill.className = "inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white cursor-pointer";
                 pill.innerHTML = `
@@ -1971,14 +1682,9 @@ class SearchFilterBar {
         }
     }
 
-    updateDisplay() {
-        if (this.isMinimum) {
-            this.updateMinimumDisplay();
-        } else {
-            this.updateStandardDisplay();
-        }
-    }
-    
+    // ============================================
+    // EVENT LISTENERS
+    // ============================================
     setupEventListeners() {
         // Search input
         if (this.searchInput) {
@@ -2021,13 +1727,6 @@ class SearchFilterBar {
             }
         });
 
-        // Clear all filters pill button
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('#clearAllFiltersPill')) {
-                this.clearAllFilters();
-            }
-        });
-
         // Click outside to close menus
         document.addEventListener('click', (e) => {
             if (!this.container?.contains(e.target)) {
@@ -2036,30 +1735,9 @@ class SearchFilterBar {
         });
     }
 
-    clearSearch() {
-        this.searchQuery = '';
-        this.filterManager.searchQuery = '';
-
-        // Always update the search input value directly
-        if (this.searchInput) {
-            this.searchInput.value = '';
-        }
-
-        // Also update any dynamically created search inputs
-        const allSearchInputs = document.querySelectorAll('#unifiedSearchInput');
-        allSearchInputs.forEach(input => {
-            input.value = '';
-        });
-
-        this.filterManager.applyFilters();
-        this.updateDisplay();
-    }
-
-    clearAllFilters() {
-        this.filterManager.clearAllFilters();
-        this.updateDisplay();
-    }
-
+    // ============================================
+    // FILTER MANAGEMENT
+    // ============================================
     toggleFilterMenu() {
         const menu = document.getElementById('unifiedFilterMenu');
         const activeMenu = document.getElementById('unifiedActiveFiltersMenu');
@@ -2069,6 +1747,21 @@ class SearchFilterBar {
                 menu.classList.remove('hidden');
                 menu.innerHTML = this.getFilterMenuHTML();
                 activeMenu?.classList.add('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+    }
+
+    toggleActiveFiltersMenu() {
+        const menu = document.getElementById('unifiedActiveFiltersMenu');
+        const filterMenu = document.getElementById('unifiedFilterMenu');
+
+        if (menu) {
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.innerHTML = this.getActiveFiltersMenuHTML();
+                filterMenu?.classList.add('hidden');
             } else {
                 menu.classList.add('hidden');
             }
@@ -2088,12 +1781,11 @@ class SearchFilterBar {
     removeFilter(filterKey) {
         this.filterManager.removeFilter(filterKey);
 
-        // Ensure search input is updated if we're switching between states
+        // Ensure search input is updated
         if (this.searchInput) {
             this.searchInput.value = this.searchQuery;
         }
 
-        // Also update any dynamically created search inputs
         const allSearchInputs = document.querySelectorAll('#unifiedSearchInput');
         allSearchInputs.forEach(input => {
             input.value = this.searchQuery;
@@ -2106,6 +1798,31 @@ class SearchFilterBar {
         this.toggleFilterMenu();
     }
 
+    clearSearch() {
+        this.searchQuery = '';
+        this.filterManager.searchQuery = '';
+
+        if (this.searchInput) {
+            this.searchInput.value = '';
+        }
+
+        const allSearchInputs = document.querySelectorAll('#unifiedSearchInput');
+        allSearchInputs.forEach(input => {
+            input.value = '';
+        });
+
+        this.filterManager.applyFilters();
+        this.updateDisplay();
+    }
+
+    clearAllFilters() {
+        this.filterManager.clearAllFilters();
+        this.updateDisplay();
+    }
+
+    // ============================================
+    // HTML GENERATION
+    // ============================================
     getFilterMenuHTML() {
         const filters = this.recipeDatabase.getFilters();
         let html = `
@@ -2144,419 +1861,6 @@ class SearchFilterBar {
             html += `<div class="mb-3">
                 <button onclick="this.parentNode.querySelector('.filter-section-content').classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
                         class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:bg-gray-50 rounded-lg transition-colors">
-                    <span>${UI_TEXT.filter.meals?.meal || 'Meals'}</span>
-                    <i class="fas fa-chevron-down text-xs chevron transition-transform duration-200"></i>
-                </button>
-                <div class="filter-section-content hidden">`;
-            filters.meals.forEach(meal => {
-                const isActive = this.filterManager.activeFilters.has(`meal:${meal}`);
-                html += `
-                    <label class="flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors ml-2">
-                        <span class="text-sm text-gray-700">${meal}</span>
-                        <input type="checkbox"
-                               ${isActive ? 'checked' : ''}
-                               onchange="recipeApp.searchFilterBar.toggleFilter('meal:${meal}')"
-                               class="rounded border-gray-300 text-amber-600 focus:ring-amber-500">
-                    </label>`;
-            });
-            html += `</div></div>`;
-        }
-
-        // Cuisines
-        if (filters.cuisines && filters.cuisines.length > 0) {
-            html += `<div class="mb-3">
-                <button onclick="this.parentNode.querySelector('.filter-section-content').classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
-                        class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:bg-gray-50 rounded-lg transition-colors">
-                    <span>${UI_TEXT.filter.cuisines?.cuisine || 'Cuisines'}</span>
-                    <i class="fas fa-chevron-down text-xs chevron transition-transform duration-200"></i>
-                </button>
-                <div class="filter-section-content hidden">`;
-            filters.cuisines.forEach(cuisine => {
-                const isActive = this.filterManager.activeFilters.has(`cuisine:${cuisine}`);
-                html += `
-                    <label class="flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors ml-2">
-                        <span class="text-sm text-gray-700">${cuisine}</span>
-                        <input type="checkbox"
-                               ${isActive ? 'checked' : ''}
-                               onchange="recipeApp.searchFilterBar.toggleFilter('cuisine:${cuisine}')"
-                               class="rounded border-gray-300 text-amber-600 focus:ring-amber-500">
-                    </label>`;
-            });
-            html += `</div></div>`;
-        }
-
-        html += `</div></div>`;
-        return html;
-    }
-
-    getStandardContent(hasSearch, hasActiveFilters, filterCount) {
-        const filterButtonClasses = hasActiveFilters
-            ? "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700"
-            : "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-white text-gray-700 hover:text-amber-600 border border-gray-200";
-
-        let filterPillsHTML = '';
-        if (hasActiveFilters && !hasSearch) {
-            this.filterManager.activeFilters.forEach((_, filterKey) => {
-                const [, filterName] = filterKey.split(':');
-                filterPillsHTML += `
-                    <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm max-w-[150px] bg-gradient-to-r from-amber-500 to-amber-600 text-white">
-                        <span class="cursor-pointer font-medium overflow-hidden text-ellipsis whitespace-nowrap max-w-[120px]">${filterName}</span>
-                        <button data-filter-key="${filterKey}" class="remove-filter ml-1 hover:opacity-70 flex-shrink-0">
-                            <i class="fas fa-times text-xs"></i>
-                        </button>
-                    </div>`;
-            });
-        }
-
-        return `
-            <button id="unifiedFilterBtn" class="${filterButtonClasses}">
-                <i class="fas fa-filter transition-transform duration-200 active:scale-90"></i>
-                <span>Filter</span>
-                ${hasActiveFilters ? `<span class="bg-white/30 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">${filterCount}</span>` : ''}
-            </button>
-            <div class="flex gap-2 flex-1 overflow-hidden">${filterPillsHTML}</div>
-            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white hover:bg-amber-50/20 transition-colors border-gray-200 border flex-1">
-                <i class="fas fa-search text-amber-700 text-sm"></i>
-                <input type="text" id="unifiedSearchInput" value="${this.searchQuery}" placeholder="Search recipes..." class="bg-transparent outline-none text-amber-700 placeholder-gray-400 w-full font-normal" style="font-size: 16px;">
-                ${hasSearch ? `<button id="clearSearchBtn" class="text-amber-700 hover:text-amber-800 transition-colors"><i class="fas fa-times text-sm"></i></button>` : ''}
-            </div>`;
-    }
-
-    getMinimumContent(hasSearch, hasActiveFilters, filterCount) {
-        let html = '';
-
-        if (hasSearch && hasActiveFilters) {
-            // Show search pill and filter counter
-            html = `
-                <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white">
-                    <i class="fas fa-search text-xs"></i>
-                    <span>${this.searchQuery}</span>
-                    <button id="clearSearchMin" class="ml-1 hover:opacity-70 flex-shrink-0"><i class="fas fa-times text-xs"></i></button>
-                </div>
-                <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white">
-                    <i class="fas fa-filter text-xs"></i>
-                    <span>${filterCount}</span>
-                </div>`;
-        } else if (hasSearch) {
-            // Show only search pill
-            html = `
-                <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white">
-                    <i class="fas fa-search text-xs"></i>
-                    <span>${this.searchQuery}</span>
-                    <button id="clearSearchMin" class="ml-1 hover:opacity-70 flex-shrink-0"><i class="fas fa-times text-xs"></i></button>
-                </div>`;
-        } else if (hasActiveFilters) {
-            // Show only filter pill
-            if (filterCount === 1) {
-                const [filterKey] = Array.from(this.filterManager.activeFilters.keys());
-                const [, filterName] = filterKey.split(':');
-                html = `
-                    <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white">
-                        <i class="fas fa-filter text-xs"></i>
-                        <span>${filterName}</span>
-                        <button data-filter-key="${filterKey}" class="remove-filter ml-1 hover:opacity-70 flex-shrink-0"><i class="fas fa-times text-xs"></i></button>
-                    </div>`;
-            } else {
-                html = `
-                    <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white">
-                        <i class="fas fa-filter text-xs"></i>
-                        <span>${filterCount}</span>
-                    </div>`;
-            }
-        }
-
-        return html;
-    }
-
-    attachDynamicListeners() {
-        // Re-attach listeners for dynamically created elements
-        const searchInput = document.getElementById('unifiedSearchInput');
-        if (searchInput && !searchInput.hasAttribute('data-listener')) {
-            searchInput.setAttribute('data-listener', 'true');
-            searchInput.addEventListener('input', (e) => {
-                this.searchQuery = e.target.value;
-                this.filterManager.searchQuery = e.target.value.toLowerCase();
-                this.filterManager.applyFilters();
-                this.updateDisplay();
-            });
-        }
-
-        // Clear search buttons
-        const clearBtns = document.querySelectorAll('#clearSearchBtn, #clearSearchMin');
-        clearBtns.forEach(btn => {
-            if (!btn.hasAttribute('data-listener')) {
-                btn.setAttribute('data-listener', 'true');
-                btn.addEventListener('click', () => this.clearSearch());
-            }
-        });
-
-        // Remove filter buttons
-        const removeFilterBtns = document.querySelectorAll('.remove-filter');
-        removeFilterBtns.forEach(btn => {
-            if (!btn.hasAttribute('data-listener')) {
-                btn.setAttribute('data-listener', 'true');
-                const filterKey = btn.getAttribute('data-filter-key');
-                btn.addEventListener('click', () => this.removeFilter(filterKey));
-            }
-        });
-
-        // Filter button
-        const filterBtn = document.getElementById('unifiedFilterBtn');
-        if (filterBtn && !filterBtn.hasAttribute('data-listener')) {
-            filterBtn.setAttribute('data-listener', 'true');
-            filterBtn.addEventListener('click', () => this.toggleFilterMenu());
-        }
-    }
-
-    getHTML() {
-        const hasActiveFilters = this.filterManager.activeFilters.size > 0;
-        const filterCount = this.filterManager.activeFilters.size;
-
-        return `
-            <div id="unifiedGlassBar"
-                 class="relative rounded-xl bg-white border border-gray-200 overflow-visible w-full z-40"
-                 style="height: 48px; transition: all 0.3s ease-out;">
-                
-                <!-- Content container -->
-                <div class="relative h-full flex items-center gap-2 px-3">
-                    <!-- Expanded content -->
-                    <div id="expandedContent" class="flex items-center gap-2">
-                        ${this.getExpandedContent()}
-                    </div>
-
-                    <!-- Collapsed content -->
-                    <div id="collapsedContent" class="flex items-center gap-2 text-sm hidden">
-                        ${this.getCollapsedContent()}
-                    </div>
-                </div>
-                
-                <!-- Filter dropdown menu -->
-                <div id="unifiedFilterMenu" class="absolute top-full left-0 mt-2 hidden z-50">
-                    ${this.getFilterMenuHTML()}
-                </div>
-
-                <!-- Active filters dropdown -->
-                <div id="unifiedActiveFiltersMenu" class="absolute top-full left-0 mt-2 hidden z-50">
-                    ${this.getActiveFiltersMenuHTML()}
-                </div>
-            </div>
-        `;
-    }
-    
-    getExpandedContent() {
-        const hasActiveFilters = this.filterManager.activeFilters.size > 0;
-        const filterCount = this.filterManager.activeFilters.size;
-        const hasSearch = this.searchQuery.length > 0;
-        const isCompact = hasSearch && hasActiveFilters;
-        
-        // Build filter button
-        const isCollapsedInFixed = this.isFixed && hasActiveFilters;
-
-        let filterButtonClasses, iconClasses;
-
-        if (isCollapsedInFixed) {
-            // Collapsed state: no background, just colored icon
-            filterButtonClasses = "flex items-center p-2 rounded-xl transition-all shrink-0 hover:bg-amber-50/30";
-            iconClasses = "fas fa-filter transition-transform duration-200 active:scale-90 text-amber-600 text-lg";
-        } else if (hasActiveFilters) {
-            // Active state with background
-            filterButtonClasses = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700";
-            iconClasses = "fas fa-filter transition-transform duration-200 active:scale-90";
-        } else {
-            // Default state
-            filterButtonClasses = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-white text-gray-700 hover:text-amber-600 border border-gray-200";
-            iconClasses = "fas fa-filter transition-transform duration-200 active:scale-90";
-        }
-
-        let filterButtonHTML = `
-            <button id="unifiedFilterBtn"
-                    class="${filterButtonClasses}">
-                <i class="${iconClasses}"></i>
-                ${!isCompact && !isCollapsedInFixed ? `<span>${UI_TEXT.filter.button}</span>` : ''}
-                ${hasActiveFilters && !isCollapsedInFixed ? `<span class="bg-white/30 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">${filterCount}</span>` : `<span class="bg-white/30 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold hidden">${filterCount}</span>`}
-            </button>
-        `;
-        
-        // Build filter pills
-        let filterPillsHTML = '';
-        if (hasActiveFilters && !hasSearch) {
-            if (filterCount === 1) {
-                const [filterKey, filterValue] = Array.from(this.filterManager.activeFilters)[0];
-                const [filterType, filterName] = filterKey.split(':');
-                filterPillsHTML = `
-                    <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm max-w-[150px] bg-gradient-to-r from-amber-500 to-amber-600 text-white">
-                        <span class="cursor-pointer font-medium overflow-hidden text-ellipsis whitespace-nowrap max-w-[120px]" onclick="recipeApp.searchFilterBar.togglePillActive('${filterKey}')">${filterName}</span>
-                        <button onclick="recipeApp.searchFilterBar.removeFilter('${filterKey}')"
-                                class="ml-1 hover:opacity-70 flex-shrink-0">
-                            <i class="fas fa-times text-xs"></i>
-                        </button>
-                    </div>
-                `;
-            } else {
-                filterPillsHTML = `
-                    <button onclick="recipeApp.searchFilterBar.toggleActiveFiltersMenu()"
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700">
-                        <span class="font-medium">${filterCount} filters</span>
-                        <i class="fas fa-chevron-down text-xs"></i>
-                    </button>
-                    <button onclick="recipeApp.searchFilterBar.clearAllFilters()"
-                            class="p-1.5 ${this.styles.iconColor} hover:text-amber-800 hover:bg-amber-100/50 rounded-lg transition-all">
-                        <i class="fas fa-times"></i>
-                    </button>
-                `;
-            }
-        }
-        
-        // Clear filters button when search is active
-        let clearFiltersHTML = '';
-        if (hasActiveFilters && hasSearch) {
-            clearFiltersHTML = `
-                <button onclick="recipeApp.searchFilterBar.clearAllFilters()"
-                        class="p-1.5 ${this.styles.iconColor} hover:text-amber-800 hover:bg-amber-100/50 rounded-lg transition-all"
-                        title="Clear filters">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-        }
-        
-        // Search input
-        const searchWidth = this.isFixed ? (hasSearch ? 'auto' : '200px') : '100%';
-        const searchHTML = `
-            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl ${this.styles.inputBgColor} ${this.styles.hoverBgColor} transition-colors ${this.styles.borderColor} border"
-                 style="width: ${searchWidth}; ${this.isFixed ? 'min-width: 150px; max-width: 260px;' : ''}">
-                <i class="fas fa-search ${this.styles.iconColor} text-sm"></i>
-                <input type="text"
-                       id="unifiedSearchInput"
-                       value="${this.searchQuery}"
-                       placeholder="${UI_TEXT.search.placeholder}"
-                       class="bg-transparent outline-none ${this.styles.textColor} ${this.styles.placeholderColor} w-full font-normal ${this.styles.focusBorderColor} ${this.styles.outlineColor}"
-                       style="font-size: 16px;">
-                ${hasSearch ? `
-                    <button onclick="recipeApp.searchFilterBar.clearSearch()"
-                            class="${this.styles.iconColor} hover:text-amber-800 transition-colors">
-                        <i class="fas fa-times text-sm"></i>
-                    </button>
-                ` : ''}
-            </div>
-        `;
-        
-        return filterButtonHTML + filterPillsHTML + clearFiltersHTML + searchHTML;
-    }
-    
-    getCollapsedContent() {
-        const hasActiveFilters = this.filterManager.activeFilters.size > 0;
-        const filterCount = this.filterManager.activeFilters.size;
-        const hasSearch = this.searchQuery.length > 0;
-        
-        let html = '';
-        
-        // Filters display
-        if (hasActiveFilters) {
-            if (filterCount === 1 && !hasSearch) {
-                // Single filter, no search - show full label
-                const [filterKey, filterValue] = Array.from(this.filterManager.activeFilters)[0];
-                const [filterType, filterName] = filterKey.split(':');
-                html += `
-                    <div class="flex items-center gap-2">
-                        <div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100/60 text-amber-700">
-                            <i class="fas fa-filter text-xs"></i>
-                            <span class="font-medium text-xs">${filterName}</span>
-                        </div>
-                        <button onclick="recipeApp.searchFilterBar.removeFilter('${filterKey}')"
-                                class="text-amber-400 hover:text-amber-600 transition-colors">
-                            <i class="fas fa-times text-xs"></i>
-                        </button>
-                    </div>
-                `;
-            } else if (filterCount > 1 && !hasSearch) {
-                // Multiple filters, no search - show count
-                html += `
-                    <div class="flex items-center gap-2">
-                        <button onclick="recipeApp.searchFilterBar.expand()"
-                                class="flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-100/60 text-amber-700 hover:bg-amber-100 transition-colors">
-                            <i class="fas fa-filter text-xs"></i>
-                            <span class="font-medium text-xs">${filterCount} filters active</span>
-                        </button>
-                        <button onclick="recipeApp.searchFilterBar.clearAllFilters()"
-                                class="text-amber-400 hover:text-amber-600 transition-colors">
-                            <i class="fas fa-times text-xs"></i>
-                        </button>
-                    </div>
-                `;
-            } else if (hasSearch) {
-                // Compact filter display with search
-                html += `
-                    <button onclick="recipeApp.searchFilterBar.expand()"
-                            class="flex items-center gap-1 px-2 py-0.5 rounded-lg text-amber-700 hover:bg-amber-100/50 transition-colors">
-                        <i class="fas fa-filter text-xs"></i>
-                        <span class="text-xs font-medium">${filterCount}</span>
-                    </button>
-                    <button onclick="recipeApp.searchFilterBar.clearAllFilters()"
-                            class="text-amber-400 hover:text-amber-600 transition-colors">
-                        <i class="fas fa-times text-xs"></i>
-                    </button>
-                `;
-            }
-        }
-        
-        // Search display
-        if (hasSearch) {
-            html += `
-                <div class="flex items-center gap-2">
-                    <button onclick="recipeApp.searchFilterBar.expand()" 
-                            class="flex items-center gap-1.5 text-gray-700 hover:bg-gray-100/30 px-2 py-0.5 rounded-lg transition-colors">
-                        <i class="fas fa-search text-xs"></i>
-                        <span class="truncate max-w-[120px] text-xs">${this.searchQuery}</span>
-                    </button>
-                    <button onclick="recipeApp.searchFilterBar.clearSearch()" 
-                            class="text-gray-400 hover:text-gray-600 transition-colors">
-                        <i class="fas fa-times text-xs"></i>
-                    </button>
-                </div>
-            `;
-        }
-        
-        return html;
-    }
-    
-    getFilterMenuHTML() {
-        const filters = this.recipeDatabase.getFilters();
-        let html = `
-            <div class="bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-100 min-w-[280px] max-h-[400px] overflow-y-auto">
-                <div class="text-sm font-semibold text-gray-700 px-4 pt-4 pb-2 border-b border-gray-100">
-                    ${UI_TEXT.filter.title}
-                </div>
-                <div class="p-2">
-        `;
-
-        // Categories
-        if (filters.categories.length > 0) {
-            html += `<div class="mb-3">
-                <button onclick="this.parentNode.querySelector('.filter-section-content').classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
-                        class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:bg-gray-50 rounded-lg transition-colors">
-                    <span>${UI_TEXT.filter.categories.category}</span>
-                    <i class="fas fa-chevron-down text-xs chevron transition-transform duration-200"></i>
-                </button>
-                <div class="filter-section-content hidden">`;
-            filters.categories.forEach(category => {
-                const isActive = this.filterManager.activeFilters.has(`category:${category}`);
-                html += `
-                    <label class="flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors ml-2">
-                        <span class="text-sm text-gray-700">${category}</span>
-                        <input type="checkbox"
-                               ${isActive ? 'checked' : ''}
-                               onchange="recipeApp.searchFilterBar.toggleFilter('category:${category}')"
-                               class="rounded border-gray-300 text-amber-600 focus:ring-amber-500">
-                    </label>`;
-            });
-            html += `</div></div>`;
-        }
-
-        // Meals
-        if (filters.meals.length > 0) {
-            html += `<div class="mb-3">
-                <button onclick="this.parentNode.querySelector('.filter-section-content').classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
-                        class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:bg-gray-50 rounded-lg transition-colors">
                     <span>${UI_TEXT.filter.categories.meal}</span>
                     <i class="fas fa-chevron-down text-xs chevron transition-transform duration-200"></i>
                 </button>
@@ -2576,7 +1880,7 @@ class SearchFilterBar {
         }
 
         // Cuisines
-        if (filters.cuisines.length > 0) {
+        if (filters.cuisines && filters.cuisines.length > 0) {
             html += `<div class="mb-3">
                 <button onclick="this.parentNode.querySelector('.filter-section-content').classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
                         class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:bg-gray-50 rounded-lg transition-colors">
@@ -2601,7 +1905,7 @@ class SearchFilterBar {
         html += `</div></div>`;
         return html;
     }
-    
+
     getActiveFiltersMenuHTML() {
         let html = `
             <div class="bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-100 min-w-[250px]">
@@ -2610,7 +1914,7 @@ class SearchFilterBar {
                 </div>
                 <div class="p-2">
         `;
-        
+
         this.filterManager.activeFilters.forEach((value, key) => {
             const [filterType, filterName] = key.split(':');
             html += `
@@ -2623,7 +1927,7 @@ class SearchFilterBar {
                 </div>
             `;
         });
-        
+
         html += `
                     <button onclick="recipeApp.searchFilterBar.clearAllFilters()" 
                             class="w-full mt-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors">
@@ -2634,53 +1938,46 @@ class SearchFilterBar {
         `;
         return html;
     }
-    
 
+    // ============================================
+    // HELPER METHODS
+    // ============================================
+    hasActiveContent() {
+        return this.searchQuery.length > 0 || this.filterManager.activeFilters.size > 0;
+    }
 
+    isIOSDevice() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    }
 
+    setupIOSTouchHandlers(scrollHandler) {
+        let touchStartY = 0;
 
-    
-    
-    
-    toggleFilterMenu() {
-        const menu = document.getElementById('unifiedFilterMenu');
-        const activeMenu = document.getElementById('unifiedActiveFiltersMenu');
-        
-        if (menu) {
-            if (menu.classList.contains('hidden')) {
-                menu.classList.remove('hidden');
-                menu.innerHTML = this.getFilterMenuHTML();
-                activeMenu?.classList.add('hidden');
-            } else {
-                menu.classList.add('hidden');
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            const touchEndY = e.changedTouches[0].clientY;
+            if (Math.abs(touchEndY - touchStartY) > 10) {
+                scrollHandler();
             }
-        }
+        }, { passive: true });
     }
-    
-    toggleActiveFiltersMenu() {
-        const menu = document.getElementById('unifiedActiveFiltersMenu');
-        const filterMenu = document.getElementById('unifiedFilterMenu');
-        
-        if (menu) {
-            if (menu.classList.contains('hidden')) {
-                menu.classList.remove('hidden');
-                menu.innerHTML = this.getActiveFiltersMenuHTML();
-                filterMenu?.classList.add('hidden');
-            } else {
-                menu.classList.add('hidden');
-            }
-        }
-    }
-    
-    closeAllMenus() {
-        document.getElementById('unifiedFilterMenu')?.classList.add('hidden');
-        document.getElementById('unifiedActiveFiltersMenu')?.classList.add('hidden');
-    }
-    
+
     destroy() {
-        // Clean up if needed
+        // Clean up event listeners and timers
+        clearTimeout(this.scrollState.debounceTimer);
+        
+        // Remove spacer if exists
+        const spacer = document.getElementById('searchBarSpacer');
+        if (spacer) spacer.remove();
+
+        // Reset container styles
         if (this.container) {
-            this.container.remove();
+            this.container.style = '';
+            this.container.classList.remove('fixed');
         }
     }
 }
