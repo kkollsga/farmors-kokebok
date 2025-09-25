@@ -85,16 +85,38 @@
         #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div { padding-top: env(safe-area-inset-top, 0); }
     }
 
-    /* iOS STANDALONE MODE (Home Screen App) */
+    /* iOS STANDALONE MODE (Home Screen App) - UPDATED */
     @media (display-mode: standalone) {
-        .search-bar-fixed-ios { position: fixed !important; top: 20px !important; left: 50%; transform: translateX(-50%); z-index: 50; }
-        #searchFilterContainer.fixed { position: fixed !important; }
+        .search-bar-fixed, .search-bar-fixed-ios { position: fixed !important; top: 12px !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 50 !important; }
+        #searchFilterContainer.fixed { position: fixed !important; padding-top: 0 !important; }
+        #searchFilterContainer:not(.search-bar-fixed):not(.search-bar-fixed-ios) { position: relative !important; }
         #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div { padding-top: max(env(safe-area-inset-top), 20px); }
+        #unifiedGlassBar { position: relative !important; }
+    }
+    
+    /* iOS STANDALONE WITH SAFE AREA SUPPORT */
+    @supports (-webkit-touch-callout: none) {
+        @media (display-mode: standalone) {
+            .search-bar-fixed, .search-bar-fixed-ios { top: max(12px, env(safe-area-inset-top, 12px)) !important; }
+        }
+    }
+    
+    /* STANDALONE MODE FULLSCREEN */
+    @media (display-mode: fullscreen) {
+        .search-bar-fixed, .search-bar-fixed-ios { position: fixed !important; top: 12px !important; }
+    }
+    
+    /* STANDALONE MODE MINIMAL UI */
+    @media (display-mode: minimal-ui) {
+        .search-bar-fixed, .search-bar-fixed-ios { position: fixed !important; top: 12px !important; }
     }
 
     /* LANDSCAPE ADJUSTMENTS */
     @media (orientation: landscape) and (max-width: 900px) {
         .search-bar-fixed-ios { top: 8px; }
+        @media (display-mode: standalone) {
+            .search-bar-fixed, .search-bar-fixed-ios { top: 8px !important; }
+        }
     }
 </style>
 </head>
@@ -1332,15 +1354,23 @@ class SearchFilterBar {
     isStandaloneMode() {
         return window.matchMedia('(display-mode: standalone)').matches ||
             window.navigator.standalone === true ||
-            document.referrer.includes('android-app://');
+            document.referrer.includes('android-app://') ||
+            window.matchMedia('(display-mode: fullscreen)').matches ||
+            window.matchMedia('(display-mode: minimal-ui)').matches;
     }
 
     initialize() {
         // Calculate trigger point after DOM loads
         setTimeout(() => {
-            // Adjust trigger point for standalone mode
-            const extraOffset = this.isStandaloneMode() ? 40 : this.config.triggerOffset;
+            const isStandalone = this.isStandaloneMode();
+            // In standalone mode, we need more offset because the status bar is handled differently
+            const extraOffset = isStandalone ? 60 : this.config.triggerOffset;
             this.scrollState.triggerPoint = this.container.offsetTop - extraOffset;
+            
+            // Store the initial top position for standalone mode
+            if (isStandalone) {
+                this.standaloneInitialTop = this.container.offsetTop;
+            }
         }, 100);
 
         this.setupEventListeners();
@@ -1370,11 +1400,20 @@ class SearchFilterBar {
     processScroll() {
         const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
         const scrollDelta = scrollY - this.scrollState.lastY;
+        
+        const isStandalone = this.isStandaloneMode();
+        
+        // Adjust trigger point dynamically for standalone mode
+        let triggerPoint = this.scrollState.triggerPoint;
+        if (isStandalone && this.standaloneInitialTop) {
+            // In standalone mode, use a more aggressive trigger point
+            triggerPoint = Math.max(10, this.standaloneInitialTop - 60);
+        }
 
         // Handle position changes (standard <-> fixed)
-        if (this.state.position === 'standard' && scrollY > this.scrollState.triggerPoint) {
+        if (this.state.position === 'standard' && scrollY > triggerPoint) {
             this.transitionToFixed();
-        } else if (this.state.position === 'fixed' && scrollY <= this.scrollState.triggerPoint) {
+        } else if (this.state.position === 'fixed' && scrollY <= triggerPoint) {
             this.transitionToStandard();
         }
 
@@ -1449,19 +1488,33 @@ class SearchFilterBar {
         spacer.style.height = this.container.offsetHeight + 'px';
         this.container.parentNode.insertBefore(spacer, this.container);
 
-        // Detect if in standalone mode
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                            window.navigator.standalone === true;
+        const isStandalone = this.isStandaloneMode();
         const isIOS = this.isIOSDevice();
         
-        // Use appropriate class based on context
-        const fixedClass = (isIOS || isStandalone) ? 'search-bar-fixed-ios' : 'search-bar-fixed';
-        this.container.className = `${fixedClass} w-auto max-w-[90vw] p-0 m-0`;
+        // Clear all classes first
+        this.container.className = '';
         
-        // Force fixed positioning in standalone mode
         if (isStandalone) {
-            this.container.style.position = 'fixed';
-            this.container.style.top = '20px'; // Slightly more space in standalone
+            // For standalone mode, use fixed positioning with specific top value
+            this.container.style.cssText = `
+                position: fixed !important;
+                top: ${this.config.fixedTopOffset}px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                z-index: 50 !important;
+                width: auto !important;
+                max-width: 90vw !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            `;
+        } else if (isIOS) {
+            // For regular iOS Safari
+            this.container.className = 'search-bar-fixed-ios w-auto max-w-[90vw] p-0 m-0';
+            this.container.style.cssText = ''; // Clear inline styles
+        } else {
+            // For desktop and other browsers
+            this.container.className = 'search-bar-fixed w-auto max-w-[90vw] p-0 m-0';
+            this.container.style.cssText = ''; // Clear inline styles
         }
         
         this.state.position = 'fixed';
