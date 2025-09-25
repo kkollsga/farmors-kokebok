@@ -1647,23 +1647,58 @@ class SearchFilterBar {
         // Get the spacer element
         const spacer = document.getElementById('searchBarSpacer');
         
-        // Restore original Tailwind classes
-        this.container.className = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 relative z-30';
-        
-        // Clear ALL inline styles that might have been set
-        this.container.style.position = '';
-        this.container.style.top = '';
-        this.container.style.left = '';
-        this.container.style.transform = '';
-        this.container.style.width = '';
-        this.container.style.maxWidth = '';
-        this.container.style.zIndex = '';
-        this.container.style.padding = '';
-        this.container.style.margin = '';
-        this.container.style.opacity = '1';  // Ensure visible
-        this.container.style.pointerEvents = '';  // Ensure clickable
-        this.container.style.display = '';  // Reset display
-        this.container.style.transition = '';  // Clear transitions
+        if (spacer) {
+            // Measure the spacer height to maintain during transition
+            const spacerHeight = spacer.offsetHeight;
+            
+            // First, position the container exactly where it will be when back in flow
+            // but keep it fixed for now
+            const spacerRect = spacer.getBoundingClientRect();
+            this.container.style.position = 'fixed';
+            this.container.style.top = (spacerRect.top + window.pageYOffset) + 'px';
+            this.container.style.left = '0';
+            this.container.style.right = '0';
+            this.container.style.width = 'auto';
+            this.container.style.transform = 'none';
+            this.container.style.margin = '0 auto';
+            this.container.style.maxWidth = '1280px'; // max-w-7xl equivalent
+            this.container.style.padding = '0 1rem'; // px-4 equivalent
+            
+            // Force layout recalculation
+            this.container.offsetHeight;
+            
+            // Now restore to standard position
+            this.container.className = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 relative z-30';
+            
+            // Clear inline styles
+            this.container.style.position = '';
+            this.container.style.top = '';
+            this.container.style.left = '';
+            this.container.style.right = '';
+            this.container.style.transform = '';
+            this.container.style.width = '';
+            this.container.style.maxWidth = '';
+            this.container.style.zIndex = '';
+            this.container.style.padding = '';
+            this.container.style.margin = '';
+            this.container.style.opacity = '1';
+            this.container.style.pointerEvents = '';
+            this.container.style.display = '';
+            this.container.style.transition = '';
+            
+            // Remove spacer after container is back in flow
+            requestAnimationFrame(() => {
+                if (spacer && spacer.parentNode) {
+                    spacer.remove();
+                }
+            });
+        } else {
+            // No spacer found, just restore normally
+            this.container.className = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 relative z-30';
+            
+            // Clear ALL inline styles
+            this.container.style.cssText = '';
+        }
 
         // Reset glass bar to standard styling
         this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 overflow-visible w-full z-40';
@@ -1681,14 +1716,6 @@ class SearchFilterBar {
             contentContainer.style.height = '';
             contentContainer.style.width = '';
             contentContainer.style.display = '';
-        }
-
-        // Remove spacer AFTER restoring styles to prevent jump
-        if (spacer) {
-            // Small delay to ensure layout has settled
-            requestAnimationFrame(() => {
-                spacer.remove();
-            });
         }
 
         this.state.position = 'standard';
