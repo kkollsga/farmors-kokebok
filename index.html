@@ -1392,6 +1392,9 @@ class SearchFilterBar {
             isTransitioning: false
         };
 
+        // Store original container classes
+        this.originalContainerClasses = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 relative z-30';
+
         // Search and filter state
         this.searchQuery = '';
         this.showFilterMenu = false;
@@ -1573,7 +1576,7 @@ class SearchFilterBar {
         if (this.state.position === 'fixed' || this.state.isTransitioning) return;
         this.state.isTransitioning = true;
 
-        // Measure the total space occupied BEFORE any changes
+        // Get the container's current position and dimensions
         const containerRect = this.container.getBoundingClientRect();
         const computedStyle = window.getComputedStyle(this.container);
         const marginTop = parseFloat(computedStyle.marginTop) || 0;
@@ -1584,23 +1587,18 @@ class SearchFilterBar {
         const shouldHideImmediately = !this.hasActiveContent() && 
                                     (window.pageYOffset - this.scrollState.lastY) > 0;
 
-        // Add spacer to prevent layout jump - must match exact space taken
+        // Create spacer that exactly matches the container's space
         const spacer = document.createElement('div');
         spacer.id = 'searchBarSpacer';
-        spacer.style.height = totalHeight + 'px';
-        spacer.style.marginTop = '0';
-        spacer.style.marginBottom = '0';
-        spacer.style.visibility = 'hidden'; // Invisible but takes up space
+        spacer.style.cssText = `height: ${totalHeight}px; margin: 0; padding: 0; border: 0; visibility: hidden;`;
+        
+        // Insert spacer BEFORE changing container position
         this.container.parentNode.insertBefore(spacer, this.container);
 
         const isStandalone = this.isStandaloneMode();
         
-        // Clear all classes first
-        this.container.className = '';
-        
+        // Now switch to fixed position
         if (isStandalone) {
-            // Use CSS env() for safe area instead of hardcoded values
-            this.container.className = 'search-bar-fixed-ios w-auto max-w-[90vw] p-0 m-0';
             this.container.style.cssText = `
                 position: fixed !important;
                 top: calc(env(safe-area-inset-top, 0px) + ${this.config.fixedTopOffset}px) !important;
@@ -1615,14 +1613,14 @@ class SearchFilterBar {
                 pointer-events: ${shouldHideImmediately ? 'none' : 'auto'} !important;
                 transition: opacity 0.2s ease-out !important;
             `;
+            this.container.className = '';
         } else {
-            // For regular browsers (Safari, etc.)
             this.container.className = 'search-bar-fixed w-auto max-w-[90vw] p-0 m-0';
-            if (shouldHideImmediately) {
-                this.container.style.opacity = '0';
-                this.container.style.pointerEvents = 'none';
-            }
-            this.container.style.transition = 'opacity 0.2s ease-out';
+            this.container.style.cssText = `
+                opacity: ${shouldHideImmediately ? '0' : '1'};
+                pointer-events: ${shouldHideImmediately ? 'none' : 'auto'};
+                transition: opacity 0.2s ease-out;
+            `;
         }
         
         this.state.position = 'fixed';
@@ -1633,7 +1631,6 @@ class SearchFilterBar {
             this.updateViewStyles();
         } else {
             this.state.view = 'collapsed';
-            // Don't update view styles if hidden
         }
         
         this.scrollState.accumulator = 0;
@@ -1644,86 +1641,39 @@ class SearchFilterBar {
         if (this.state.position === 'standard' || this.state.isTransitioning) return;
         this.state.isTransitioning = true;
 
-        // Get the spacer element
         const spacer = document.getElementById('searchBarSpacer');
         
-        if (spacer) {
-            // Measure the spacer height to maintain during transition
-            const spacerHeight = spacer.offsetHeight;
-            
-            // First, position the container exactly where it will be when back in flow
-            // but keep it fixed for now
-            const spacerRect = spacer.getBoundingClientRect();
-            this.container.style.position = 'fixed';
-            this.container.style.top = (spacerRect.top + window.pageYOffset) + 'px';
-            this.container.style.left = '0';
-            this.container.style.right = '0';
-            this.container.style.width = 'auto';
-            this.container.style.transform = 'none';
-            this.container.style.margin = '0 auto';
-            this.container.style.maxWidth = '1280px'; // max-w-7xl equivalent
-            this.container.style.padding = '0 1rem'; // px-4 equivalent
-            
-            // Force layout recalculation
-            this.container.offsetHeight;
-            
-            // Now restore to standard position
-            this.container.className = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 relative z-30';
-            
-            // Clear inline styles
-            this.container.style.position = '';
-            this.container.style.top = '';
-            this.container.style.left = '';
-            this.container.style.right = '';
-            this.container.style.transform = '';
-            this.container.style.width = '';
-            this.container.style.maxWidth = '';
-            this.container.style.zIndex = '';
-            this.container.style.padding = '';
-            this.container.style.margin = '';
-            this.container.style.opacity = '1';
-            this.container.style.pointerEvents = '';
-            this.container.style.display = '';
-            this.container.style.transition = '';
-            
-            // Remove spacer after container is back in flow
-            requestAnimationFrame(() => {
-                if (spacer && spacer.parentNode) {
-                    spacer.remove();
-                }
-            });
-        } else {
-            // No spacer found, just restore normally
-            this.container.className = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 relative z-30';
-            
-            // Clear ALL inline styles
-            this.container.style.cssText = '';
-        }
-
+        // Reset container to standard position directly
+        this.container.className = this.originalContainerClasses;
+        
+        // Clear ALL inline styles in one go
+        this.container.style.cssText = '';
+        
         // Reset glass bar to standard styling
         this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 overflow-visible w-full z-40';
-        this.glassBar.style.height = '48px';
-        this.glassBar.style.width = '';
-        this.glassBar.style.minHeight = '';
-        this.glassBar.style.padding = '';
-        this.glassBar.style.display = '';
-        this.glassBar.style.transition = '';
+        this.glassBar.style.cssText = 'height: 48px;';
 
         // Reset content container
         const contentContainer = this.glassBar?.querySelector('.relative');
         if (contentContainer) {
             contentContainer.className = 'relative h-full flex items-center gap-2 px-3';
-            contentContainer.style.height = '';
-            contentContainer.style.width = '';
-            contentContainer.style.display = '';
+            contentContainer.style.cssText = '';
         }
 
+        // Update state
         this.state.position = 'standard';
         this.state.view = 'expanded';
         this.scrollState.accumulator = 0;
 
         // Ensure standard content is shown
         this.showStandardContent();
+        
+        // Remove spacer after next frame to avoid layout shift
+        if (spacer) {
+            requestAnimationFrame(() => {
+                spacer.remove();
+            });
+        }
         
         this.state.isTransitioning = false;
     }
