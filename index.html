@@ -96,6 +96,14 @@
         .search-bar-fixed { top: calc(env(safe-area-inset-top, 0px) + 8px); }
         .search-bar-collapsed { min-height: 32px; }
     }
+
+    /* Use constant positioning for iOS */
+    .search-bar-fixed-ios { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 50; }
+
+    /* Keep the original for non-iOS devices */
+    @supports not (-webkit-touch-callout: none) {
+        .search-bar-fixed { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 50%; transform: translateX(-50%); z-index: 50; }
+    }
 </style>
 </head>
 <body class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 min-h-screen">
@@ -1407,8 +1415,10 @@ class SearchFilterBar {
         spacer.style.height = this.container.offsetHeight + 'px';
         this.container.parentNode.insertBefore(spacer, this.container);
 
-        // Use classes instead of inline styles
-        this.container.className = 'search-bar-fixed w-auto max-w-[90vw] p-0 m-0';
+        // Use iOS-specific class for constant positioning on iOS devices
+        const isIOS = this.isIOSDevice();
+        const fixedClass = isIOS ? 'search-bar-fixed-ios' : 'search-bar-fixed';
+        this.container.className = `${fixedClass} w-auto max-w-[90vw] p-0 m-0`;
         
         this.state.position = 'fixed';
         this.state.view = 'expanded';
@@ -1445,9 +1455,12 @@ class SearchFilterBar {
         this.state.isTransitioning = true;
         this.state.view = 'collapsed';
 
-        // Use classes for collapsed state
-        this.container.classList.remove('search-bar-expanded');
-        this.container.classList.add('search-bar-collapsed', 'max-w-[90vw]');
+        // Make the container inline to shrink-wrap content
+        if (this.container) {
+            this.container.style.width = 'auto';
+            this.container.style.display = 'inline-block';
+            this.container.style.maxWidth = '90vw';
+        }
 
         this.updateViewStyles();
         this.showMinimumContent();
@@ -1460,9 +1473,11 @@ class SearchFilterBar {
         this.state.isTransitioning = true;
         this.state.view = 'expanded';
 
-        // Use classes for expanded state
-        this.container.classList.remove('search-bar-collapsed');
-        this.container.classList.add('search-bar-expanded', 'max-w-[90vw]');
+        if (this.container) {
+            this.container.style.width = 'fit-content';
+            this.container.style.display = '';
+            this.container.style.maxWidth = '90vw';
+        }
 
         this.updateViewStyles();
         this.showStandardContent();
@@ -1477,7 +1492,7 @@ class SearchFilterBar {
 
         if (this.state.view === 'collapsed') {
             // Remove ALL height properties and let content determine size
-            this.glassBar.className = 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40 inline-block'; // inline-block instead of block
+            this.glassBar.className = 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40 inline-block';
             this.glassBar.style.width = 'auto';
             this.glassBar.style.height = 'auto';
             this.glassBar.style.minHeight = '';
@@ -1485,9 +1500,8 @@ class SearchFilterBar {
             
             const contentContainer = this.glassBar?.querySelector('.relative');
             if (contentContainer) {
-                // Remove flex and height constraints
                 contentContainer.classList.remove('h-full', 'flex', 'items-center');
-                contentContainer.classList.add('inline-flex', 'items-center'); // inline-flex for tight wrapping
+                contentContainer.classList.add('inline-flex', 'items-center');
                 contentContainer.style.height = 'auto';
             }
         } else {
@@ -1515,7 +1529,7 @@ class SearchFilterBar {
         const contentContainer = this.glassBar?.querySelector('.relative');
         if (contentContainer) {
             contentContainer.classList.remove('px-3', 'h-full', 'flex');
-            contentContainer.classList.add('px-1.5', 'py-0.5', 'inline-flex'); // inline-flex for tight wrap
+            contentContainer.classList.add('px-1.5', 'py-0.5', 'inline-flex');
         }
         
         this.updateMinimumDisplay();
