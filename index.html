@@ -1481,13 +1481,18 @@ class SearchFilterBar {
         if (this.state.position === 'standard' && scrollY > triggerPoint) {
             // Check if we have content BEFORE transitioning
             const hasContent = this.hasActiveContent();
-            this.transitionToFixed();
             
-            // If no content and scrolling down, immediately hide
             if (!hasContent && scrollDelta > 0) {
+                // If no content and scrolling down, prepare to hide immediately
                 this.container.style.opacity = '0';
                 this.container.style.pointerEvents = 'none';
-                this.state.view = 'collapsed'; // Set collapsed state to prevent expansion flash
+            }
+            
+            this.transitionToFixed();
+            
+            // Set state after transition
+            if (!hasContent && scrollDelta > 0) {
+                this.state.view = 'collapsed';
             }
         } else if (this.state.position === 'fixed' && scrollY <= triggerPoint) {
             this.transitionToStandard();
@@ -1495,26 +1500,35 @@ class SearchFilterBar {
 
         // Handle view changes when fixed
         if (this.state.position === 'fixed') {
+            const hasContent = this.hasActiveContent();
             this.scrollState.accumulator += scrollDelta;
 
             // Check thresholds
             if (this.state.view === 'expanded' && this.scrollState.accumulator > this.config.scrollThreshold) {
-                // Only collapse if there's content, otherwise hide
-                if (this.hasActiveContent()) {
+                if (hasContent) {
+                    // Only animate collapse if there's content
                     this.setCollapsedView();
                 } else {
-                    // Directly hide without calling setCollapsedView first
+                    // No content - hide immediately without animation
                     this.state.view = 'collapsed';
                     this.container.style.opacity = '0';
                     this.container.style.pointerEvents = 'none';
+                    // Don't update view styles or show minimum content
                 }
                 this.scrollState.accumulator = 0;
             } else if (this.state.view === 'collapsed' && this.scrollState.accumulator < -this.config.scrollThreshold) {
                 // Show the bar when scrolling up
-                this.setExpandedView();
-                // Always restore visibility when scrolling up
                 this.container.style.opacity = '1';
                 this.container.style.pointerEvents = '';
+                
+                if (hasContent || this.container.style.opacity === '1') {
+                    this.setExpandedView();
+                } else {
+                    // No content but scrolling up - just show expanded empty bar
+                    this.state.view = 'expanded';
+                    this.updateViewStyles();
+                    this.showStandardContent();
+                }
                 this.scrollState.accumulator = 0;
             }
 
@@ -1559,6 +1573,10 @@ class SearchFilterBar {
         if (this.state.position === 'fixed' || this.state.isTransitioning) return;
         this.state.isTransitioning = true;
 
+        // Check if we should hide immediately
+        const shouldHideImmediately = !this.hasActiveContent() && 
+                                    this.container.style.opacity === '0';
+
         // Add spacer to prevent layout jump
         const spacer = document.createElement('div');
         spacer.id = 'searchBarSpacer';
@@ -1583,22 +1601,32 @@ class SearchFilterBar {
                 max-width: 90vw !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                opacity: ${shouldHideImmediately ? '0' : '1'} !important;
+                pointer-events: ${shouldHideImmediately ? 'none' : 'auto'} !important;
                 transition: opacity 0.2s ease-out !important;
             `;
         } else {
             // For regular browsers (Safari, etc.)
             this.container.className = 'search-bar-fixed w-auto max-w-[90vw] p-0 m-0';
-            this.container.style.cssText = 'transition: opacity 0.2s ease-out !important;'; // Add transition for smooth hide/show
+            if (shouldHideImmediately) {
+                this.container.style.opacity = '0';
+                this.container.style.pointerEvents = 'none';
+            }
+            this.container.style.transition = 'opacity 0.2s ease-out';
         }
         
         this.state.position = 'fixed';
-        // Don't automatically set to expanded if we don't have content
-        if (this.hasActiveContent()) {
+        
+        // Set initial view state based on content
+        if (!shouldHideImmediately) {
             this.state.view = 'expanded';
+            this.updateViewStyles();
+        } else {
+            this.state.view = 'collapsed';
+            // Don't update view styles if hidden
         }
+        
         this.scrollState.accumulator = 0;
-
-        this.updateViewStyles();
         this.state.isTransitioning = false;
     }
 
