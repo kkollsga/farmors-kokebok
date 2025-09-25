@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui">
 <title>Farmors Kokebok</title>
 <!-- Progressive Web App -->
 <meta name="mobile-web-app-capable" content="yes">
@@ -32,12 +32,12 @@
     
     /* SEARCH FILTER BAR - POSITIONING */
     .search-bar-fixed { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 50%; transform: translateX(-50%); z-index: 50; }
+    .search-bar-fixed-ios { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 50; }
     .search-bar-collapsed { width: auto; }
     .search-bar-expanded { width: fit-content; }
-    #unifiedGlassBar { transition: all 0.3s ease-out; }
+    #unifiedGlassBar { transition: width 0.3s ease-out, height 0.3s ease-out, padding 0.3s ease-out; }
     #standardContent.hidden, #minimumContent.hidden { display: none !important; }
     #minimumContent { padding: 0; }
-    #minimumContent .inline-flex { padding: 0.4rem 0.625rem; font-size: 0.75rem; }
     
     /* FILTER DROPDOWN */
     #filterOptions { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
@@ -71,8 +71,7 @@
     @media (max-width: 768px) {
         #filterButtonText { display: none; }
         #searchInputContainer { min-width: 200px; }
-        .search-bar-fixed { max-width: calc(100vw - 20px); }
-        .search-bar-collapsed { padding: 2px 4px; min-height: 32px; }
+        .search-bar-fixed, .search-bar-fixed-ios { max-width: calc(100vw - 20px); }
     }
 
     /* iOS SPECIFIC */
@@ -86,23 +85,16 @@
         #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div { padding-top: env(safe-area-inset-top, 0); }
     }
 
-    /* iOS STANDALONE MODE */
+    /* iOS STANDALONE MODE (Home Screen App) */
     @media (display-mode: standalone) {
+        .search-bar-fixed-ios { position: fixed !important; top: 20px !important; left: 50%; transform: translateX(-50%); z-index: 50; }
+        #searchFilterContainer.fixed { position: fixed !important; }
         #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div { padding-top: max(env(safe-area-inset-top), 20px); }
     }
 
     /* LANDSCAPE ADJUSTMENTS */
     @media (orientation: landscape) and (max-width: 900px) {
-        .search-bar-fixed { top: calc(env(safe-area-inset-top, 0px) + 8px); }
-        .search-bar-collapsed { min-height: 32px; }
-    }
-
-    /* Use constant positioning for iOS */
-    .search-bar-fixed-ios { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 50; }
-
-    /* Keep the original for non-iOS devices */
-    @supports not (-webkit-touch-callout: none) {
-        .search-bar-fixed { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 50%; transform: translateX(-50%); z-index: 50; }
+        .search-bar-fixed-ios { top: 8px; }
     }
 </style>
 </head>
@@ -1329,10 +1321,18 @@ class SearchFilterBar {
         this.initialize();
     }
 
+    isStandaloneMode() {
+        return window.matchMedia('(display-mode: standalone)').matches ||
+            window.navigator.standalone === true ||
+            document.referrer.includes('android-app://');
+    }
+
     initialize() {
         // Calculate trigger point after DOM loads
         setTimeout(() => {
-            this.scrollState.triggerPoint = this.container.offsetTop - this.config.triggerOffset;
+            // Adjust trigger point for standalone mode
+            const extraOffset = this.isStandaloneMode() ? 40 : this.config.triggerOffset;
+            this.scrollState.triggerPoint = this.container.offsetTop - extraOffset;
         }, 100);
 
         this.setupEventListeners();
@@ -1370,17 +1370,27 @@ class SearchFilterBar {
             this.transitionToStandard();
         }
 
-        // Handle view changes when fixed (expanded <-> collapsed)
-        if (this.state.position === 'fixed' && this.hasActiveContent()) {
-            // Accumulate scroll for view changes
+        // Handle view changes when fixed
+        if (this.state.position === 'fixed') {
             this.scrollState.accumulator += scrollDelta;
 
-            // Check for view transitions
+            // Check thresholds
             if (this.state.view === 'expanded' && this.scrollState.accumulator > this.config.scrollThreshold) {
-                this.setCollapsedView();
+                // Only collapse if there's content, otherwise hide
+                if (this.hasActiveContent()) {
+                    this.setCollapsedView();
+                } else {
+                    this.setCollapsedView();
+                    // Add opacity to hide when empty
+                    this.container.style.opacity = '0';
+                    this.container.style.pointerEvents = 'none';
+                }
                 this.scrollState.accumulator = 0;
             } else if (this.state.view === 'collapsed' && this.scrollState.accumulator < -this.config.scrollThreshold) {
                 this.setExpandedView();
+                // Restore visibility
+                this.container.style.opacity = '1';
+                this.container.style.pointerEvents = '';
                 this.scrollState.accumulator = 0;
             }
 
@@ -1388,14 +1398,6 @@ class SearchFilterBar {
             if ((scrollDelta > 0 && this.scrollState.accumulator < 0) || 
                 (scrollDelta < 0 && this.scrollState.accumulator > 0)) {
                 this.scrollState.accumulator = scrollDelta;
-            }
-        }
-
-        // Handle visibility when fixed with no content
-        if (this.state.position === 'fixed' && !this.hasActiveContent()) {
-            this.container.style.opacity = '1'; // Always visible when empty
-            if (this.state.view !== 'expanded') {
-                this.setExpandedView(); // Always expanded when no content
             }
         }
 
@@ -1415,10 +1417,20 @@ class SearchFilterBar {
         spacer.style.height = this.container.offsetHeight + 'px';
         this.container.parentNode.insertBefore(spacer, this.container);
 
-        // Use iOS-specific class for constant positioning on iOS devices
+        // Detect if in standalone mode
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                            window.navigator.standalone === true;
         const isIOS = this.isIOSDevice();
-        const fixedClass = isIOS ? 'search-bar-fixed-ios' : 'search-bar-fixed';
+        
+        // Use appropriate class based on context
+        const fixedClass = (isIOS || isStandalone) ? 'search-bar-fixed-ios' : 'search-bar-fixed';
         this.container.className = `${fixedClass} w-auto max-w-[90vw] p-0 m-0`;
+        
+        // Force fixed positioning in standalone mode
+        if (isStandalone) {
+            this.container.style.position = 'fixed';
+            this.container.style.top = '20px'; // Slightly more space in standalone
+        }
         
         this.state.position = 'fixed';
         this.state.view = 'expanded';
@@ -1435,8 +1447,38 @@ class SearchFilterBar {
         // Restore original Tailwind classes
         this.container.className = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 relative z-30';
         
-        // Reset glass bar to default
-        this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 overflow-visible w-full z-40 h-12';
+        // Clear ALL inline styles that might have been set
+        this.container.style.position = '';
+        this.container.style.top = '';
+        this.container.style.left = '';
+        this.container.style.transform = '';
+        this.container.style.width = '';
+        this.container.style.maxWidth = '';
+        this.container.style.zIndex = '';
+        this.container.style.padding = '';
+        this.container.style.margin = '';
+        this.container.style.opacity = '1';  // Ensure visible
+        this.container.style.pointerEvents = '';  // Ensure clickable
+        this.container.style.display = '';  // Reset display
+        this.container.style.transition = '';  // Clear transitions
+
+        // Reset glass bar to standard styling
+        this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 overflow-visible w-full z-40';
+        this.glassBar.style.height = '48px';
+        this.glassBar.style.width = '';
+        this.glassBar.style.minHeight = '';
+        this.glassBar.style.padding = '';
+        this.glassBar.style.display = '';
+        this.glassBar.style.transition = '';
+
+        // Reset content container
+        const contentContainer = this.glassBar?.querySelector('.relative');
+        if (contentContainer) {
+            contentContainer.className = 'relative h-full flex items-center gap-2 px-3';
+            contentContainer.style.height = '';
+            contentContainer.style.width = '';
+            contentContainer.style.display = '';
+        }
 
         // Remove spacer
         const spacer = document.getElementById('searchBarSpacer');
@@ -1446,7 +1488,9 @@ class SearchFilterBar {
         this.state.view = 'expanded';
         this.scrollState.accumulator = 0;
 
+        // Ensure standard content is shown
         this.showStandardContent();
+        
         this.state.isTransitioning = false;
     }
 
