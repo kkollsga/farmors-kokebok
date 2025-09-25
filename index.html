@@ -20,43 +20,53 @@
     body.modal-open { overflow: hidden; position: relative; touch-action: none; }
     .font-display { font-family: 'Playfair Display', serif; }
     
-    /* SAFE AREA (iOS) */
+    /* SAFE AREA */
     .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0); }
     .safe-top { padding-top: env(safe-area-inset-top, 0); }
     
-    /* SCROLLBAR STYLES */
+    /* SCROLLBAR */
     .recipe-scroll::-webkit-scrollbar { width: 6px; }
     .recipe-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
     .recipe-scroll::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 3px; }
     .recipe-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
     
-    /* SEARCH FILTER BAR - POSITIONING */
+    /* SEARCH BAR POSITIONING */
     .search-bar-fixed { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 50%; transform: translateX(-50%); z-index: 50; }
-    .search-bar-fixed-ios { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 50; }
-    .search-bar-collapsed { width: auto; }
-    .search-bar-expanded { width: fit-content; }
     #unifiedGlassBar { transition: width 0.3s ease-out, height 0.3s ease-out, padding 0.3s ease-out; }
     #standardContent.hidden, #minimumContent.hidden { display: none !important; }
     #minimumContent { padding: 0; }
     
     /* FILTER DROPDOWN */
     #filterOptions { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
-    #filterOptions { background: linear-gradient(white 30%, rgba(255,255,255,0)) center top, linear-gradient(rgba(255,255,255,0), white 70%) center bottom, linear-gradient(white, white) center; background-size: 100% 40px, 100% 40px, 100% 100%; background-attachment: local, local, scroll; background-repeat: no-repeat; }
+    #filterOptions { 
+        background: linear-gradient(white 30%, rgba(255,255,255,0)) center top, 
+                    linear-gradient(rgba(255,255,255,0), white 70%) center bottom, 
+                    linear-gradient(white, white) center; 
+        background-size: 100% 40px, 100% 40px, 100% 100%; 
+        background-attachment: local, local, scroll; 
+        background-repeat: no-repeat; 
+    }
     
     /* ANIMATIONS */
-    @keyframes tipHighlight { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
+    @keyframes tipHighlight { 
+        from { transform: translateX(-10px); opacity: 0; } 
+        to { transform: translateX(0); opacity: 1; } 
+    }
+    @keyframes shimmer { 
+        0% { background-position: -1000px 0; } 
+        100% { background-position: 1000px 0; } 
+    }
     
     /* CARD TRANSITIONS */
     [data-recipe-id] { transition: opacity 0.3s ease-out; }
     .recipe-counter { transition: transform 0.2s ease-out; }
     .recipe-stars i { transition: color 0.2s ease-out, transform 0.2s ease-out; }
     
-    /* RECOMMENDATIONS CONTAINER */
+    /* RECOMMENDATIONS */
     #recommendedRecipes { transition: min-height 0.3s ease-out; position: relative; }
     #recommendedRecipes > div { transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
     
-    /* MODAL SCROLLING */
+    /* MODAL */
     #recipeModal .absolute.inset-0 { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
     #recipeModal .fixed.top-4.right-4 { transition: transform 0.2s ease-out; }
     #recipeModal .fixed.top-4.right-4:active { transform: scale(0.95); }
@@ -71,7 +81,7 @@
     @media (max-width: 768px) {
         #filterButtonText { display: none; }
         #searchInputContainer { min-width: 200px; }
-        .search-bar-fixed, .search-bar-fixed-ios { max-width: calc(100vw - 20px); }
+        .search-bar-fixed { max-width: calc(100vw - 20px); }
     }
 
     /* iOS SPECIFIC */
@@ -85,37 +95,30 @@
         #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div { padding-top: env(safe-area-inset-top, 0); }
     }
 
-    /* iOS STANDALONE MODE (Home Screen App) - WITH 27px EXTRA PADDING */
+    /* iOS STANDALONE MODE */
     @media (display-mode: standalone) {
-        .search-bar-fixed, .search-bar-fixed-ios { position: fixed !important; top: 39px !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 50 !important; }
+        .search-bar-fixed { position: fixed !important; top: calc(env(safe-area-inset-top, 0px) + 12px) !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 50 !important; }
         #searchFilterContainer.fixed { position: fixed !important; padding-top: 0 !important; }
-        #searchFilterContainer:not(.search-bar-fixed):not(.search-bar-fixed-ios) { position: relative !important; }
+        #searchFilterContainer:not(.search-bar-fixed) { position: relative !important; }
         #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div { padding-top: max(env(safe-area-inset-top), 20px); }
         #unifiedGlassBar { position: relative !important; }
     }
     
-    /* iOS STANDALONE WITH SAFE AREA SUPPORT */
-    @supports (-webkit-touch-callout: none) {
-        @media (display-mode: standalone) {
-            .search-bar-fixed, .search-bar-fixed-ios { top: 39px !important; }
-        }
-    }
-    
-    /* STANDALONE MODE FULLSCREEN */
+    /* STANDALONE FULLSCREEN */
     @media (display-mode: fullscreen) {
-        .search-bar-fixed, .search-bar-fixed-ios { position: fixed !important; top: 39px !important; }
+        .search-bar-fixed { position: fixed !important; top: calc(env(safe-area-inset-top, 0px) + 12px) !important; }
     }
     
-    /* STANDALONE MODE MINIMAL UI */
+    /* STANDALONE MINIMAL UI */
     @media (display-mode: minimal-ui) {
-        .search-bar-fixed, .search-bar-fixed-ios { position: fixed !important; top: 39px !important; }
+        .search-bar-fixed { position: fixed !important; top: calc(env(safe-area-inset-top, 0px) + 12px) !important; }
     }
 
-    /* LANDSCAPE ADJUSTMENTS */
+    /* LANDSCAPE */
     @media (orientation: landscape) and (max-width: 900px) {
-        .search-bar-fixed-ios { top: 8px; }
+        .search-bar-fixed { top: calc(env(safe-area-inset-top, 0px) + 8px); }
         @media (display-mode: standalone) {
-            .search-bar-fixed, .search-bar-fixed-ios { top: 35px !important; }
+            .search-bar-fixed { top: calc(env(safe-area-inset-top, 0px) + 8px) !important; }
         }
     }
 </style>
@@ -1363,14 +1366,10 @@ class SearchFilterBar {
         // Calculate trigger point after DOM loads
         setTimeout(() => {
             const isStandalone = this.isStandaloneMode();
-            // In standalone mode, we need more offset because the status bar is handled differently
-            const extraOffset = isStandalone ? 60 : this.config.triggerOffset;
-            this.scrollState.triggerPoint = this.container.offsetTop - extraOffset;
+            // Use a consistent trigger point
+            this.scrollState.triggerPoint = this.container.offsetTop - this.config.triggerOffset;
             
-            // Store the initial top position for standalone mode
-            if (isStandalone) {
-                this.standaloneInitialTop = this.container.offsetTop;
-            }
+            // Don't need special handling for standalone mode here
         }, 100);
 
         this.setupEventListeners();
@@ -1489,17 +1488,16 @@ class SearchFilterBar {
         this.container.parentNode.insertBefore(spacer, this.container);
 
         const isStandalone = this.isStandaloneMode();
-        const isIOS = this.isIOSDevice();
         
         // Clear all classes first
         this.container.className = '';
         
         if (isStandalone) {
-            // For standalone mode, add 27px extra padding
-            const standaloneTop = this.config.fixedTopOffset + 27;
+            // Use CSS env() for safe area instead of hardcoded values
+            this.container.className = 'search-bar-fixed-ios w-auto max-w-[90vw] p-0 m-0';
             this.container.style.cssText = `
                 position: fixed !important;
-                top: ${standaloneTop}px !important;
+                top: calc(env(safe-area-inset-top, 0px) + ${this.config.fixedTopOffset}px) !important;
                 left: 50% !important;
                 transform: translateX(-50%) !important;
                 z-index: 50 !important;
@@ -1508,14 +1506,10 @@ class SearchFilterBar {
                 padding: 0 !important;
                 margin: 0 !important;
             `;
-        } else if (isIOS) {
-            // For regular iOS Safari
-            this.container.className = 'search-bar-fixed-ios w-auto max-w-[90vw] p-0 m-0';
-            this.container.style.cssText = ''; // Clear inline styles
         } else {
-            // For desktop and other browsers
+            // For regular browsers (Safari, etc.)
             this.container.className = 'search-bar-fixed w-auto max-w-[90vw] p-0 m-0';
-            this.container.style.cssText = ''; // Clear inline styles
+            this.container.style.cssText = ''; // Let CSS handle it
         }
         
         this.state.position = 'fixed';
