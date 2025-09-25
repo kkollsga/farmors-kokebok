@@ -795,6 +795,11 @@ class URLManager {
             this.filterManager.updateFilterButton();
         }
         
+        // Refresh the search filter bar after URL parameters are loaded
+        if (recipeApp.searchFilterBar) {
+            recipeApp.searchFilterBar.refreshState();
+        }
+        
         // Handle recipe parameter - now supports both ID and title for backwards compatibility
         const recipeParam = params.get('recipe');
         if (recipeParam) {
@@ -1037,16 +1042,14 @@ class FilterManager {
         if (!this.activeFilters.has(filterKey)) {
             this.activeFilters.set(filterKey, true);
             
-            // Update the search filter bar display
+            // Refresh the search filter bar state
             if (recipeApp.searchFilterBar) {
-                recipeApp.searchFilterBar.updateDisplay();
+                recipeApp.searchFilterBar.refreshState();
             }
             
-            // Use requestAnimationFrame to ensure the DOM updates are complete
             requestAnimationFrame(() => {
                 this.applyFilters();
                 
-                // Scroll to top if we came from the modal
                 if (wasModalOpen) {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
@@ -1079,6 +1082,11 @@ class FilterManager {
     clearAllFilters() {
         this.activeFilters.clear();
         this.applyFilters();
+        
+        // Refresh the search filter bar state
+        if (recipeApp.searchFilterBar) {
+            recipeApp.searchFilterBar.refreshState();
+        }
         
         if (this.urlManager) {
             this.urlManager.updateURL();
@@ -1402,6 +1410,30 @@ class SearchFilterBar {
         }
 
         this.scrollState.lastY = scrollY;
+    }
+
+    refreshState() {
+        // Check if we have content now
+        const hasContent = this.hasActiveContent();
+        
+        // If we're in fixed position
+        if (this.state.position === 'fixed') {
+            // If we were hidden/collapsed without content but now have content
+            if (hasContent && this.container.style.opacity === '0') {
+                // Show the bar
+                this.container.style.opacity = '1';
+                this.container.style.pointerEvents = '';
+                this.setExpandedView();
+            }
+            // If we're expanded but empty and scrolled down, allow hiding
+            else if (!hasContent && this.state.view === 'collapsed') {
+                this.container.style.opacity = '0';
+                this.container.style.pointerEvents = 'none';
+            }
+        }
+        
+        // Always update the display to reflect new filters/search
+        this.updateDisplay();
     }
 
     // ============================================
@@ -1744,7 +1776,7 @@ class SearchFilterBar {
                 this.searchQuery = e.target.value;
                 this.filterManager.searchQuery = e.target.value.toLowerCase();
                 this.filterManager.applyFilters();
-                this.updateDisplay();
+                this.refreshState(); // Add this line
             });
         }
 
