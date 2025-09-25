@@ -1573,14 +1573,24 @@ class SearchFilterBar {
         if (this.state.position === 'fixed' || this.state.isTransitioning) return;
         this.state.isTransitioning = true;
 
+        // Measure the total space occupied BEFORE any changes
+        const containerRect = this.container.getBoundingClientRect();
+        const computedStyle = window.getComputedStyle(this.container);
+        const marginTop = parseFloat(computedStyle.marginTop) || 0;
+        const marginBottom = parseFloat(computedStyle.marginBottom) || 0;
+        const totalHeight = this.container.offsetHeight + marginTop + marginBottom;
+        
         // Check if we should hide immediately
         const shouldHideImmediately = !this.hasActiveContent() && 
-                                    this.container.style.opacity === '0';
+                                    (window.pageYOffset - this.scrollState.lastY) > 0;
 
-        // Add spacer to prevent layout jump
+        // Add spacer to prevent layout jump - must match exact space taken
         const spacer = document.createElement('div');
         spacer.id = 'searchBarSpacer';
-        spacer.style.height = this.container.offsetHeight + 'px';
+        spacer.style.height = totalHeight + 'px';
+        spacer.style.marginTop = '0';
+        spacer.style.marginBottom = '0';
+        spacer.style.visibility = 'hidden'; // Invisible but takes up space
         this.container.parentNode.insertBefore(spacer, this.container);
 
         const isStandalone = this.isStandaloneMode();
@@ -1634,6 +1644,9 @@ class SearchFilterBar {
         if (this.state.position === 'standard' || this.state.isTransitioning) return;
         this.state.isTransitioning = true;
 
+        // Get the spacer element
+        const spacer = document.getElementById('searchBarSpacer');
+        
         // Restore original Tailwind classes
         this.container.className = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 relative z-30';
         
@@ -1670,9 +1683,13 @@ class SearchFilterBar {
             contentContainer.style.display = '';
         }
 
-        // Remove spacer
-        const spacer = document.getElementById('searchBarSpacer');
-        if (spacer) spacer.remove();
+        // Remove spacer AFTER restoring styles to prevent jump
+        if (spacer) {
+            // Small delay to ensure layout has settled
+            requestAnimationFrame(() => {
+                spacer.remove();
+            });
+        }
 
         this.state.position = 'standard';
         this.state.view = 'expanded';
