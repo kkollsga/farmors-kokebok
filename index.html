@@ -121,14 +121,27 @@
             .search-bar-fixed { top: calc(env(safe-area-inset-top, 0px) + 8px) !important; }
         }
     }
+
+    .text-shadow { text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
 </style>
 </head>
 <body class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 min-h-screen">
 <!-- Header -->
 <header class="safe-top">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <!-- Daily Farmor Image -->
+        <div id="farmorImageContainer" class="flex justify-center mb-4">
+            <div class="relative inline-block">
+                <img src="" 
+                     alt="Farmor" 
+                     class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 object-cover rounded-2xl shadow-lg opacity-0 transition-opacity duration-500 hover:scale-105 transform transition-transform"
+                     style="filter: sepia(0.15) contrast(1.05);">
+            </div>
+        </div>
+        
+        <!-- App Title -->
         <div class="flex justify-between items-center">
-            <h1 id="appTitle" class="font-display text-3xl text-amber-800"></h1>
+            <h1 id="appTitle" class="font-display text-3xl text-amber-800 w-full text-center"></h1>
         </div>
     </div>
 </header>
@@ -270,6 +283,10 @@
 // ============================================================================
 // CONFIGURATION CONSTANTS
 // ============================================================================
+const FARMOR_IMAGES = [
+    'farmor/farmor_og_guttene.jpg',
+    // Add more images as needed
+];
 
 const CONFIG = {
     BREAKPOINTS: {
@@ -300,6 +317,42 @@ let UI_TEXT = {};
 let RECIPES_DATA = [];
 let TAXONOMY = {};
 let CURRENT_LANGUAGE = CONFIG.DEFAULT_LANGUAGE;
+
+// ============================================================================
+// DAILY IMAGE SELECTOR
+// ============================================================================
+
+function getDailyFarmorImage() {
+    // Get today's date and create a seed based on it
+    const today = new Date();
+    const dateString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+    
+    // Create a simple hash from the date string
+    let hash = 0;
+    for (let i = 0; i < dateString.length; i++) {
+        hash = ((hash << 5) - hash) + dateString.charCodeAt(i);
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    
+    // Use the hash to select an image
+    const imageIndex = Math.abs(hash) % FARMOR_IMAGES.length;
+    return FARMOR_IMAGES[imageIndex];
+}
+
+function displayDailyFarmorImage() {
+    const imageUrl = getDailyFarmorImage();
+    const container = document.getElementById('farmorImageContainer');
+    
+    if (container) {
+        const img = container.querySelector('img');
+        if (img) {
+            img.src = imageUrl;
+            img.onload = () => {
+                img.classList.add('opacity-100');
+            };
+        }
+    }
+}
 
 // ============================================================================
 // DUMMY DATA GENERATOR (for local development)
@@ -4153,6 +4206,9 @@ let recipeApp;
 async function initApp() {
     recipeApp = new RecipeApp();
     await recipeApp.init();
+    
+    // Display the daily farmor image
+    displayDailyFarmorImage();
 }
 
 if (document.readyState === 'loading') {
