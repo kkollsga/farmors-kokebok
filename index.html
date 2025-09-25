@@ -1708,23 +1708,24 @@ class SearchFilterBar {
         const countSpan = this.filterButton.querySelector('#filterCount');
         const textSpan = this.filterButton.querySelector('#filterButtonText');
         const hasSearch = this.searchQuery.length > 0;
+        const isMobile = window.innerWidth <= 768;
 
-        if (hasSearch && hasFilters) {
-            this.filterButton.className = "flex items-center p-2 rounded-xl transition-all text-sm font-medium shrink-0 text-amber-700 hover:text-amber-800 hover:bg-amber-50";
-            if (countSpan) countSpan.classList.add('hidden');
+        if (hasFilters && isMobile) {
+            // On mobile with filters - minimal style (just icon, no background, no counter)
+            this.filterButton.className = "flex items-center p-1.5 rounded-lg transition-all text-sm font-medium shrink-0 text-amber-700 hover:text-amber-800 hover:bg-amber-50";
+            if (countSpan) countSpan.classList.add('hidden'); // Hide counter on mobile
             if (textSpan) textSpan.classList.add('hidden');
-        } else if (hasSearch && !hasFilters) {
-            this.filterButton.className = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-white text-gray-700 hover:text-amber-600 border border-gray-200";
-            if (countSpan) countSpan.classList.add('hidden');
-            if (textSpan) textSpan.classList.remove('hidden');
-        } else if (hasFilters) {
+        } else if (hasFilters && !isMobile) {
+            // Desktop with filters - full button style with counter
             this.filterButton.className = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700";
             if (countSpan) {
                 countSpan.textContent = filterCount;
+                countSpan.className = 'bg-white/30 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold';
                 countSpan.classList.remove('hidden');
             }
             if (textSpan) textSpan.classList.remove('hidden');
         } else {
+            // No filters - default button
             this.filterButton.className = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-white text-gray-700 hover:text-amber-600 border border-gray-200";
             if (countSpan) countSpan.classList.add('hidden');
             if (textSpan) textSpan.classList.remove('hidden');
