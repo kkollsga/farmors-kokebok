@@ -85,9 +85,9 @@
         #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div { padding-top: env(safe-area-inset-top, 0); }
     }
 
-    /* iOS STANDALONE MODE (Home Screen App) - UPDATED */
+    /* iOS STANDALONE MODE (Home Screen App) - WITH 27px EXTRA PADDING */
     @media (display-mode: standalone) {
-        .search-bar-fixed, .search-bar-fixed-ios { position: fixed !important; top: 12px !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 50 !important; }
+        .search-bar-fixed, .search-bar-fixed-ios { position: fixed !important; top: 39px !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 50 !important; }
         #searchFilterContainer.fixed { position: fixed !important; padding-top: 0 !important; }
         #searchFilterContainer:not(.search-bar-fixed):not(.search-bar-fixed-ios) { position: relative !important; }
         #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div { padding-top: max(env(safe-area-inset-top), 20px); }
@@ -97,25 +97,25 @@
     /* iOS STANDALONE WITH SAFE AREA SUPPORT */
     @supports (-webkit-touch-callout: none) {
         @media (display-mode: standalone) {
-            .search-bar-fixed, .search-bar-fixed-ios { top: max(12px, env(safe-area-inset-top, 12px)) !important; }
+            .search-bar-fixed, .search-bar-fixed-ios { top: 39px !important; }
         }
     }
     
     /* STANDALONE MODE FULLSCREEN */
     @media (display-mode: fullscreen) {
-        .search-bar-fixed, .search-bar-fixed-ios { position: fixed !important; top: 12px !important; }
+        .search-bar-fixed, .search-bar-fixed-ios { position: fixed !important; top: 39px !important; }
     }
     
     /* STANDALONE MODE MINIMAL UI */
     @media (display-mode: minimal-ui) {
-        .search-bar-fixed, .search-bar-fixed-ios { position: fixed !important; top: 12px !important; }
+        .search-bar-fixed, .search-bar-fixed-ios { position: fixed !important; top: 39px !important; }
     }
 
     /* LANDSCAPE ADJUSTMENTS */
     @media (orientation: landscape) and (max-width: 900px) {
         .search-bar-fixed-ios { top: 8px; }
         @media (display-mode: standalone) {
-            .search-bar-fixed, .search-bar-fixed-ios { top: 8px !important; }
+            .search-bar-fixed, .search-bar-fixed-ios { top: 35px !important; }
         }
     }
 </style>
@@ -1495,10 +1495,11 @@ class SearchFilterBar {
         this.container.className = '';
         
         if (isStandalone) {
-            // For standalone mode, use fixed positioning with specific top value
+            // For standalone mode, add 27px extra padding
+            const standaloneTop = this.config.fixedTopOffset + 27;
             this.container.style.cssText = `
                 position: fixed !important;
-                top: ${this.config.fixedTopOffset}px !important;
+                top: ${standaloneTop}px !important;
                 left: 50% !important;
                 transform: translateX(-50%) !important;
                 z-index: 50 !important;
