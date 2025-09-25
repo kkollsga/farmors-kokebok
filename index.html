@@ -1510,25 +1510,11 @@ class SearchFilterBar {
                 }
                 this.scrollState.accumulator = 0;
             } else if (this.state.view === 'collapsed' && this.scrollState.accumulator < -this.config.scrollThreshold) {
-                // Only expand if we have content or were already visible
-                if (this.hasActiveContent() || this.container.style.opacity === '1') {
-                    this.setExpandedView();
-                    // Restore visibility
-                    this.container.style.opacity = '1';
-                    this.container.style.pointerEvents = '';
-                } else if (!this.hasActiveContent()) {
-                    // If no content, show expanded briefly then hide
-                    this.setExpandedView();
-                    this.container.style.opacity = '1';
-                    this.container.style.pointerEvents = '';
-                    // Hide after a brief moment
-                    setTimeout(() => {
-                        if (!this.hasActiveContent() && this.state.position === 'fixed') {
-                            this.container.style.opacity = '0';
-                            this.container.style.pointerEvents = 'none';
-                        }
-                    }, 500);
-                }
+                // Show the bar when scrolling up
+                this.setExpandedView();
+                // Always restore visibility when scrolling up
+                this.container.style.opacity = '1';
+                this.container.style.pointerEvents = '';
                 this.scrollState.accumulator = 0;
             }
 
