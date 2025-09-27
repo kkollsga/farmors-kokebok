@@ -3267,6 +3267,7 @@ class ModalManager {
         this.recommendationEngine = recommendationEngine;
         this.scrollPosition = 0;
         this.isFullscreen = false;
+        this.isMobileLayout = false; // Add this new property
         this.currentRecipeId = null;
         this.completedSteps = new Map();
         this.activeStep = null;
@@ -3310,8 +3311,15 @@ class ModalManager {
                 clearTimeout(this.boundHandlers.resizeTimer);
                 this.boundHandlers.resizeTimer = setTimeout(() => {
                     this.updateModalLayout();
-                    const newIsFullscreen = window.innerWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
-                    if (newIsFullscreen !== this.isFullscreen) {
+                    
+                    const windowWidth = window.innerWidth;
+                    const newIsFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
+                    const newIsMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
+                    
+                    // Check if either breakpoint was crossed
+                    if (newIsFullscreen !== this.isFullscreen || newIsMobileLayout !== this.isMobileLayout) {
+                        this.isFullscreen = newIsFullscreen;
+                        this.isMobileLayout = newIsMobileLayout;
                         this.updateModalContent();
                     }
                 }, 250);
@@ -3406,6 +3414,10 @@ class ModalManager {
         
         this.currentRecipeId = recipeId;
         
+        // Initialize layout states
+        this.isFullscreen = window.innerWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
+        this.isMobileLayout = window.innerWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
+        
         this.scrollPosition = window.pageYOffset;
         document.body.classList.add('modal-open');
         document.body.style.overflow = 'hidden';
@@ -3461,7 +3473,6 @@ class ModalManager {
             modal.className = 'fixed inset-0 z-50 bg-gradient-to-br from-amber-100 to-orange-100';
             if (flexContainer) {
                 flexContainer.className = 'h-full';
-                // Add minimal safe area padding for iOS in portrait mode (just status bar)
                 if (isIOS && isPortrait) {
                     flexContainer.style.paddingTop = 'env(safe-area-inset-top, 0)';
                 } else {
@@ -3475,7 +3486,7 @@ class ModalManager {
             modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50';
             if (flexContainer) {
                 flexContainer.className = 'flex items-center justify-center min-h-screen p-4';
-                flexContainer.style.paddingTop = ''; // Reset padding for desktop
+                flexContainer.style.paddingTop = '';
             }
             if (modalWrapper) {
                 modalWrapper.className = 'bg-gradient-to-br from-amber-100 to-orange-100 rounded-3xl max-w-5xl w-full h-[92vh] flex flex-col shadow-2xl relative overflow-hidden';
@@ -3537,7 +3548,6 @@ class ModalManager {
         `;
     }
 
-
     updateModalContent() {
         if (!this.currentRecipeId) return;
         
@@ -3554,6 +3564,7 @@ class ModalManager {
         
         const windowWidth = window.innerWidth;
         const isMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
+        const isNarrowWidth = windowWidth >= 400 && windowWidth <= 500; // Add this line
         
         modalWrapper.innerHTML = `
             <div class="relative w-full h-full">
@@ -3566,17 +3577,17 @@ class ModalManager {
                     <div class="${isMobileLayout ? 'h-48' : 'h-72'} pointer-events-none"></div>
 
                     <!-- Actual content -->
-                    <div class="min-h-full bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
+                    <div class="min-h-full bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)] ${isNarrowWidth ? 'pl-4' : ''}">
                         ${
                             isMobileLayout 
-                                ? this.generateMobileContent(recipeWithUserData) 
-                                : this.generateDesktopContent(recipeWithUserData)
+                                ? this.generateMobileContent(recipeWithUserData, isNarrowWidth) 
+                                : this.generateDesktopContent(recipeWithUserData, isNarrowWidth)
                         }
                     </div>        
                 </div>
 
-                <!-- Category button (fixed to modal, not screen, and outside scroll flow) -->
-                <div class="absolute top-4 left-4 z-0">
+                <!-- Category button with adjusted left position -->
+                <div class="absolute top-4 ${isNarrowWidth ? 'left-8' : 'left-4'} z-0">
                     ${this.generateCategoryButton(recipeWithUserData)}
                 </div>
             </div>
@@ -3590,14 +3601,14 @@ class ModalManager {
         });
     }
 
-    generateMobileContent(recipe) {
+    generateMobileContent(recipe, isNarrowWidth = false) {
         const sourceInfo = this.uiManager.formatSource(recipe);
         const today = new Date().toISOString().split('T')[0];
         const madeToday = recipe.madeDates && recipe.madeDates.includes(today);
         const madeCount = recipe.madeDates ? recipe.madeDates.length : 0;
         
         return `
-            <div class="px-4 py-6">
+            <div class="${isNarrowWidth ? 'px-8' : 'px-4'} py-6">
                 <div class="mb-4">
                     <div class="flex items-start gap-2">
                         <h2 class="font-display text-2xl text-gray-800 ${sourceInfo ? 'mb-1' : 'mb-2'}">${recipe.title}</h2>
@@ -3670,14 +3681,14 @@ class ModalManager {
         `;
     }
 
-    generateDesktopContent(recipe) {
+    generateDesktopContent(recipe, isNarrowWidth = false) {
         const sourceInfo = this.uiManager.formatSource(recipe);
         const today = new Date().toISOString().split('T')[0];
         const madeToday = recipe.madeDates && recipe.madeDates.includes(today);
         const madeCount = recipe.madeDates ? recipe.madeDates.length : 0;
         
         return `
-            <div class="px-8 py-8">
+            <div class="${isNarrowWidth ? 'px-12' : 'px-8'} py-8">
                 <div class="border-b border-gray-100 pb-4 mb-6">
                     <div class="flex items-start gap-3">
                         <h2 class="font-display text-3xl text-gray-800 ${sourceInfo ? 'mb-1' : 'mb-2'}">${recipe.title}</h2>
@@ -3991,6 +4002,7 @@ class ModalManager {
         
         this.currentRecipeId = null;
         this.isFullscreen = false;
+        this.isMobileLayout = false;
         
         modal.classList.add('hidden');
         
