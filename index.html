@@ -153,12 +153,21 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <!-- Daily Farmor Image -->
         <div id="farmorImageContainer" class="flex justify-center mb-4">
-            <div class="w-full max-w-4xl" style="max-height: 400px;">
+            <div class="inline-block relative">
                 <img src="" 
                      alt="Farmor" 
                      id="farmorImage"
-                     class="w-full h-full object-contain rounded-2xl shadow-xl opacity-0 transition-opacity duration-500"
-                     style="filter: sepia(0.15) contrast(1.05); max-height: 400px; object-fit: contain;">
+                     class="block rounded-lg opacity-0 transition-opacity duration-500 shadow-md"
+                     style="filter: sepia(0.15) contrast(1.05); max-width: 720px; max-height: 360px; object-fit: contain;">
+                
+                <!-- Subtle frame border -->
+                <div class="absolute inset-0 border-2 border-gray-600/10 rounded-lg pointer-events-none"></div>
+                
+                <!-- Inner shadow for depth -->
+                <div class="absolute inset-0 rounded-lg shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] pointer-events-none"></div>
+                
+                <!-- Outer frame effect -->
+                <div class="absolute -inset-1 border border-amber-100/30 rounded-xl pointer-events-none"></div>
             </div>
         </div>
         
