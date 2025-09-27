@@ -297,7 +297,7 @@
 </div>
 
 <!-- Main Recipe Grid -->
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 pb-12 safe-bottom">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 pb-2 safe-bottom">
     <div id="recipeGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Recipe cards will be inserted here -->
     </div>
@@ -315,7 +315,7 @@
 </div>
 
 <!-- Signature -->
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-6 safe-bottom">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 mb-12 safe-bottom">
     <p class="text-right text-gray-500 text-xs">
         Laget av <span class="signature-name text-gray-600 text-base">Kristian de Figueiredo Kollsgård</span>
     </p>
@@ -3493,7 +3493,7 @@ class ModalManager {
         const imageLowUrl = recipe.image ? CONFIG.IMAGE_PATHS.LIST + recipe.image : null;
         const imageHighUrl = recipe.image ? CONFIG.IMAGE_PATHS.MODAL + recipe.image : null;
         const isMobile = window.innerWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
-        const heroImageHeight = isMobile ? 'h-56' : 'h-80';
+        const heroImageHeight = isMobile ? 'h-56' : 'h-[500px]';
         const isFullscreen = window.innerWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
         
         return `
