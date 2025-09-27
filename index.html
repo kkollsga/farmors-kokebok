@@ -3316,7 +3316,7 @@ class ModalManager {
                 const windowWidth = window.innerWidth;
                 const newIsFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
                 const newIsMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
-                const newIsNarrowWidth = windowWidth >= 500 && windowWidth <= 700;
+                const newIsNarrowWidth = windowWidth >= 700 && windowWidth <= 900;
                 
                 // Check if any breakpoint was crossed
                 if (newIsFullscreen !== this.isFullscreen || 
@@ -3420,9 +3420,10 @@ class ModalManager {
         this.currentRecipeId = recipeId;
         
         // Initialize layout states
-        this.isFullscreen = window.innerWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
-        this.isMobileLayout = window.innerWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
-        this.isNarrowWidth = window.innerWidth >= 500 && window.innerWidth <= 700;
+        const windowWidth = window.innerWidth;
+        this.isFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
+        this.isMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
+        this.isNarrowWidth = windowWidth >= 700 && windowWidth <= 900;
         
         this.scrollPosition = window.pageYOffset;
         document.body.classList.add('modal-open');
@@ -3570,7 +3571,7 @@ class ModalManager {
         
         const windowWidth = window.innerWidth;
         const isMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
-        const isNarrowWidth = windowWidth >= 500 && windowWidth <= 700; // Add this line
+        const isNarrowWidth = windowWidth >= 700 && windowWidth <= 900; // Add this line
         
         modalWrapper.innerHTML = `
             <div class="relative w-full h-full">
