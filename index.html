@@ -12,6 +12,7 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap" rel="stylesheet">
 <!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -144,6 +145,11 @@
     .farmor-overlay.active {
         opacity: 1;
         pointer-events: auto;
+    }
+
+    .signature-name {
+        font-family: 'Kalam', cursive;
+        font-weight: 700;
     }
 </style>
 </head>
@@ -311,6 +317,12 @@
     </div>
 </div>
 
+<!-- Signature -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-6 safe-bottom">
+    <p class="text-right text-gray-500 text-xs">
+        Laget av <span class="signature-name text-gray-600 text-base">Kristian de Figueiredo Kollsgård</span>
+    </p>
+</div>
 <script>
 // ============================================================================
 // CONFIGURATION CONSTANTS
