@@ -3316,7 +3316,7 @@ class ModalManager {
                 const windowWidth = window.innerWidth;
                 const newIsFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
                 const newIsMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
-                const newIsNarrowWidth = windowWidth >= 400 && windowWidth <= 500;
+                const newIsNarrowWidth = windowWidth >= 400 && windowWidth <= 600;
                 
                 // Check if any breakpoint was crossed
                 if (newIsFullscreen !== this.isFullscreen || 
@@ -3422,7 +3422,7 @@ class ModalManager {
         // Initialize layout states
         this.isFullscreen = window.innerWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
         this.isMobileLayout = window.innerWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
-        this.isNarrowWidth = window.innerWidth >= 400 && window.innerWidth <= 500;
+        this.isNarrowWidth = window.innerWidth >= 400 && window.innerWidth <= 600;
         
         this.scrollPosition = window.pageYOffset;
         document.body.classList.add('modal-open');
@@ -3570,7 +3570,7 @@ class ModalManager {
         
         const windowWidth = window.innerWidth;
         const isMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
-        const isNarrowWidth = windowWidth >= 400 && windowWidth <= 500; // Add this line
+        const isNarrowWidth = windowWidth >= 400 && windowWidth <= 600; // Add this line
         
         modalWrapper.innerHTML = `
             <div class="relative w-full h-full">
