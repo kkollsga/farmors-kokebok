@@ -4244,9 +4244,9 @@ class RecommendationEngine {
         if (recipe) {
             // Get the international category key
             const categoryKey = this.recipeDatabase.getCategoryKey(recipe.category);
-            
+            console.log(categoryKey);
             // Christmas recipes (using international key)
-            if (categoryKey === 'christmas') {
+            if (categoryKey === 'julekaker') {  // Changed from 'christmas' to 'julekaker'
                 const now = new Date();
                 const month = now.getMonth();
                 
@@ -4255,12 +4255,12 @@ class RecommendationEngine {
                 } else if (month === 0) {  // January
                     score *= WEIGHTS.CHRISTMAS_JANUARY;
                 } else {
-                    score *= WEIGHTS.CHRISTMAS_OFF_SEASON;
+                    score *= WEIGHTS.CHRISTMAS_OFF_SEASON;  // This should apply in September
                 }
             }
             
             // Butchery guide (using international key)
-            if (categoryKey === 'butchery') {
+            if (categoryKey === 'slakteveiledning') {  // Or whatever the Norwegian key would be
                 score *= WEIGHTS.BUTCHERY;
             }
         }
