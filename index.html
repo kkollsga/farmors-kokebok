@@ -901,18 +901,16 @@ class URLManager {
 
     initializeFromURL() {
         const params = new URLSearchParams(window.location.search);
+
+        // Skip language param (already handled)
         
-        // Skip language param as it's already handled
-        
-        // Handle filter parameter - now using international keys
+        // --- Handle filters (already there) ---
         const filterParam = params.get('filter');
         if (filterParam) {
             const filters = filterParam.split(',');
             filters.forEach(filter => {
                 if (filter.includes(':')) {
                     const [filterType, filterKey] = filter.split(':');
-                    
-                    // Convert international key to localized value
                     let localizedValue = filterKey;
                     
                     if (filterType === 'category' && TAXONOMY.categories[filterKey]) {
@@ -929,27 +927,24 @@ class URLManager {
             this.filterManager.renderFilterPills();
             this.filterManager.updateFilterButton();
         }
-        
-        // Refresh the search filter bar after URL parameters are loaded
-        if (recipeApp.searchFilterBar) {
-            recipeApp.searchFilterBar.refreshState();
+
+        // --- Handle search parameter (NEW) ---
+        const searchParam = params.get('search');
+        if (searchParam) {
+            this.filterManager.searchQuery = decodeURIComponent(searchParam).toLowerCase();
+            if (recipeApp.searchFilterBar) {
+                recipeApp.searchFilterBar.setSearch(this.filterManager.searchQuery);
+            }
+            this.filterManager.applyFilters();
         }
-        
-        // Handle recipe parameter - now supports both ID and title for backwards compatibility
+
+        // --- Handle recipe parameter (already there) ---
         const recipeParam = params.get('recipe');
         if (recipeParam) {
-            let recipe = null;
-            
-            // First try to find by ID
-            recipe = this.recipeDatabase.findById(recipeParam);
-            
-            // If not found by ID, try by title (for backwards compatibility)
-            if (!recipe) {
-                recipe = this.recipeDatabase.getAll().find(r => 
+            let recipe = this.recipeDatabase.findById(recipeParam) ||
+                this.recipeDatabase.getAll().find(r => 
                     r.title.toLowerCase() === decodeURIComponent(recipeParam).toLowerCase()
                 );
-            }
-            
             if (recipe) {
                 setTimeout(() => {
                     this.modalManager.showRecipe(recipe.id);
@@ -960,25 +955,23 @@ class URLManager {
 
     updateURL() {
         if (this.isUpdatingFromURL) return;
-        
+
         const parts = [];
-        
+
         // Add language parameter if not default
         if (CURRENT_LANGUAGE !== CONFIG.DEFAULT_LANGUAGE) {
             parts.push(`lang=${CURRENT_LANGUAGE}`);
         }
-        
+
         // Build filter parameter with international keys
         if (this.filterManager.activeFilters.size > 0) {
             const activeFilters = [];
-            
             this.filterManager.activeFilters.forEach((value, key) => {
                 if (!value) return;
-                
+
                 const [filterType, filterValue] = key.split(':');
                 let internationalKey = filterValue;
-                
-                // Convert localized value to international key
+
                 if (filterType === 'category') {
                     internationalKey = this.recipeDatabase.getCategoryKey(filterValue) || filterValue;
                 } else if (filterType === 'meal') {
@@ -986,48 +979,49 @@ class URLManager {
                 } else if (filterType === 'cuisine') {
                     internationalKey = this.recipeDatabase.getCuisineKey(filterValue) || filterValue;
                 }
-                
+
                 activeFilters.push(`${filterType}:${internationalKey}`);
             });
-            
+
             if (activeFilters.length > 0) {
                 parts.push('filter=' + activeFilters.join(','));
             }
         }
-        
+
+        // --- Add search parameter (NEW) ---
+        if (this.filterManager.searchQuery && this.filterManager.searchQuery.length > 0) {
+            parts.push('search=' + encodeURIComponent(this.filterManager.searchQuery));
+        }
+
         // Build recipe parameter with ID
         if (this.modalManager.currentRecipeId) {
             parts.push('recipe=' + this.modalManager.currentRecipeId);
         }
-        
+
         const newURL = parts.length > 0 ? '?' + parts.join('&') : '';
         const fullURL = window.location.pathname + newURL;
-        
+
         window.history.replaceState({
             filters: Array.from(this.filterManager.activeFilters),
+            search: this.filterManager.searchQuery,
             recipeId: this.modalManager.currentRecipeId
         }, '', fullURL);
     }
 
     getShareableURL() {
         const parts = [];
-        
-        // Add language parameter if not default
+
         if (CURRENT_LANGUAGE !== CONFIG.DEFAULT_LANGUAGE) {
             parts.push(`lang=${CURRENT_LANGUAGE}`);
         }
-        
-        // Build filter parameter with international keys
+
+        // Filters (same logic as above) ...
         if (this.filterManager.activeFilters.size > 0) {
             const activeFilters = [];
-            
             this.filterManager.activeFilters.forEach((value, key) => {
                 if (!value) return;
-                
                 const [filterType, filterValue] = key.split(':');
                 let internationalKey = filterValue;
-                
-                // Convert localized value to international key
                 if (filterType === 'category') {
                     internationalKey = this.recipeDatabase.getCategoryKey(filterValue) || filterValue;
                 } else if (filterType === 'meal') {
@@ -1035,21 +1029,36 @@ class URLManager {
                 } else if (filterType === 'cuisine') {
                     internationalKey = this.recipeDatabase.getCuisineKey(filterValue) || filterValue;
                 }
-                
                 activeFilters.push(`${filterType}:${internationalKey}`);
             });
-            
             if (activeFilters.length > 0) {
                 parts.push('filter=' + activeFilters.join(','));
             }
         }
-        
-        // Build recipe parameter with ID
+
+        // --- Add search (NEW) ---
+        if (this.filterManager.searchQuery && this.filterManager.searchQuery.length > 0) {
+            parts.push('search=' + encodeURIComponent(this.filterManager.searchQuery));
+        }
+
         if (this.modalManager.currentRecipeId) {
             parts.push('recipe=' + this.modalManager.currentRecipeId);
         }
-        
+
         return parts.length > 0 ? `${this.baseURL}?${parts.join('&')}` : this.baseURL;
+    }
+
+    setSearch(query) {
+        this.searchQuery = query;
+        if (this.searchInput) {
+            this.searchInput.value = query;
+        }
+        if (query && this.clearSearchBtn) {
+            this.clearSearchBtn.classList.remove('hidden');
+        } else if (this.clearSearchBtn) {
+            this.clearSearchBtn.classList.add('hidden');
+        }
+        this.updateDisplay();
     }
 
     getRecipeURL(recipeId) {
@@ -1505,7 +1514,6 @@ class SearchFilterBar {
         }, 100);
 
         this.setupEventListeners();
-        this.setupScrollListener();
         this.updateDisplay();
     }
 
@@ -2032,10 +2040,18 @@ class SearchFilterBar {
         // Search input
         if (this.searchInput) {
             this.searchInput.addEventListener('input', (e) => {
-                this.searchQuery = e.target.value;
-                this.filterManager.searchQuery = e.target.value.toLowerCase();
+                const query = e.target.value.trim().toLowerCase();
+                this.searchQuery = query;
+                this.filterManager.searchQuery = query;
                 this.filterManager.applyFilters();
-                this.refreshState();
+
+                // Update URL when search changes
+                if (this.filterManager.urlManager) {
+                    this.filterManager.urlManager.updateURL();
+                }
+
+                // Toggle clear button visibility
+                this.clearSearchBtn.classList.toggle('hidden', query.length === 0);
             });
         }
 
@@ -2173,6 +2189,28 @@ class SearchFilterBar {
         this.toggleFilterMenu();
     }
 
+    setSearch(query) {
+        this.searchQuery = query;
+        this.filterManager.searchQuery = query;
+        
+        if (this.searchInput) {
+            this.searchInput.value = query;
+        }
+        
+        // Update all search inputs (in case there are multiple in different states)
+        const allSearchInputs = document.querySelectorAll('#unifiedSearchInput');
+        allSearchInputs.forEach(input => {
+            input.value = query;
+        });
+        
+        // Show/hide clear button
+        if (this.clearSearchBtn) {
+            this.clearSearchBtn.classList.toggle('hidden', !query || query.length === 0);
+        }
+        
+        this.updateDisplay();
+    }
+
     clearSearch() {
         this.searchQuery = '';
         this.filterManager.searchQuery = '';
@@ -2188,6 +2226,11 @@ class SearchFilterBar {
 
         this.filterManager.applyFilters();
         this.updateDisplay();
+        
+        // Update URL when search is cleared
+        if (this.filterManager.urlManager) {
+            this.filterManager.urlManager.updateURL();
+        }
     }
 
     clearAllFilters() {
@@ -4295,7 +4338,6 @@ class RecommendationEngine {
         if (recipe) {
             // Get the international category key
             const categoryKey = this.recipeDatabase.getCategoryKey(recipe.category);
-            console.log(categoryKey);
             // Christmas recipes (using international key)
             if (categoryKey === 'julekaker') {  // Changed from 'christmas' to 'julekaker'
                 const now = new Date();
