@@ -1129,41 +1129,13 @@ class SearchFilterBar {
         this.updateDisplay();
 
         // Setup visual viewport listener for iOS keyboard handling
-        if (window.visualViewport && this.isStandaloneMode()) {
+        if (window.visualViewport) {
             this.visualViewportListener = () => {
-                // When keyboard dismisses, refresh the fixed position
-                if (this.state.position === 'fixed') {
-                    requestAnimationFrame(() => {
-                        this.refreshFixedPosition();
-                    });
-                }
+                // iOS Safari bug fix: force scroll position update when keyboard dismisses
+                const currentScroll = window.scrollY;
+                window.scrollTo(0, currentScroll);
             };
             window.visualViewport.addEventListener('resize', this.visualViewportListener);
-        }
-    }
-
-    refreshFixedPosition() {
-        // Force re-apply the fixed position styling to refresh safe area
-        if (this.state.position === 'fixed' && this.container) {
-            const currentOpacity = this.container.style.opacity;
-            const currentPointerEvents = this.container.style.pointerEvents;
-
-            if (this.isStandaloneMode()) {
-                this.container.style.cssText = `
-                    position: fixed !important;
-                    top: calc(env(safe-area-inset-top, 0px) + ${this.config.fixedTopOffset}px) !important;
-                    left: 50% !important;
-                    transform: translateX(-50%) !important;
-                    z-index: 50 !important;
-                    width: auto !important;
-                    max-width: 90vw !important;
-                    padding: 0 !important;
-                    margin: 0 !important;
-                    opacity: ${currentOpacity} !important;
-                    pointer-events: ${currentPointerEvents} !important;
-                    transition: opacity 0.2s ease-out !important;
-                `;
-            }
         }
     }
 
@@ -3271,11 +3243,9 @@ class ModalManager {
         // Setup visual viewport listener for iOS keyboard handling
         if (isIOS && window.visualViewport && !this.visualViewportListener) {
             this.visualViewportListener = () => {
-                if (this.currentRecipeId && this.isFullscreen) {
-                    requestAnimationFrame(() => {
-                        this.setupModalLayout();
-                    });
-                }
+                // iOS Safari bug fix: force scroll/layout update when keyboard dismisses
+                const currentScroll = window.scrollY;
+                window.scrollTo(0, currentScroll);
             };
             window.visualViewport.addEventListener('resize', this.visualViewportListener);
         }
