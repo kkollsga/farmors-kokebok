@@ -3069,6 +3069,12 @@ class ModalManager {
     cleanupEventListeners() {
         clearTimeout(this.boundHandlers.resizeTimer);
         clearTimeout(this.boundHandlers.orientationTimer);
+
+        // Cleanup visual viewport listener
+        if (this.visualViewportListener && window.visualViewport) {
+            window.visualViewport.removeEventListener('resize', this.visualViewportListener);
+            this.visualViewportListener = null;
+        }
     }
 
     preloadHighResImage(recipe) {
@@ -3202,6 +3208,9 @@ class ModalManager {
             if (flexContainer) {
                 flexContainer.className = 'h-full';
                 if (isIOS && isPortrait) {
+                    // Force reflow to ensure safe area is applied correctly
+                    flexContainer.style.paddingTop = '';
+                    void flexContainer.offsetHeight; // Trigger reflow
                     flexContainer.style.paddingTop = 'env(safe-area-inset-top, 0)';
                 } else {
                     flexContainer.style.paddingTop = '';
@@ -3219,6 +3228,18 @@ class ModalManager {
             if (modalWrapper) {
                 modalWrapper.className = 'bg-gradient-to-br from-amber-100 to-orange-100 rounded-3xl max-w-5xl w-full h-[92vh] flex flex-col shadow-2xl relative overflow-hidden';
             }
+        }
+
+        // Setup visual viewport listener for iOS keyboard handling
+        if (isIOS && window.visualViewport && !this.visualViewportListener) {
+            this.visualViewportListener = () => {
+                if (this.currentRecipeId && this.isFullscreen) {
+                    requestAnimationFrame(() => {
+                        this.setupModalLayout();
+                    });
+                }
+            };
+            window.visualViewport.addEventListener('resize', this.visualViewportListener);
         }
     }
 
