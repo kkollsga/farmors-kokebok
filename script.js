@@ -1127,6 +1127,44 @@ class SearchFilterBar {
 
         this.setupEventListeners();
         this.updateDisplay();
+
+        // Setup visual viewport listener for iOS keyboard handling
+        if (window.visualViewport && this.isStandaloneMode()) {
+            this.visualViewportListener = () => {
+                // When keyboard dismisses, refresh the fixed position
+                if (this.state.position === 'fixed') {
+                    requestAnimationFrame(() => {
+                        this.refreshFixedPosition();
+                    });
+                }
+            };
+            window.visualViewport.addEventListener('resize', this.visualViewportListener);
+        }
+    }
+
+    refreshFixedPosition() {
+        // Force re-apply the fixed position styling to refresh safe area
+        if (this.state.position === 'fixed' && this.container) {
+            const currentOpacity = this.container.style.opacity;
+            const currentPointerEvents = this.container.style.pointerEvents;
+
+            if (this.isStandaloneMode()) {
+                this.container.style.cssText = `
+                    position: fixed !important;
+                    top: calc(env(safe-area-inset-top, 0px) + ${this.config.fixedTopOffset}px) !important;
+                    left: 50% !important;
+                    transform: translateX(-50%) !important;
+                    z-index: 50 !important;
+                    width: auto !important;
+                    max-width: 90vw !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    opacity: ${currentOpacity} !important;
+                    pointer-events: ${currentPointerEvents} !important;
+                    transition: opacity 0.2s ease-out !important;
+                `;
+            }
+        }
     }
 
     // ============================================
