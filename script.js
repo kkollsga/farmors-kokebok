@@ -3932,16 +3932,16 @@ class RecommendationEngine {
             NEVER_VIEWED: 30,
             MADE_COUNT: 5,
             NOSTALGIA_BONUS: 10,
-            
-            RECENCY_TODAY: 0.1,
-            RECENCY_RECENT: 0.3,
-            RECENCY_WEEK: 0.6,
-            RECENCY_NORMAL: 1.0,
-            
-            CHRISTMAS_SEASON: 3.0,      // November-December multiplier
-            CHRISTMAS_JANUARY: 1.5,      // January multiplier
-            CHRISTMAS_OFF_SEASON: 0.05,  // Rest of year multiplier
-            BUTCHERY: 0.01,             // Butchery guide weight
+
+            RECENCY_TODAY: 0.5,        // Viewed today - mild penalty
+            RECENCY_RECENT: 0.7,       // Viewed in last 3 days
+            RECENCY_WEEK: 0.85,        // Viewed in last week
+            RECENCY_NORMAL: 1.0,       // Normal (not recently viewed)
+
+            CHRISTMAS_SEASON: 1.5,      // November-December - small boost
+            CHRISTMAS_JANUARY: 1.2,     // January - slight boost
+            CHRISTMAS_OFF_SEASON: 0.05, // Rest of year - strong penalty (bottom of list)
+            BUTCHERY: 0.01,             // Butchery guide weight (below Christmas off-season)
         };
         
         let score = WEIGHTS.BASE;
