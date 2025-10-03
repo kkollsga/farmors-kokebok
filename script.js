@@ -397,9 +397,39 @@ class UserDataManager {
 
     trackView(recipeId) {
         this.initializeRecipe(recipeId);
-        this.userData[recipeId].lastViewed = new Date().toISOString();
-        this.userData[recipeId].viewCount = (this.userData[recipeId].viewCount || 0) + 1;
-        this.save();
+
+        // Cancel any pending view tracking for this recipe
+        if (this.viewTrackingTimeouts && this.viewTrackingTimeouts[recipeId]) {
+            clearTimeout(this.viewTrackingTimeouts[recipeId]);
+        }
+
+        // Initialize timeouts storage if needed
+        if (!this.viewTrackingTimeouts) {
+            this.viewTrackingTimeouts = {};
+        }
+
+        // Delay updating view timestamp by 10 seconds
+        // This prevents immediate re-sorting when opening/closing modals
+        this.viewTrackingTimeouts[recipeId] = setTimeout(() => {
+            this.userData[recipeId].lastViewed = new Date().toISOString();
+            this.userData[recipeId].viewCount = (this.userData[recipeId].viewCount || 0) + 1;
+            this.save();
+
+            // Update recommendation scores and trigger resort if in recommendation mode
+            if (recipeApp && recipeApp.filterManager) {
+                // Update the recommendation score for this recipe
+                if (recipeApp.modalManager.recommendationEngine) {
+                    recipeApp.modalManager.recommendationEngine.updateScoreForRecipe(recipeId);
+                }
+
+                // Trigger resort if in recommendation mode
+                if (recipeApp.filterManager.sortOrder === 'recommendation') {
+                    recipeApp.filterManager.applyFilters();
+                }
+            }
+
+            delete this.viewTrackingTimeouts[recipeId];
+        }, 10000);
     }
 
     getRecipeWithUserData(recipe) {
@@ -494,7 +524,7 @@ class URLManager {
     updateURL(useReplace = false) {
         if (this.isUpdatingFromURL) return;
 
-        // Debounce to prevent double updates
+        // Debounce to prevent any potential double updates
         if (this.updateURLTimeout) {
             clearTimeout(this.updateURLTimeout);
         }
@@ -3142,17 +3172,11 @@ class ModalManager {
         requestAnimationFrame(() => {
             this.updateModalContent();
 
-            // Track view immediately (not in a timeout that could be cancelled)
+            // Track view with delayed update (trackView handles the 10s delay and resort)
             this.userDataManager.trackView(recipeId);
 
             // Update recommendation scores since viewing affects recommendations
             this.recommendationEngine.updateScoreForRecipe(recipeId);
-
-            // Schedule recommendation update if in recommendation mode
-            const filterManager = recipeApp.filterManager;
-            if (filterManager && filterManager.sortOrder === 'recommendation') {
-                filterManager.scheduleRecommendationUpdate();
-            }
 
             this.addPendingTimeout(() => {
                 if (this.urlManager && !skipURLUpdate) {
@@ -3234,7 +3258,7 @@ class ModalManager {
 
     generateCloseButton() {
         return `
-            <button onclick="recipeApp.modalManager.closeRecipe()"
+            <button onclick="event.stopPropagation(); recipeApp.modalManager.closeRecipe()"
                     class="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2 md:p-2.5 hover:bg-white shadow-lg transition-transform hover:scale-110">
                 <i class="fas fa-times text-gray-600 text-lg md:text-xl"></i>
             </button>
