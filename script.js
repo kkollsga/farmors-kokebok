@@ -417,17 +417,20 @@ class URLManager {
         this.filterManager = filterManager;
         this.modalManager = modalManager;
         this.recipeDatabase = recipeDatabase;
-        this.baseURL = window.location.protocol === 'file:' 
+        this.baseURL = window.location.protocol === 'file:'
             ? window.location.href.split('?')[0]
             : 'https://kkollsga.github.io/farmors-kokebok/';
         this.isUpdatingFromURL = false;
+        this.updateURLTimeout = null;
     }
 
     initializeFromURL() {
+        this.isUpdatingFromURL = true;
+
         const params = new URLSearchParams(window.location.search);
 
         // Skip language param (already handled)
-        
+
         // --- Handle filters (already there) ---
         const filterParam = params.get('filter');
         if (filterParam) {
@@ -436,7 +439,7 @@ class URLManager {
                 if (filter.includes(':')) {
                     const [filterType, filterKey] = filter.split(':');
                     let localizedValue = filterKey;
-                    
+
                     if (filterType === 'category' && TAXONOMY.categories[filterKey]) {
                         localizedValue = TAXONOMY.categories[filterKey];
                     } else if (filterType === 'meal' && TAXONOMY.meals[filterKey]) {
@@ -444,7 +447,7 @@ class URLManager {
                     } else if (filterType === 'cuisine' && TAXONOMY.cuisines[filterKey]) {
                         localizedValue = TAXONOMY.cuisines[filterKey];
                     }
-                    
+
                     this.filterManager.activeFilters.set(`${filterType}:${localizedValue}`, true);
                 }
             });
@@ -466,18 +469,43 @@ class URLManager {
         const recipeParam = params.get('recipe');
         if (recipeParam) {
             let recipe = this.recipeDatabase.findById(recipeParam) ||
-                this.recipeDatabase.getAll().find(r => 
+                this.recipeDatabase.getAll().find(r =>
                     r.title.toLowerCase() === decodeURIComponent(recipeParam).toLowerCase()
                 );
             if (recipe) {
                 setTimeout(() => {
-                    this.modalManager.showRecipe(recipe.id);
+                    this.modalManager.showRecipe(recipe.id, true); // Skip URL update on initial load
                 }, 100);
             }
         }
+
+        // Set initial history state so back button works correctly
+        if (!window.history.state) {
+            window.history.replaceState({
+                filters: Array.from(this.filterManager.activeFilters),
+                search: this.filterManager.searchQuery,
+                recipeId: null
+            }, '', window.location.href);
+        }
+
+        this.isUpdatingFromURL = false;
     }
 
-    updateURL() {
+    updateURL(useReplace = false) {
+        if (this.isUpdatingFromURL) return;
+
+        // Debounce to prevent double updates
+        if (this.updateURLTimeout) {
+            clearTimeout(this.updateURLTimeout);
+        }
+
+        this.updateURLTimeout = setTimeout(() => {
+            this.performURLUpdate(useReplace);
+            this.updateURLTimeout = null;
+        }, 0);
+    }
+
+    performURLUpdate(useReplace = false) {
         if (this.isUpdatingFromURL) return;
 
         const parts = [];
@@ -525,11 +553,17 @@ class URLManager {
         const newURL = parts.length > 0 ? '?' + parts.join('&') : '';
         const fullURL = window.location.pathname + newURL;
 
-        window.history.replaceState({
+        const state = {
             filters: Array.from(this.filterManager.activeFilters),
             search: this.filterManager.searchQuery,
             recipeId: this.modalManager.currentRecipeId
-        }, '', fullURL);
+        };
+
+        if (useReplace) {
+            window.history.replaceState(state, '', fullURL);
+        } else {
+            window.history.pushState(state, '', fullURL);
+        }
     }
 
     getShareableURL() {
@@ -617,7 +651,7 @@ class URLManager {
     setupHistoryListener() {
         window.addEventListener('popstate', (event) => {
             this.isUpdatingFromURL = true;
-            
+
             if (event.state) {
                 this.filterManager.activeFilters.clear();
                 if (event.state.filters) {
@@ -628,19 +662,19 @@ class URLManager {
                 this.filterManager.renderFilterPills();
                 this.filterManager.updateFilterButton();
                 this.filterManager.applyFilters();
-                
+
                 if (event.state.recipeId) {
-                    this.modalManager.showRecipe(event.state.recipeId);
+                    this.modalManager.showRecipe(event.state.recipeId, true); // Skip URL update when triggered by popstate
                 } else if (this.modalManager.currentRecipeId) {
-                    this.modalManager.closeRecipe();
+                    this.modalManager.closeRecipe(true); // Skip URL update when triggered by popstate
                 }
             } else {
                 this.filterManager.clearAllFilters();
                 if (this.modalManager.currentRecipeId) {
-                    this.modalManager.closeRecipe();
+                    this.modalManager.closeRecipe(true); // Skip URL update when triggered by popstate
                 }
             }
-            
+
             this.isUpdatingFromURL = false;
         });
     }
@@ -715,28 +749,33 @@ class FilterManager {
             event.stopPropagation();
             event.preventDefault();
         }
-        
+
         const filterKey = `${filterType}:${filterValue}`;
-        
+
         // Close modal if it's open
         const modal = document.getElementById('recipeModal');
         const wasModalOpen = !modal.classList.contains('hidden');
         if (wasModalOpen) {
             recipeApp.modalManager.closeRecipe();
         }
-        
+
         // Add the filter if it's not already active
         if (!this.activeFilters.has(filterKey)) {
             this.activeFilters.set(filterKey, true);
-            
+
             // Refresh the search filter bar state
             if (recipeApp.searchFilterBar) {
                 recipeApp.searchFilterBar.refreshState();
             }
-            
+
+            // Update URL
+            if (this.urlManager) {
+                this.urlManager.updateURL();
+            }
+
             requestAnimationFrame(() => {
                 this.applyFilters();
-                
+
                 if (wasModalOpen) {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
@@ -1423,13 +1462,13 @@ class SearchFilterBar {
 
         this.standardContent.classList.add('hidden');
         this.minimumContent.classList.remove('hidden');
-        
+
         const contentContainer = this.glassBar?.querySelector('.relative');
         if (contentContainer) {
-            contentContainer.classList.remove('px-3', 'h-full', 'flex');
-            contentContainer.classList.add('px-1.5', 'py-0.5', 'inline-flex');
+            contentContainer.classList.remove('px-3', 'h-full', 'flex', 'px-1.5', 'py-0.5');
+            contentContainer.classList.add('p-0', 'inline-flex');
         }
-        
+
         this.updateMinimumDisplay();
     }
 
@@ -1438,13 +1477,13 @@ class SearchFilterBar {
 
         this.minimumContent.classList.add('hidden');
         this.standardContent.classList.remove('hidden');
-        
+
         const contentContainer = this.glassBar?.querySelector('.relative');
         if (contentContainer) {
-            contentContainer.classList.remove('px-1.5', 'py-0.5', 'inline-flex');
+            contentContainer.classList.remove('p-0', 'inline-flex');
             contentContainer.classList.add('px-3', 'h-full', 'flex');
         }
-        
+
         this.updateStandardDisplay();
     }
 
@@ -3060,29 +3099,29 @@ class ModalManager {
         }
     }
 
-    showRecipe(recipeId) {
+    showRecipe(recipeId, skipURLUpdate = false) {
         const recipe = this.recipeDatabase.findById(recipeId);
         if (!recipe) return;
-        
+
         this.currentRecipeId = recipeId;
-        
+
         // Initialize layout states
         const windowWidth = window.innerWidth;
         this.isFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
         this.isMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
         this.isNarrowWidth = windowWidth >= 700 && windowWidth <= 1000;
-        
+
         this.scrollPosition = window.pageYOffset;
         document.body.classList.add('modal-open');
         document.body.style.overflow = 'hidden';
         document.body.style.position = 'relative';
         document.documentElement.style.overflow = 'hidden';
-        
+
         this.setupModalLayout();
-        
+
         const modal = document.getElementById('recipeModal');
         const modalWrapper = modal.querySelector('#modalContent') || modal.querySelector('.flex.flex-col');
-        
+
         modalWrapper.innerHTML = `
             <div class="flex items-center justify-center h-full bg-gradient-to-br from-amber-100 to-orange-100 ${
                 window.innerWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL ? '' : 'rounded-2xl'
@@ -3092,14 +3131,14 @@ class ModalManager {
                 </div>
             </div>
         `;
-        
+
         modal.classList.remove('hidden');
-        
+
         const recipeWithUserData = this.userDataManager.getRecipeWithUserData(recipe);
         this.preloadHighResImage(recipeWithUserData);
-        
+
         this.clearStepsForRecipe(recipeId);
-        
+
         requestAnimationFrame(() => {
             this.updateModalContent();
 
@@ -3116,8 +3155,8 @@ class ModalManager {
             }
 
             this.addPendingTimeout(() => {
-                if (this.urlManager) {
-                    this.urlManager.updateURL();
+                if (this.urlManager && !skipURLUpdate) {
+                    this.urlManager.updateURL(); // Use pushState so modal opening is in history
                 }
             });
         });
@@ -3195,7 +3234,7 @@ class ModalManager {
 
     generateCloseButton() {
         return `
-            <button onclick="recipeApp.modalManager.closeRecipe()" 
+            <button onclick="recipeApp.modalManager.closeRecipe()"
                     class="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur rounded-full p-2 md:p-2.5 hover:bg-white shadow-lg transition-transform hover:scale-110">
                 <i class="fas fa-times text-gray-600 text-lg md:text-xl"></i>
             </button>
@@ -3637,32 +3676,34 @@ class ModalManager {
         return stars;
     }
 
-    closeRecipe() {
+    closeRecipe(skipURLUpdate = false) {
         const modal = document.getElementById('recipeModal');
-        
+
         this.cancelPendingTimeouts();
         this.cleanupEventListeners();
-        
+
         this.currentRecipeId = null;
         this.isFullscreen = false;
         this.isMobileLayout = false;
-        this.isNarrowWidth = false; 
-        
+        this.isNarrowWidth = false;
+
         modal.classList.add('hidden');
-        
-        if (this.urlManager) {
-            this.urlManager.updateURL();
+
+        if (this.urlManager && !skipURLUpdate) {
+            // Use pushState to create new history entry when manually closing
+            // This allows back/forward navigation to work correctly
+            this.urlManager.updateURL(false); // false = use pushState, not replaceState
         }
-        
+
         document.body.classList.remove('modal-open');
         document.body.style.overflow = '';
         document.body.style.position = '';
         document.documentElement.style.overflow = '';
-        
+
         requestAnimationFrame(() => {
             window.scrollTo(0, this.scrollPosition);
         });
-        
+
         this.resetModalToDefault();
     }
 
