@@ -1,0 +1,24 @@
+{
+  "name": "kokebok",
+  "version": "1.0.0",
+  "description": "En digital versjon av Farmors håndskrevne oppskriftssamling - modernisert og tilgjengeliggjort for nye generasjoner.",
+  "main": "script.js",
+  "scripts": {
+    "build:css": "cp node_modules/tailwindcss/index.css ./tailwind.css",
+    "update:tailwind": "npm update tailwindcss && npm run build:css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kkollsga/kokebok.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kkollsga/kokebok/issues"
+  },
+  "homepage": "https://github.com/kkollsga/kokebok#readme",
+  "devDependencies": {
+    "tailwindcss": "^4.1.14"
+  }
+}
