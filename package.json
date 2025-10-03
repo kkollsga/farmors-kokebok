@@ -4,8 +4,10 @@
   "description": "En digital versjon av Farmors håndskrevne oppskriftssamling - modernisert og tilgjengeliggjort for nye generasjoner.",
   "main": "script.js",
   "scripts": {
-    "build:css": "cp node_modules/tailwindcss/index.css ./tailwind.css",
-    "update:tailwind": "npm update tailwindcss && npm run build:css"
+    "build:css": "tailwindcss -i ./src/input.css -o ./tailwind.css --minify",
+    "build:css:watch": "tailwindcss -i ./src/input.css -o ./tailwind.css --watch",
+    "dev": "npm run build:css && npx http-server -p 8000",
+    "start": "npm run dev"
   },
   "repository": {
     "type": "git",
@@ -19,6 +21,6 @@
   },
   "homepage": "https://github.com/kkollsga/kokebok#readme",
   "devDependencies": {
-    "tailwindcss": "^4.1.14"
+    "tailwindcss": "^3.4.18"
   }
 }
