@@ -19,7 +19,30 @@ body.modal-open { overflow: hidden; position: relative; touch-action: none; }
     top: calc(env(safe-area-inset-top, 0px) + 12px); 
     left: 50%; 
     transform: translateX(-50%); 
-    z-index: 50; 
+    z-index: 50;
+    width: 100%;
+    max-width: 1280px; /* Same as max-w-7xl for large screens */
+}
+
+/* Medium screens - allow 80% width */
+@media (max-width: 1024px) {
+    .search-bar-fixed { 
+        max-width: 80%; 
+    }
+}
+
+/* Small screens - allow 90% width */
+@media (max-width: 768px) {
+    .search-bar-fixed { 
+        max-width: 90%;
+    }
+}
+
+/* Very small screens - almost full width */
+@media (max-width: 500px) {
+    .search-bar-fixed { 
+        max-width: calc(100vw - 20px); 
+    }
 }
 
 /* Allow bar to expand based on content, with min/max constraints */
@@ -100,7 +123,6 @@ body.modal-open { overflow: hidden; position: relative; touch-action: none; }
 @media (max-width: 768px) {
     #filterButtonText { display: none; }
     #searchInputContainer { min-width: 120px; }
-    .search-bar-fixed { max-width: calc(100vw - 20px); }
 }
 
 /* RESPONSIVE SEARCH BAR - SMALL SCREENS */
