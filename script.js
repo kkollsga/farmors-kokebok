@@ -2913,39 +2913,53 @@ class ModalManager {
         const modal = document.getElementById('recipeModal');
         const flexContainer = modal.firstElementChild;
         const modalWrapper = flexContainer ? flexContainer.firstElementChild : null;
-
+    
         const windowWidth = window.innerWidth;
         this.isFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
         const isPortrait = window.innerHeight > window.innerWidth;
+        const isLandscape = window.innerWidth > window.innerHeight;
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
+    
         if (this.isFullscreen) {
+            // Fullscreen mobile - solid amber background
             modal.className = 'fixed inset-0 z-50 bg-gradient-to-br from-amber-100 to-orange-100';
+            
             if (flexContainer) {
-                flexContainer.className = 'h-full';
-                if (isIOS && isPortrait) {
+                if (isLandscape) {
+                    // Landscape: no padding, edge-to-edge
+                    flexContainer.className = 'h-full';
                     flexContainer.style.paddingTop = '';
-                    void flexContainer.offsetHeight;
-                    flexContainer.style.paddingTop = 'env(safe-area-inset-top, 0)';
                 } else {
-                    flexContainer.style.paddingTop = '';
+                    // Portrait: add safe area padding at top
+                    flexContainer.className = 'h-full';
+                    if (isIOS) {
+                        flexContainer.style.paddingTop = '';
+                        void flexContainer.offsetHeight;
+                        flexContainer.style.paddingTop = 'env(safe-area-inset-top, 0)';
+                    } else {
+                        flexContainer.style.paddingTop = '';
+                    }
                 }
             }
+            
             if (modalWrapper) {
                 modalWrapper.className = 'h-full w-full flex flex-col relative';
             }
         } else {
-            modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50';
+            // Desktop - solid black background (not transparent)
+            modal.className = 'fixed inset-0 bg-black z-50';
+            
             if (flexContainer) {
                 flexContainer.className = 'flex items-center justify-center min-h-screen p-4';
                 flexContainer.style.paddingTop = '';
             }
+            
             if (modalWrapper) {
                 modalWrapper.className = 'bg-gradient-to-br from-amber-100 to-orange-100 rounded-3xl max-w-5xl w-full h-[92vh] flex flex-col shadow-2xl relative overflow-hidden';
             }
         }
-
+    
         // Setup iOS-specific keyboard listener (only once)
         if (isIOS && window.visualViewport && !this.visualViewportListener) {
             this.visualViewportListener = () => {
@@ -3031,21 +3045,16 @@ class ModalManager {
         const windowWidth = window.innerWidth;
         const isMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
         const isNarrowWidth = windowWidth >= 700 && windowWidth <= 1000;
-
-        // Check for landscape and fullscreen
-        const isLandscape = window.innerWidth > window.innerHeight;
-        const isFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
-        const contentRounding = (isFullscreen && isLandscape) ? '' : 'rounded-t-3xl';
-
+        
         modalWrapper.innerHTML = `
             <div class="relative w-full h-full">
                 ${this.generateHeroSection(recipeWithUserData)}
                 ${this.generateCloseButton()}
 
                 <div id="scrollableContent" class="absolute inset-0 overflow-y-auto z-10">
-                    <div class="${(isFullscreen && isLandscape) ? 'h-0' : (isMobileLayout ? 'h-48' : 'h-72')} pointer-events-none"></div>
+                    <div class="${isMobileLayout ? 'h-48' : 'h-72'} pointer-events-none"></div>
 
-                    <div class="min-h-full bg-white ${contentRounding} shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
+                    <div class="min-h-full bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
                         ${
                             isMobileLayout 
                                 ? this.generateMobileContent(recipeWithUserData) 
@@ -3059,7 +3068,7 @@ class ModalManager {
                 </div>
             </div>
         `;
-    
+
         requestAnimationFrame(() => {
             const newScrollContainer = modalWrapper.querySelector('#scrollableContent');
             if (newScrollContainer && currentScrollTop > 0) {
