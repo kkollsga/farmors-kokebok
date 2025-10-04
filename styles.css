@@ -73,6 +73,36 @@ body.modal-open { overflow: hidden; position: relative; touch-action: none; }
     .search-bar-fixed { max-width: calc(100vw - 20px); }
 }
 
+/* RESPONSIVE SEARCH BAR - SMALL SCREENS */
+@media (max-width: 500px) {
+    .search-bar-fixed #searchInputContainer {
+        min-width: 80px !important;
+        flex: 0 1 auto;
+    }
+    
+    .search-bar-fixed #filterPillsContainer .inline-flex {
+        max-width: 80px;
+    }
+    
+    .search-bar-fixed #filterPillsContainer span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 60px;
+    }
+}
+
+/* RESPONSIVE SEARCH BAR - MEDIUM SCREENS */
+@media (min-width: 501px) and (max-width: 768px) {
+    .search-bar-fixed #searchInputContainer {
+        min-width: 120px;
+    }
+    
+    .search-bar-fixed #filterPillsContainer .inline-flex {
+        max-width: 100px;
+    }
+}
+
 /* iOS SPECIFIC */
 @supports (-webkit-touch-callout: none) {
     input[type="text"], input[type="search"], textarea, select { font-size: 16px !important; }
