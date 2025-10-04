@@ -49,7 +49,7 @@ body.modal-open { overflow: hidden; position: relative; touch-action: none; }
 #unifiedGlassBar { 
     min-height: 48px;
     height: auto;
-    max-height: 80px;
+    max-height: 120px; /* Increased from 80px to allow wrapping */
     transition: min-height 0.3s ease-out, max-height 0.3s ease-out, padding 0.3s ease-out; 
 }
 
