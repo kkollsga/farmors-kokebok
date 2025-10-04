@@ -3031,16 +3031,21 @@ class ModalManager {
         const windowWidth = window.innerWidth;
         const isMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
         const isNarrowWidth = windowWidth >= 700 && windowWidth <= 1000;
-        
+
+        // Check for landscape and fullscreen
+        const isLandscape = window.innerWidth > window.innerHeight;
+        const isFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
+        const contentRounding = (isFullscreen && isLandscape) ? '' : 'rounded-t-3xl';
+
         modalWrapper.innerHTML = `
             <div class="relative w-full h-full">
                 ${this.generateHeroSection(recipeWithUserData)}
                 ${this.generateCloseButton()}
 
                 <div id="scrollableContent" class="absolute inset-0 overflow-y-auto z-10">
-                    <div class="${isMobileLayout ? 'h-48' : 'h-72'} pointer-events-none"></div>
+                    <div class="${(isFullscreen && isLandscape) ? 'h-0' : (isMobileLayout ? 'h-48' : 'h-72')} pointer-events-none"></div>
 
-                    <div class="min-h-full bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
+                    <div class="min-h-full bg-white ${contentRounding} shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
                         ${
                             isMobileLayout 
                                 ? this.generateMobileContent(recipeWithUserData) 
@@ -3054,7 +3059,7 @@ class ModalManager {
                 </div>
             </div>
         `;
-
+    
         requestAnimationFrame(() => {
             const newScrollContainer = modalWrapper.querySelector('#scrollableContent');
             if (newScrollContainer && currentScrollTop > 0) {
