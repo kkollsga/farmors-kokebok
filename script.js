@@ -1294,17 +1294,31 @@ class SearchFilterBar {
 
     showMinimumContent() {
         if (!this.standardContent || !this.minimumContent) return;
-
+    
         this.standardContent.classList.add('hidden');
         this.minimumContent.classList.remove('hidden');
+        
+        // Make container shrink-wrap and center
+        if (this.glassBar) {
+            this.glassBar.classList.remove('w-full');
+            this.glassBar.classList.add('w-auto', 'mx-auto');
+        }
+        
         this.updateMinimumDisplay();
     }
-
+    
     showStandardContent() {
         if (!this.standardContent || !this.minimumContent) return;
-
+    
         this.minimumContent.classList.add('hidden');
         this.standardContent.classList.remove('hidden');
+        
+        // Restore full width
+        if (this.glassBar) {
+            this.glassBar.classList.remove('w-auto', 'mx-auto');
+            this.glassBar.classList.add('w-full');
+        }
+        
         this.updateStandardDisplay();
     }
 
