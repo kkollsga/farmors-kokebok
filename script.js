@@ -1035,6 +1035,10 @@ class FilterManager {
 // SEARCH FILTER BAR CLASS (iOS-style unified component)
 // ============================================================================
 
+// ============================================================================
+// SEARCH FILTER BAR CLASS (Simplified - iOS-style unified component)
+// ============================================================================
+
 class SearchFilterBar {
     constructor(filterManager, recipeDatabase) {
         this.filterManager = filterManager;
@@ -1042,34 +1046,27 @@ class SearchFilterBar {
 
         // Simplified configuration
         this.config = {
-            fixedTopOffset: 8, // Pixels below safe area (same for all views)
             scrollThreshold: 50, // Pixels to trigger collapse/expand
-            triggerOffset: 20, // Pixels before bar top to trigger fixed
             debounceDelay: 10
         };
 
-        // State management - cleaner state machine
+        // State management
         this.state = {
             position: 'standard', // 'standard' | 'fixed'
             view: 'expanded',     // 'expanded' | 'collapsed'
-            isTransitioning: false
         };
-
-        // Store original container classes
-        this.originalContainerClasses = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 relative z-30';
-
-        // Search and filter state
-        this.searchQuery = '';
-        this.showFilterMenu = false;
-        this.showActiveFiltersMenu = false;
 
         // Scroll tracking
         this.scrollState = {
             lastY: 0,
             accumulator: 0,
-            triggerPoint: 0, // Will be set on init
             debounceTimer: null
         };
+
+        // Search and filter state
+        this.searchQuery = '';
+        this.showFilterMenu = false;
+        this.showActiveFiltersMenu = false;
 
         // DOM element references
         this.container = document.getElementById('searchFilterContainer');
@@ -1083,60 +1080,13 @@ class SearchFilterBar {
         this.searchPill = document.getElementById('searchPill');
         this.filterPill = document.getElementById('filterPill');
         this.filterCounter = document.getElementById('filterCounter');
-        // Store original container classes
-        this.originalContainerClasses = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 relative z-30';
+
         this.initialize();
     }
 
-    isStandaloneMode() {
-        return window.matchMedia('(display-mode: standalone)').matches ||
-            window.navigator.standalone === true ||
-            document.referrer.includes('android-app://') ||
-            window.matchMedia('(display-mode: fullscreen)').matches ||
-            window.matchMedia('(display-mode: minimal-ui)').matches;
-    }
-
-    recalculateTriggerPoint() {
-        // Only recalculate when in standard position
-        if (this.state.position === 'standard' && this.container) {
-            const rect = this.container.getBoundingClientRect();
-            const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
-            this.scrollState.triggerPoint = rect.top + scrollY - this.config.triggerOffset;
-            this.lastCalculatedWidth = window.innerWidth;
-            return this.scrollState.triggerPoint;
-        }
-        
-        // If we're fixed, use spacer as reference
-        const spacer = document.getElementById('searchBarSpacer');
-        if (spacer) {
-            const originalTop = spacer.getAttribute('data-original-top');
-            if (originalTop) {
-                this.scrollState.triggerPoint = parseFloat(originalTop) - this.config.triggerOffset;
-                return this.scrollState.triggerPoint;
-            }
-        }
-        
-        return this.scrollState.triggerPoint || 100;
-    }
-
     initialize() {
-        // Calculate initial trigger point after DOM is ready
-        setTimeout(() => {
-            this.recalculateTriggerPoint();
-        }, 100);
-
         this.setupEventListeners();
         this.updateDisplay();
-
-        // Setup visual viewport listener for iOS keyboard handling
-        if (window.visualViewport) {
-            this.visualViewportListener = () => {
-                // iOS Safari bug fix: force scroll position update when keyboard dismisses
-                const currentScroll = window.scrollY;
-                window.scrollTo(0, currentScroll);
-            };
-            window.visualViewport.addEventListener('resize', this.visualViewportListener);
-        }
     }
 
     // ============================================
@@ -1151,38 +1101,20 @@ class SearchFilterBar {
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
-
-        // iOS-specific touch handling
-        if (this.isIOSDevice()) {
-            this.setupIOSTouchHandlers(handleScroll);
-        }
     }
 
     processScroll() {
         const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
         const scrollDelta = scrollY - this.scrollState.lastY;
         
-        // Use cached trigger point
-        const triggerPoint = this.scrollState.triggerPoint || 100;
+        // Get container position to determine if we should be fixed
+        const containerRect = this.container.getBoundingClientRect();
+        const shouldBeFixed = containerRect.top < 0;
         
         // Handle position changes (standard <-> fixed)
-        if (this.state.position === 'standard' && scrollY > triggerPoint) {
-            // Check if we have content BEFORE transitioning
-            const hasContent = this.hasActiveContent();
-            
-            if (!hasContent && scrollDelta > 0) {
-                // If no content and scrolling down, prepare to hide immediately
-                this.container.style.opacity = '0';
-                this.container.style.pointerEvents = 'none';
-            }
-            
+        if (this.state.position === 'standard' && shouldBeFixed) {
             this.transitionToFixed();
-            
-            // Set state after transition
-            if (!hasContent && scrollDelta > 0) {
-                this.state.view = 'collapsed';
-            }
-        } else if (this.state.position === 'fixed' && scrollY <= triggerPoint) {
+        } else if (this.state.position === 'fixed' && !shouldBeFixed) {
             this.transitionToStandard();
         }
 
@@ -1194,29 +1126,19 @@ class SearchFilterBar {
             // Check thresholds
             if (this.state.view === 'expanded' && this.scrollState.accumulator > this.config.scrollThreshold) {
                 if (hasContent) {
-                    // Only animate collapse if there's content
                     this.setCollapsedView();
                 } else {
-                    // No content - hide immediately without animation
+                    // No content - hide immediately
                     this.state.view = 'collapsed';
                     this.container.style.opacity = '0';
                     this.container.style.pointerEvents = 'none';
-                    // Don't update view styles or show minimum content
                 }
                 this.scrollState.accumulator = 0;
             } else if (this.state.view === 'collapsed' && this.scrollState.accumulator < -this.config.scrollThreshold) {
                 // Show the bar when scrolling up
                 this.container.style.opacity = '1';
                 this.container.style.pointerEvents = '';
-                
-                if (hasContent || this.container.style.opacity === '1') {
-                    this.setExpandedView();
-                } else {
-                    // No content but scrolling up - just show expanded empty bar
-                    this.state.view = 'expanded';
-                    this.updateViewStyles();
-                    this.showStandardContent();
-                }
+                this.setExpandedView();
                 this.scrollState.accumulator = 0;
             }
 
@@ -1231,26 +1153,19 @@ class SearchFilterBar {
     }
 
     refreshState() {
-        // Check if we have content now
         const hasContent = this.hasActiveContent();
         
-        // If we're in fixed position
         if (this.state.position === 'fixed') {
-            // If we were hidden/collapsed without content but now have content
             if (hasContent && this.container.style.opacity === '0') {
-                // Show the bar
                 this.container.style.opacity = '1';
                 this.container.style.pointerEvents = '';
                 this.setExpandedView();
-            }
-            // If we're expanded but empty and scrolled down, allow hiding
-            else if (!hasContent && this.state.view === 'collapsed') {
+            } else if (!hasContent && this.state.view === 'collapsed') {
                 this.container.style.opacity = '0';
                 this.container.style.pointerEvents = 'none';
             }
         }
         
-        // Always update the display to reflect new filters/search
         this.updateDisplay();
     }
 
@@ -1258,243 +1173,41 @@ class SearchFilterBar {
     // STATE TRANSITIONS
     // ============================================
     transitionToFixed() {
-        if (this.state.position === 'fixed' || this.state.isTransitioning) return;
-        this.state.isTransitioning = true;
+        if (this.state.position === 'fixed') return;
 
-        // Store the exact position before transitioning
-        const containerRect = this.container.getBoundingClientRect();
-        const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
-        this.lastStandardPosition = containerRect.top + scrollY;
-
-        // Get the container's current position and dimensions
-        const computedStyle = window.getComputedStyle(this.container);
-        const marginTop = parseFloat(computedStyle.marginTop) || 0;
-        const marginBottom = parseFloat(computedStyle.marginBottom) || 0;
-        const totalHeight = this.container.offsetHeight + marginTop + marginBottom;
-        
-        // Check if we should hide immediately
-        const shouldHideImmediately = !this.hasActiveContent() && 
-                                    (window.pageYOffset - this.scrollState.lastY) > 0;
-
-        // Create spacer that exactly matches the container's space
-        const spacer = document.createElement('div');
-        spacer.id = 'searchBarSpacer';
-        spacer.style.cssText = `height: ${totalHeight}px; margin: 0; padding: 0; border: 0; visibility: hidden;`;
-        
-        // Store the position in the spacer for reference
-        spacer.setAttribute('data-original-top', this.lastStandardPosition);
-        
-        // Insert spacer BEFORE changing container position
-        this.container.parentNode.insertBefore(spacer, this.container);
-
-        const isStandalone = this.isStandaloneMode();
-        
-        // Now switch to fixed position
-        if (isStandalone) {
-            this.container.style.cssText = `
-                position: fixed !important;
-                top: calc(env(safe-area-inset-top, 0px) + ${this.config.fixedTopOffset}px) !important;
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                z-index: 50 !important;
-                width: auto !important;
-                max-width: 90vw !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                opacity: ${shouldHideImmediately ? '0' : '1'} !important;
-                pointer-events: ${shouldHideImmediately ? 'none' : 'auto'} !important;
-                transition: opacity 0.2s ease-out !important;
-            `;
-            this.container.className = '';
-        } else {
-            this.container.className = 'search-bar-fixed w-auto max-w-[90vw] p-0 m-0';
-            this.container.style.cssText = `
-                opacity: ${shouldHideImmediately ? '0' : '1'};
-                pointer-events: ${shouldHideImmediately ? 'none' : 'auto'};
-                transition: opacity 0.2s ease-out;
-            `;
-        }
-        
+        // Simple transition - just add the class
+        this.container.classList.add('search-bar-fixed');
         this.state.position = 'fixed';
-        
-        // Set initial view state based on content
-        if (!shouldHideImmediately) {
-            this.state.view = 'expanded';
-            this.updateViewStyles();
-        } else {
-            this.state.view = 'collapsed';
-        }
-        
+        this.state.view = 'expanded';
         this.scrollState.accumulator = 0;
-        this.state.isTransitioning = false;
     }
 
     transitionToStandard() {
-        if (this.state.position === 'standard' || this.state.isTransitioning) return;
-        this.state.isTransitioning = true;
+        if (this.state.position === 'standard') return;
 
-        const spacer = document.getElementById('searchBarSpacer');
+        // Remove fixed class
+        this.container.classList.remove('search-bar-fixed');
+        this.state.position = 'standard';
+        this.state.view = 'expanded';
+        this.scrollState.accumulator = 0;
         
-        if (spacer) {
-            // Get the exact position where the spacer is
-            const spacerRect = spacer.getBoundingClientRect();
-            const scrollY = window.pageYOffset;
-            
-            // Keep container fixed but position it exactly where it will be
-            this.container.style.position = 'absolute';
-            this.container.style.top = (spacerRect.top + scrollY) + 'px';
-            this.container.style.left = '0';
-            this.container.style.right = '0';
-            this.container.style.transform = 'none';
-            this.container.style.width = 'auto';
-            this.container.style.zIndex = '30';
-            
-            // Force a reflow
-            this.container.offsetHeight;
-            
-            // Now do the instant swap
-            requestAnimationFrame(() => {
-                // Remove spacer
-                spacer.remove();
-                
-                // Instantly restore container to normal flow
-                this.container.className = this.originalContainerClasses;
-                this.container.style.cssText = '';
-                
-                // Reset glass bar
-                this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 overflow-visible w-full z-40';
-                this.glassBar.style.cssText = 'height: 48px;';
-                
-                // Reset content container
-                const contentContainer = this.glassBar?.querySelector('.relative');
-                if (contentContainer) {
-                    contentContainer.className = 'relative h-full flex items-center gap-2 px-3';
-                    contentContainer.style.cssText = '';
-                }
-                
-                // Update state
-                this.state.position = 'standard';
-                this.state.view = 'expanded';
-                this.scrollState.accumulator = 0;
-                this.showStandardContent();
-                
-                this.state.isTransitioning = false;
-                
-                // Recalculate trigger point after returning to standard
-                setTimeout(() => {
-                    this.recalculateTriggerPoint();
-                }, 10);
-            });
-        } else {
-            // No spacer, just reset everything
-            this.container.className = this.originalContainerClasses;
-            this.container.style.cssText = '';
-            
-            this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 overflow-visible w-full z-40';
-            this.glassBar.style.cssText = 'height: 48px;';
-            
-            const contentContainer = this.glassBar?.querySelector('.relative');
-            if (contentContainer) {
-                contentContainer.className = 'relative h-full flex items-center gap-2 px-3';
-                contentContainer.style.cssText = '';
-            }
-            
-            this.state.position = 'standard';
-            this.state.view = 'expanded';
-            this.scrollState.accumulator = 0;
-            this.showStandardContent();
-            
-            this.state.isTransitioning = false;
-            
-            // Recalculate trigger point
-            setTimeout(() => {
-                this.recalculateTriggerPoint();
-            }, 10);
-        }
+        // Ensure visibility
+        this.container.style.opacity = '';
+        this.container.style.pointerEvents = '';
+        
+        this.showStandardContent();
     }
 
-
     setCollapsedView() {
-        if (this.state.view === 'collapsed' || this.state.isTransitioning) return;
-        this.state.isTransitioning = true;
+        if (this.state.view === 'collapsed') return;
         this.state.view = 'collapsed';
-
-        // Make the container inline to shrink-wrap content
-        if (this.container) {
-            this.container.style.width = 'auto';
-            this.container.style.display = 'inline-block';
-            this.container.style.maxWidth = '90vw';
-        }
-
-        this.updateViewStyles();
         this.showMinimumContent();
-        
-        this.state.isTransitioning = false;
     }
 
     setExpandedView() {
-        if (this.state.view === 'expanded' || this.state.isTransitioning) return;
-        this.state.isTransitioning = true;
+        if (this.state.view === 'expanded') return;
         this.state.view = 'expanded';
-
-        if (this.container) {
-            this.container.style.width = 'fit-content';
-            this.container.style.display = '';
-            this.container.style.maxWidth = '90vw';
-        }
-
-        this.updateViewStyles();
         this.showStandardContent();
-        
-        this.state.isTransitioning = false;
-    }
-
-    updateViewStyles() {
-        if (this.state.position === 'standard') {
-            return;
-        }
-
-        if (this.state.view === 'collapsed') {
-            // Remove transition class temporarily for instant change
-            this.glassBar.style.transition = 'none';
-            this.glassBar.className = 'relative rounded-full bg-white border border-gray-200 shadow-lg overflow-visible z-40 inline-block';
-            this.glassBar.style.width = 'auto';
-            this.glassBar.style.height = 'auto';
-            this.glassBar.style.minHeight = '';
-            this.glassBar.style.padding = '0';
-            
-            // Re-enable transitions after a frame
-            requestAnimationFrame(() => {
-                this.glassBar.style.transition = '';
-            });
-            
-            const contentContainer = this.glassBar?.querySelector('.relative');
-            if (contentContainer) {
-                contentContainer.classList.remove('h-full', 'flex', 'items-center');
-                contentContainer.classList.add('inline-flex', 'items-center');
-                contentContainer.style.height = 'auto';
-            }
-        } else {
-            // Remove transition class temporarily for instant change
-            this.glassBar.style.transition = 'none';
-            this.glassBar.className = 'relative rounded-xl bg-white border border-gray-200 shadow-lg overflow-visible z-40 h-12';
-            this.glassBar.style.width = '';
-            this.glassBar.style.height = '';
-            this.glassBar.style.minHeight = '';
-            this.glassBar.style.padding = '';
-            
-            // Re-enable transitions after a frame
-            requestAnimationFrame(() => {
-                this.glassBar.style.transition = '';
-            });
-            
-            const contentContainer = this.glassBar?.querySelector('.relative');
-            if (contentContainer) {
-                contentContainer.classList.remove('inline-flex');
-                contentContainer.classList.add('flex', 'h-full');
-                contentContainer.style.height = '';
-            }
-        }
     }
 
     showMinimumContent() {
@@ -1502,13 +1215,6 @@ class SearchFilterBar {
 
         this.standardContent.classList.add('hidden');
         this.minimumContent.classList.remove('hidden');
-
-        const contentContainer = this.glassBar?.querySelector('.relative');
-        if (contentContainer) {
-            contentContainer.classList.remove('px-3', 'h-full', 'flex', 'px-1.5', 'py-0.5');
-            contentContainer.classList.add('p-0', 'inline-flex');
-        }
-
         this.updateMinimumDisplay();
     }
 
@@ -1517,13 +1223,6 @@ class SearchFilterBar {
 
         this.minimumContent.classList.add('hidden');
         this.standardContent.classList.remove('hidden');
-
-        const contentContainer = this.glassBar?.querySelector('.relative');
-        if (contentContainer) {
-            contentContainer.classList.remove('p-0', 'inline-flex');
-            contentContainer.classList.add('px-3', 'h-full', 'flex');
-        }
-
         this.updateStandardDisplay();
     }
 
@@ -1567,17 +1266,14 @@ class SearchFilterBar {
         this.filterCounter.classList.add('hidden');
 
         if (hasSearch && hasFilters) {
-            // Show counter and search pill
             this.filterCounter.classList.remove('hidden');
             document.getElementById('filterCounterText').textContent = filterCount;
             this.searchPill.classList.remove('hidden');
             document.getElementById('searchPillText').textContent = this.searchQuery;
         } else if (hasSearch) {
-            // Show only search pill
             this.searchPill.classList.remove('hidden');
             document.getElementById('searchPillText').textContent = this.searchQuery;
         } else if (hasFilters) {
-            // Show filter pill
             this.filterPill.classList.remove('hidden');
             const filterPillText = document.getElementById('filterPillText');
             if (filterCount === 1) {
@@ -1595,16 +1291,13 @@ class SearchFilterBar {
 
         const countSpan = this.filterButton.querySelector('#filterCount');
         const textSpan = this.filterButton.querySelector('#filterButtonText');
-        const hasSearch = this.searchQuery.length > 0;
         const isMobile = window.innerWidth <= 768;
 
         if (hasFilters && isMobile) {
-            // On mobile with filters - minimal style (just icon, no background, no counter)
             this.filterButton.className = "flex items-center p-1.5 rounded-lg transition-all text-sm font-medium shrink-0 text-amber-700 hover:text-amber-800 hover:bg-amber-50";
-            if (countSpan) countSpan.classList.add('hidden'); // Hide counter on mobile
+            if (countSpan) countSpan.classList.add('hidden');
             if (textSpan) textSpan.classList.add('hidden');
         } else if (hasFilters && !isMobile) {
-            // Desktop with filters - full button style with counter
             this.filterButton.className = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700";
             if (countSpan) {
                 countSpan.textContent = filterCount;
@@ -1613,7 +1306,6 @@ class SearchFilterBar {
             }
             if (textSpan) textSpan.classList.remove('hidden');
         } else {
-            // No filters - default button
             this.filterButton.className = "flex items-center space-x-2 px-4 py-2 rounded-xl transition-all text-sm font-medium shrink-0 shadow-sm hover:shadow-md bg-white text-gray-700 hover:text-amber-600 border border-gray-200";
             if (countSpan) countSpan.classList.add('hidden');
             if (textSpan) textSpan.classList.remove('hidden');
@@ -1670,12 +1362,10 @@ class SearchFilterBar {
                 this.filterManager.searchQuery = query;
                 this.filterManager.applyFilters();
 
-                // Update URL when search changes
                 if (this.filterManager.urlManager) {
                     this.filterManager.urlManager.updateURL();
                 }
 
-                // Toggle clear button visibility
                 this.clearSearchBtn.classList.toggle('hidden', query.length === 0);
             });
         }
@@ -1694,7 +1384,7 @@ class SearchFilterBar {
             });
         }
 
-        // Clear search pill
+        // Clear search/filter pills
         document.addEventListener('click', (e) => {
             if (e.target.closest('#clearSearchPill')) {
                 this.clearSearch();
@@ -1704,7 +1394,7 @@ class SearchFilterBar {
             }
         });
 
-        // Filter counter click to show dropdown
+        // Filter counter click
         document.addEventListener('click', (e) => {
             if (e.target.closest('#filterCounter')) {
                 this.toggleActiveFiltersMenu();
@@ -1715,38 +1405,6 @@ class SearchFilterBar {
         document.addEventListener('click', (e) => {
             if (!this.container?.contains(e.target)) {
                 this.closeAllMenus();
-            }
-        });
-
-        // Add resize observer for width changes
-        this.resizeObserver = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                const newWidth = entry.contentRect.width;
-                // Recalculate if width changed significantly (more than 10px)
-                if (Math.abs(newWidth - (this.lastObservedWidth || 0)) > 10) {
-                    this.lastObservedWidth = newWidth;
-                    if (this.state.position === 'standard') {
-                        this.recalculateTriggerPoint();
-                    }
-                }
-            }
-        });
-        
-        // Observe the document body for width changes
-        this.resizeObserver.observe(document.body);
-
-        // Listen for image load events in the header
-        const headerImages = document.querySelectorAll('header img');
-        headerImages.forEach(img => {
-            if (!img.complete) {
-                img.addEventListener('load', () => {
-                    if (this.state.position === 'standard') {
-                        // Delay to let layout settle
-                        setTimeout(() => {
-                            this.recalculateTriggerPoint();
-                        }, 50);
-                    }
-                });
             }
         });
     }
@@ -1797,7 +1455,6 @@ class SearchFilterBar {
     removeFilter(filterKey) {
         this.filterManager.removeFilter(filterKey);
 
-        // Ensure search input is updated
         if (this.searchInput) {
             this.searchInput.value = this.searchQuery;
         }
@@ -1822,13 +1479,11 @@ class SearchFilterBar {
             this.searchInput.value = query;
         }
         
-        // Update all search inputs (in case there are multiple in different states)
         const allSearchInputs = document.querySelectorAll('#unifiedSearchInput');
         allSearchInputs.forEach(input => {
             input.value = query;
         });
         
-        // Show/hide clear button
         if (this.clearSearchBtn) {
             this.clearSearchBtn.classList.toggle('hidden', !query || query.length === 0);
         }
@@ -1852,7 +1507,6 @@ class SearchFilterBar {
         this.filterManager.applyFilters();
         this.updateDisplay();
         
-        // Update URL when search is cleared
         if (this.filterManager.urlManager) {
             this.filterManager.urlManager.updateURL();
         }
@@ -1987,47 +1641,6 @@ class SearchFilterBar {
     // ============================================
     hasActiveContent() {
         return this.searchQuery.length > 0 || this.filterManager.activeFilters.size > 0;
-    }
-
-    isIOSDevice() {
-        return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    }
-
-    setupIOSTouchHandlers(scrollHandler) {
-        let touchStartY = 0;
-
-        document.addEventListener('touchstart', (e) => {
-            touchStartY = e.touches[0].clientY;
-        }, { passive: true });
-
-        document.addEventListener('touchend', (e) => {
-            const touchEndY = e.changedTouches[0].clientY;
-            if (Math.abs(touchEndY - touchStartY) > 10) {
-                scrollHandler();
-            }
-        }, { passive: true });
-    }
-
-    destroy() {
-        // Clean up event listeners and timers
-        clearTimeout(this.scrollState.debounceTimer);
-        
-        // Clean up resize observer
-        if (this.resizeObserver) {
-            this.resizeObserver.disconnect();
-            this.resizeObserver = null;
-        }
-        
-        // Remove spacer if exists
-        const spacer = document.getElementById('searchBarSpacer');
-        if (spacer) spacer.remove();
-
-        // Reset container styles
-        if (this.container) {
-            this.container.style = '';
-            this.container.classList.remove('fixed');
-        }
     }
 }
 
