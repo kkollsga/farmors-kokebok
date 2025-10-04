@@ -2946,33 +2946,42 @@ class ModalManager {
                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     
         if (this.isFullscreen) {
-            // Fullscreen mobile - solid amber background
-            modal.className = 'fixed inset-0 z-50 bg-gradient-to-br from-amber-100 to-orange-100';
-            
-            if (flexContainer) {
-                if (isLandscape) {
-                    // Landscape: no padding, edge-to-edge
+            if (isLandscape) {
+                // Landscape mobile - edge to edge, full coverage
+                modal.className = 'fixed inset-0 z-50 bg-gradient-to-br from-amber-100 to-orange-100';
+                
+                if (flexContainer) {
                     flexContainer.className = 'h-full';
                     flexContainer.style.paddingTop = '';
-                } else {
-                    // Portrait: add safe area padding at top
+                }
+                
+                if (modalWrapper) {
+                    modalWrapper.className = 'h-full w-full flex flex-col relative';
+                }
+            } else {
+                // Portrait mobile - full coverage with safe area padding
+                modal.className = 'fixed inset-0 z-50 bg-gradient-to-br from-amber-100 to-orange-100';
+                
+                if (flexContainer) {
                     flexContainer.className = 'h-full';
+                    // Add safe area padding in portrait
                     if (isIOS) {
                         flexContainer.style.paddingTop = '';
                         void flexContainer.offsetHeight;
                         flexContainer.style.paddingTop = 'env(safe-area-inset-top, 0)';
                     } else {
-                        flexContainer.style.paddingTop = '';
+                        flexContainer.style.paddingTop = 'env(safe-area-inset-top, 0)';
                     }
                 }
-            }
-            
-            if (modalWrapper) {
-                modalWrapper.className = 'h-full w-full flex flex-col relative';
+                
+                if (modalWrapper) {
+                    modalWrapper.className = 'h-full w-full flex flex-col relative';
+                }
             }
         } else {
-            // Desktop - solid black background (not transparent)
-            modal.className = 'fixed inset-0 bg-black z-50';
+            // Desktop - transparent background, clickable modal
+            modal.className = 'fixed inset-0 z-50';
+            modal.style.background = 'transparent';
             
             if (flexContainer) {
                 flexContainer.className = 'flex items-center justify-center min-h-screen p-4';
@@ -2990,7 +2999,6 @@ class ModalManager {
                 const currentScroll = window.scrollY;
                 window.scrollTo(0, currentScroll);
                 
-                // Update viewport height when keyboard changes
                 const vh = window.visualViewport?.height || window.innerHeight;
                 document.documentElement.style.setProperty('--vvh', `${vh * 0.01}px`);
             };
