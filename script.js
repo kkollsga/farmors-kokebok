@@ -1298,10 +1298,15 @@ class SearchFilterBar {
         this.standardContent.classList.add('hidden');
         this.minimumContent.classList.remove('hidden');
         
-        // Make container shrink-wrap and center
+        // Make glassBar shrink-wrap with max width and center it
         if (this.glassBar) {
             this.glassBar.classList.remove('w-full');
-            this.glassBar.classList.add('w-auto', 'mx-auto');
+            this.glassBar.classList.add('w-auto', 'max-w-md');
+        }
+        
+        // Center the container's content
+        if (this.container) {
+            this.container.classList.add('flex', 'justify-center');
         }
         
         this.updateMinimumDisplay();
@@ -1313,10 +1318,15 @@ class SearchFilterBar {
         this.minimumContent.classList.add('hidden');
         this.standardContent.classList.remove('hidden');
         
-        // Restore full width
+        // Restore full width to glassBar
         if (this.glassBar) {
-            this.glassBar.classList.remove('w-auto', 'mx-auto');
+            this.glassBar.classList.remove('w-auto', 'max-w-md');
             this.glassBar.classList.add('w-full');
+        }
+        
+        // Remove centering from container
+        if (this.container) {
+            this.container.classList.remove('flex', 'justify-center');
         }
         
         this.updateStandardDisplay();

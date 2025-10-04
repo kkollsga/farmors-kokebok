@@ -21,46 +21,23 @@ body.modal-open { overflow: hidden; position: relative; touch-action: none; }
     transform: translateX(-50%); 
     z-index: 50;
     width: 100%;
-    max-width: 1280px; /* Same as max-w-7xl for large screens */
+    max-width: 100%;
 }
 
-/* Medium screens - allow 80% width */
-@media (max-width: 1024px) {
-    .search-bar-fixed { 
-        max-width: 80%; 
-    }
-}
-
-/* Small screens - allow 90% width */
-@media (max-width: 768px) {
-    .search-bar-fixed { 
-        max-width: 90%;
-    }
-}
-
-/* Very small screens - almost full width */
-@media (max-width: 500px) {
-    .search-bar-fixed { 
-        max-width: calc(100vw - 20px); 
-    }
-}
-
-/* Allow bar to expand based on content, with min/max constraints */
+/* UNIFIED GLASS BAR */
 #unifiedGlassBar { 
     min-height: 48px;
     height: auto;
-    max-height: 120px; /* Increased from 80px to allow wrapping */
+    max-height: 120px;
     transition: min-height 0.3s ease-out, max-height 0.3s ease-out, padding 0.3s ease-out; 
 }
 
 #standardContent.hidden, #minimumContent.hidden { display: none !important; }
 
-/* Add padding to minimum content for better spacing */
 #minimumContent { 
     padding: 4px 0;
 }
 
-/* Allow pills to wrap if needed */
 #minimumContent .inline-flex {
     flex-wrap: wrap;
     gap: 0.5rem;
@@ -96,99 +73,23 @@ body.modal-open { overflow: hidden; position: relative; touch-action: none; }
 #recommendedRecipes { transition: min-height 0.3s ease-out; position: relative; }
 #recommendedRecipes > div { transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
 
-/* MODAL - Using dvh with --vvh fallback (Solution 3) */
+/* MODAL */
 #recipeModal .absolute.inset-0 { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 #recipeModal .fixed.top-4.right-4 { transition: transform 0.2s ease-out; }
 #recipeModal .fixed.top-4.right-4:active { transform: scale(0.95); }
 #recipeModal .rounded-t-3xl { box-shadow: 0 -20px 40px rgba(0,0,0,0.3), 0 -10px 20px rgba(0,0,0,0.2); }
 
-/* Modal height using dynamic viewport units with fallback */
 #recipeModal .h-\[92vh\] {
     height: 92dvh;
     height: calc(var(--vvh, 1vh) * 92);
 }
 
-/* Fullscreen modal on mobile using dynamic viewport */
 #recipeModal.fixed.inset-0 {
     height: 100dvh;
     height: calc(var(--vvh, 1vh) * 100);
 }
 
-/* DESKTOP MODAL */
-@media (min-width: 901px) {
-    #recipeModal .absolute.inset-0 { max-width: 1280px; margin: 0 auto; }
-}
-
-/* MOBILE RESPONSIVE */
-@media (max-width: 768px) {
-    #filterButtonText { display: none; }
-    #searchInputContainer { min-width: 120px; }
-}
-
-/* RESPONSIVE SEARCH BAR - SMALL SCREENS */
-@media (max-width: 500px) {
-    #searchInputContainer {
-        min-width: 80px !important;
-        flex: 0 1 auto;
-    }
-    
-    #filterPillsContainer .inline-flex {
-        max-width: 80px;
-    }
-    
-    #filterPillsContainer span {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        max-width: 60px;
-    }
-}
-
-/* RESPONSIVE SEARCH BAR - MEDIUM SCREENS */
-@media (min-width: 501px) and (max-width: 768px) {
-    #searchInputContainer {
-        min-width: 120px !important;
-    }
-    
-    #filterPillsContainer .inline-flex {
-        max-width: 100px;
-    }
-}
-
-/* iOS SPECIFIC - Force 16px font size to prevent zoom */
-@supports (-webkit-touch-callout: none) {
-    input[type="text"], input[type="search"], textarea, select { font-size: 16px !important; }
-}
-
-/* iOS PWA MODAL SAFE AREA - Using dynamic viewport height */
-@media screen and (max-width: 900px) {
-    #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div { 
-        padding-top: max(env(safe-area-inset-top), 20px); 
-    }
-    
-    /* Modal content wrapper height */
-    #recipeModal .modal-height-mobile {
-        height: 100dvh;
-        height: calc(var(--vvh, 1vh) * 100);
-    }
-}
-
-/* LANDSCAPE - Adjust for keyboard */
-@media (orientation: landscape) and (max-width: 900px) {
-    .search-bar-fixed { 
-        top: calc(env(safe-area-inset-top, 0px) + 8px); 
-    }
-    
-    /* Adjust modal in landscape to account for smaller viewport height */
-    #recipeModal .h-full {
-        height: 100dvh;
-        height: calc(var(--vvh, 1vh) * 100);
-    }
-}
-
-.text-shadow { text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
-
-/* FARMOR IMAGE EXPANSION */
+/* FARMOR IMAGE */
 .farmor-expanded {
     transform: scale(var(--scale-factor)) !important;
     z-index: 40;
@@ -210,45 +111,153 @@ body.modal-open { overflow: hidden; position: relative; touch-action: none; }
     pointer-events: auto;
 }
 
+/* SIGNATURE */
 .signature-name {
     font-family: 'Kalam', cursive;
     font-weight: 700;
 }
 
-/* KOKEBOK VIEWER - Using dynamic viewport height */
+.text-shadow { text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+
+/* KOKEBOK VIEWER */
 #kokebokViewer {
     height: calc(100dvh - 5rem);
     height: calc((var(--vvh, 1vh) * 100) - 5rem);
 }
 
+/* VIEWPORT UTILITIES */
+.min-h-screen {
+    min-height: 100dvh;
+    min-height: calc(var(--vvh, 1vh) * 100);
+}
+
+.h-screen {
+    height: 100dvh;
+    height: calc(var(--vvh, 1vh) * 100);
+}
+
+/* ============================================================================
+   RESPONSIVE BREAKPOINTS
+   ============================================================================ */
+
+/* WIDE SCREENS - 1024px and up */
+@media (min-width: 1024px) {
+    #unifiedGlassBar {
+        max-width: 56rem; /* 896px */
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* MEDIUM-LARGE SCREENS - 1023px and down */
+@media (max-width: 1023px) {
+    .search-bar-fixed { 
+        max-width: 80%; 
+    }
+}
+
+/* DESKTOP MODAL - 901px and up */
+@media (min-width: 901px) {
+    #recipeModal .absolute.inset-0 { 
+        max-width: 1280px; 
+        margin: 0 auto; 
+    }
+}
+
+/* MOBILE MODAL - 900px and down */
+@media (max-width: 900px) {
+    #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div { 
+        padding-top: max(env(safe-area-inset-top), 20px); 
+    }
+    
+    #recipeModal .modal-height-mobile {
+        height: 100dvh;
+        height: calc(var(--vvh, 1vh) * 100);
+    }
+}
+
+/* TABLET - 768px and down */
+@media (max-width: 768px) {
+    .search-bar-fixed { 
+        max-width: 90%;
+    }
+    
+    #filterButtonText { 
+        display: none; 
+    }
+    
+    #searchInputContainer { 
+        min-width: 120px; 
+    }
+}
+
+/* MEDIUM SCREENS - 501px to 768px */
+@media (min-width: 501px) and (max-width: 768px) {
+    #searchInputContainer {
+        min-width: 120px !important;
+    }
+    
+    #filterPillsContainer .inline-flex {
+        max-width: 100px;
+    }
+}
+
+/* SMALL SCREENS - 500px and down */
+@media (max-width: 500px) {
+    .search-bar-fixed { 
+        max-width: calc(100vw - 20px); 
+    }
+    
+    #searchInputContainer {
+        min-width: 80px !important;
+        flex: 0 1 auto;
+    }
+    
+    #filterPillsContainer .inline-flex {
+        max-width: 80px;
+    }
+    
+    #filterPillsContainer span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 60px;
+    }
+}
+
+/* LANDSCAPE ORIENTATION - Mobile landscape */
 @media (orientation: landscape) and (max-width: 900px) {
+    .search-bar-fixed { 
+        top: calc(env(safe-area-inset-top, 0px) + 8px); 
+    }
+    
+    #recipeModal .h-full {
+        height: 100dvh;
+        height: calc(var(--vvh, 1vh) * 100);
+    }
+    
     #kokebokViewer {
         height: 100dvh;
         height: calc(var(--vvh, 1vh) * 100);
     }
 }
 
-/* MIN-HEIGHT UTILITIES - Using dynamic viewport with fallback */
-.min-h-screen {
-    min-height: 100dvh;
-    min-height: calc(var(--vvh, 1vh) * 100);
-}
-
-/* HEIGHT UTILITIES - Using dynamic viewport with fallback */
-.h-screen {
-    height: 100dvh;
-    height: calc(var(--vvh, 1vh) * 100);
-}
-
-/* iOS SAFARI KEYBOARD FIX - Ensure content respects visual viewport */
+/* IOS SPECIFIC FIXES */
 @supports (-webkit-touch-callout: none) {
-    /* When keyboard is open, use visual viewport height */
+    /* Force 16px font size to prevent zoom */
+    input[type="text"], 
+    input[type="search"], 
+    textarea, 
+    select { 
+        font-size: 16px !important; 
+    }
+    
+    /* Keyboard fix - ensure content respects visual viewport */
     body {
         min-height: 100dvh;
         min-height: calc(var(--vvh, 1vh) * 100);
     }
     
-    /* Fixed elements should respect safe area after keyboard dismissal */
     .search-bar-fixed {
         will-change: transform;
         backface-visibility: hidden;
