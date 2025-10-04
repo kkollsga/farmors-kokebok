@@ -1211,7 +1211,23 @@ class SearchFilterBar {
         // Now transition to fixed
         this.container.classList.add('search-bar-fixed');
         this.state.position = 'fixed';
-        this.state.view = 'expanded';
+        
+        // Check scroll direction to determine initial state
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+        const isScrollingDown = scrollY > this.scrollState.lastY;
+        
+        if (isScrollingDown) {
+            // When scrolling down, start hidden/collapsed
+            this.state.view = 'collapsed';
+            this.container.style.opacity = '0';
+            this.container.style.pointerEvents = 'none';
+        } else {
+            // When scrolling up (edge case), start visible
+            this.state.view = 'expanded';
+            this.container.style.opacity = '1';
+            this.container.style.pointerEvents = '';
+        }
+        
         this.scrollState.accumulator = 0;
     }
 
