@@ -1208,36 +1208,25 @@ class SearchFilterBar {
         // Insert spacer before changing position
         this.container.parentNode.insertBefore(spacer, this.container);
     
-        // Now transition to fixed
+        // Transition to fixed
         this.container.classList.add('search-bar-fixed');
         this.state.position = 'fixed';
+        this.state.view = 'collapsed';
+        this.scrollState.accumulator = 0;
         
-        // Check scroll direction to determine initial state
-        const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
-        const isScrollingDown = scrollY > this.scrollState.lastY;
+        // Determine initial visibility based on content
         const hasContent = this.hasActiveContent();
         
-        if (isScrollingDown) {
-            if (hasContent) {
-                // When scrolling down with filters/search, show minimum view
-                this.state.view = 'collapsed';
-                this.container.style.opacity = '1';
-                this.container.style.pointerEvents = '';
-                this.showMinimumContent();
-            } else {
-                // When scrolling down without content, hide completely
-                this.state.view = 'collapsed';
-                this.container.style.opacity = '0';
-                this.container.style.pointerEvents = 'none';
-            }
-        } else {
-            // When scrolling up, start visible/expanded
-            this.state.view = 'expanded';
+        if (hasContent) {
+            // Has filters/search → show minimum view
             this.container.style.opacity = '1';
             this.container.style.pointerEvents = '';
+            this.showMinimumContent();
+        } else {
+            // No content → hide completely
+            this.container.style.opacity = '0';
+            this.container.style.pointerEvents = 'none';
         }
-        
-        this.scrollState.accumulator = 0;
     }
 
     transitionToStandard() {
