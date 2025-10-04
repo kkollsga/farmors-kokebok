@@ -55,11 +55,23 @@ body.modal-open { overflow: hidden; position: relative; touch-action: none; }
 #recommendedRecipes { transition: min-height 0.3s ease-out; position: relative; }
 #recommendedRecipes > div { transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
 
-/* MODAL */
+/* MODAL - Using dvh with --vvh fallback (Solution 3) */
 #recipeModal .absolute.inset-0 { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 #recipeModal .fixed.top-4.right-4 { transition: transform 0.2s ease-out; }
 #recipeModal .fixed.top-4.right-4:active { transform: scale(0.95); }
 #recipeModal .rounded-t-3xl { box-shadow: 0 -20px 40px rgba(0,0,0,0.3), 0 -10px 20px rgba(0,0,0,0.2); }
+
+/* Modal height using dynamic viewport units with fallback */
+#recipeModal .h-\[92vh\] {
+    height: 92dvh;
+    height: calc(var(--vvh, 1vh) * 92);
+}
+
+/* Fullscreen modal on mobile using dynamic viewport */
+#recipeModal.fixed.inset-0 {
+    height: 100dvh;
+    height: calc(var(--vvh, 1vh) * 100);
+}
 
 /* DESKTOP MODAL */
 @media (min-width: 901px) {
@@ -69,13 +81,12 @@ body.modal-open { overflow: hidden; position: relative; touch-action: none; }
 /* MOBILE RESPONSIVE */
 @media (max-width: 768px) {
     #filterButtonText { display: none; }
-    #searchInputContainer { min-width: 120px; } /* Reduced from 200px */
+    #searchInputContainer { min-width: 120px; }
     .search-bar-fixed { max-width: calc(100vw - 20px); }
 }
 
 /* RESPONSIVE SEARCH BAR - SMALL SCREENS */
 @media (max-width: 500px) {
-    /* Apply to both standard and fixed positions */
     #searchInputContainer {
         min-width: 80px !important;
         flex: 0 1 auto;
@@ -104,21 +115,35 @@ body.modal-open { overflow: hidden; position: relative; touch-action: none; }
     }
 }
 
-/* iOS SPECIFIC */
+/* iOS SPECIFIC - Force 16px font size to prevent zoom */
 @supports (-webkit-touch-callout: none) {
     input[type="text"], input[type="search"], textarea, select { font-size: 16px !important; }
 }
 
-/* iOS PWA MODAL SAFE AREA */
+/* iOS PWA MODAL SAFE AREA - Using dynamic viewport height */
 @media screen and (max-width: 900px) {
     #recipeModal.fixed.inset-0.z-50:not(.bg-black) > div { 
         padding-top: max(env(safe-area-inset-top), 20px); 
     }
+    
+    /* Modal content wrapper height */
+    #recipeModal .modal-height-mobile {
+        height: 100dvh;
+        height: calc(var(--vvh, 1vh) * 100);
+    }
 }
 
-/* LANDSCAPE */
+/* LANDSCAPE - Adjust for keyboard */
 @media (orientation: landscape) and (max-width: 900px) {
-    .search-bar-fixed { top: calc(env(safe-area-inset-top, 0px) + 8px); }
+    .search-bar-fixed { 
+        top: calc(env(safe-area-inset-top, 0px) + 8px); 
+    }
+    
+    /* Adjust modal in landscape to account for smaller viewport height */
+    #recipeModal .h-full {
+        height: 100dvh;
+        height: calc(var(--vvh, 1vh) * 100);
+    }
 }
 
 .text-shadow { text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
@@ -148,4 +173,44 @@ body.modal-open { overflow: hidden; position: relative; touch-action: none; }
 .signature-name {
     font-family: 'Kalam', cursive;
     font-weight: 700;
+}
+
+/* KOKEBOK VIEWER - Using dynamic viewport height */
+#kokebokViewer {
+    height: calc(100dvh - 5rem);
+    height: calc((var(--vvh, 1vh) * 100) - 5rem);
+}
+
+@media (orientation: landscape) and (max-width: 900px) {
+    #kokebokViewer {
+        height: 100dvh;
+        height: calc(var(--vvh, 1vh) * 100);
+    }
+}
+
+/* MIN-HEIGHT UTILITIES - Using dynamic viewport with fallback */
+.min-h-screen {
+    min-height: 100dvh;
+    min-height: calc(var(--vvh, 1vh) * 100);
+}
+
+/* HEIGHT UTILITIES - Using dynamic viewport with fallback */
+.h-screen {
+    height: 100dvh;
+    height: calc(var(--vvh, 1vh) * 100);
+}
+
+/* iOS SAFARI KEYBOARD FIX - Ensure content respects visual viewport */
+@supports (-webkit-touch-callout: none) {
+    /* When keyboard is open, use visual viewport height */
+    body {
+        min-height: 100dvh;
+        min-height: calc(var(--vvh, 1vh) * 100);
+    }
+    
+    /* Fixed elements should respect safe area after keyboard dismissal */
+    .search-bar-fixed {
+        will-change: transform;
+        backface-visibility: hidden;
+    }
 }

@@ -1032,10 +1032,6 @@ class FilterManager {
 }
 
 // ============================================================================
-// SEARCH FILTER BAR CLASS (iOS-style unified component)
-// ============================================================================
-
-// ============================================================================
 // SEARCH FILTER BAR CLASS (Simplified - iOS-style unified component)
 // ============================================================================
 
@@ -1046,14 +1042,14 @@ class SearchFilterBar {
 
         // Simplified configuration
         this.config = {
-            scrollThreshold: 50, // Pixels to trigger collapse/expand
+            scrollThreshold: 50,
             debounceDelay: 10
         };
 
         // State management
         this.state = {
-            position: 'standard', // 'standard' | 'fixed'
-            view: 'expanded',     // 'expanded' | 'collapsed'
+            position: 'standard',
+            view: 'expanded',
         };
 
         // Scroll tracking
@@ -1067,6 +1063,12 @@ class SearchFilterBar {
         this.searchQuery = '';
         this.showFilterMenu = false;
         this.showActiveFiltersMenu = false;
+
+        // Viewport tracking (Solution 3)
+        this.viewportUpdateTimer = null;
+
+        // Keyboard handler tracking (Solution 1)
+        this.keyboardKickTimer = null;
 
         // DOM element references
         this.container = document.getElementById('searchFilterContainer');
@@ -1085,8 +1087,56 @@ class SearchFilterBar {
     }
 
     initialize() {
+        this.setupViewportTracking();
+        this.setupKeyboardHandler();
         this.setupEventListeners();
         this.updateDisplay();
+    }
+
+    // ============================================
+    // SOLUTION 3: VIEWPORT HEIGHT TRACKING
+    // ============================================
+    setupViewportTracking() {
+        const updateVH = () => {
+            clearTimeout(this.viewportUpdateTimer);
+            this.viewportUpdateTimer = setTimeout(() => {
+                const vh = window.visualViewport?.height || window.innerHeight;
+                document.documentElement.style.setProperty('--vvh', `${vh * 0.01}px`);
+            }, 16); // ~60fps debounce
+        };
+        
+        updateVH();
+        
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', updateVH);
+        }
+        window.addEventListener('resize', updateVH);
+    }
+
+    // ============================================
+    // SOLUTION 1: KEYBOARD HANDLER WITH FORCED REFLOW
+    // ============================================
+    setupKeyboardHandler() {
+        if (!window.visualViewport) return;
+        
+        const kickLayout = () => {
+            cancelAnimationFrame(this.keyboardKickTimer);
+            this.keyboardKickTimer = requestAnimationFrame(() => {
+                // Update viewport height variable
+                const vvh = window.visualViewport?.height || window.innerHeight;
+                document.documentElement.style.setProperty('--vvh', `${vvh * 0.01}px`);
+                
+                // Force repaint when in fixed position (fixes notch slip bug)
+                if (this.state.position === 'fixed' && this.container) {
+                    const currentTop = this.container.style.top;
+                    this.container.style.top = 'calc(env(safe-area-inset-top, 0px) + 13px)';
+                    void this.container.offsetHeight; // Trigger reflow
+                    this.container.style.top = currentTop || 'calc(env(safe-area-inset-top, 0px) + 12px)';
+                }
+            });
+        };
+        
+        window.visualViewport.addEventListener('resize', kickLayout);
     }
 
     // ============================================
@@ -1107,60 +1157,49 @@ class SearchFilterBar {
         const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
         const scrollDelta = scrollY - this.scrollState.lastY;
         
-        // Define threshold for position transitions (pixels)
         const POSITION_THRESHOLD = 20;
         
-        // Determine if we should be fixed based on current state and threshold
         let shouldBeFixed = false;
         
         if (this.state.position === 'standard') {
-            // When standard, check if container has scrolled past threshold
             const containerRect = this.container.getBoundingClientRect();
             shouldBeFixed = containerRect.top < -POSITION_THRESHOLD;
         } else {
-            // When fixed, check if we've scrolled back above threshold
             const spacer = document.getElementById('searchBarSpacer');
             if (spacer) {
                 const spacerRect = spacer.getBoundingClientRect();
-                // Return to standard only when spacer is clearly visible again
                 shouldBeFixed = spacerRect.bottom < POSITION_THRESHOLD;
             } else {
                 shouldBeFixed = true;
             }
         }
         
-        // Handle position changes (standard <-> fixed)
         if (this.state.position === 'standard' && shouldBeFixed) {
             this.transitionToFixed();
         } else if (this.state.position === 'fixed' && !shouldBeFixed) {
             this.transitionToStandard();
         }
     
-        // Handle view changes when fixed
         if (this.state.position === 'fixed') {
             const hasContent = this.hasActiveContent();
             this.scrollState.accumulator += scrollDelta;
     
-            // Check thresholds
             if (this.state.view === 'expanded' && this.scrollState.accumulator > this.config.scrollThreshold) {
                 if (hasContent) {
                     this.setCollapsedView();
                 } else {
-                    // No content - hide immediately
                     this.state.view = 'collapsed';
                     this.container.style.opacity = '0';
                     this.container.style.pointerEvents = 'none';
                 }
                 this.scrollState.accumulator = 0;
             } else if (this.state.view === 'collapsed' && this.scrollState.accumulator < -this.config.scrollThreshold) {
-                // Show the bar when scrolling up
                 this.container.style.opacity = '1';
                 this.container.style.pointerEvents = '';
                 this.setExpandedView();
                 this.scrollState.accumulator = 0;
             }
     
-            // Reset accumulator on direction change
             if ((scrollDelta > 0 && this.scrollState.accumulator < 0) || 
                 (scrollDelta < 0 && this.scrollState.accumulator > 0)) {
                 this.scrollState.accumulator = scrollDelta;
@@ -1193,37 +1232,30 @@ class SearchFilterBar {
     transitionToFixed() {
         if (this.state.position === 'fixed') return;
     
-        // Get current height before transitioning
         const containerHeight = this.container.offsetHeight;
         const computedStyle = window.getComputedStyle(this.container);
         const marginTop = parseFloat(computedStyle.marginTop) || 0;
         const marginBottom = parseFloat(computedStyle.marginBottom) || 0;
         const totalHeight = containerHeight + marginTop + marginBottom;
     
-        // Create spacer to prevent content shift
         const spacer = document.createElement('div');
         spacer.id = 'searchBarSpacer';
         spacer.style.cssText = `height: ${totalHeight}px; margin: 0; padding: 0; visibility: hidden;`;
         
-        // Insert spacer before changing position
         this.container.parentNode.insertBefore(spacer, this.container);
     
-        // Transition to fixed
         this.container.classList.add('search-bar-fixed');
         this.state.position = 'fixed';
         this.state.view = 'collapsed';
         this.scrollState.accumulator = 0;
         
-        // Determine initial visibility based on content
         const hasContent = this.hasActiveContent();
         
         if (hasContent) {
-            // Has filters/search → show minimum view
             this.container.style.opacity = '1';
             this.container.style.pointerEvents = '';
             this.showMinimumContent();
         } else {
-            // No content → hide completely
             this.container.style.opacity = '0';
             this.container.style.pointerEvents = 'none';
         }
@@ -1232,19 +1264,16 @@ class SearchFilterBar {
     transitionToStandard() {
         if (this.state.position === 'standard') return;
     
-        // Remove spacer
         const spacer = document.getElementById('searchBarSpacer');
         if (spacer) {
             spacer.remove();
         }
     
-        // Remove fixed class
         this.container.classList.remove('search-bar-fixed');
         this.state.position = 'standard';
         this.state.view = 'expanded';
         this.scrollState.accumulator = 0;
         
-        // Ensure visibility
         this.container.style.opacity = '';
         this.container.style.pointerEvents = '';
         
@@ -1313,7 +1342,6 @@ class SearchFilterBar {
         const hasFilters = this.filterManager.activeFilters.size > 0;
         const filterCount = this.filterManager.activeFilters.size;
 
-        // Hide all pills first
         this.searchPill.classList.add('hidden');
         this.filterPill.classList.add('hidden');
         this.filterCounter.classList.add('hidden');
@@ -1404,10 +1432,8 @@ class SearchFilterBar {
     // EVENT LISTENERS
     // ============================================
     setupEventListeners() {
-        // Setup scroll listener for search bar transitions
         this.setupScrollListener();
 
-        // Search input
         if (this.searchInput) {
             this.searchInput.addEventListener('input', (e) => {
                 const query = e.target.value.trim().toLowerCase();
@@ -1423,21 +1449,18 @@ class SearchFilterBar {
             });
         }
 
-        // Clear search button
         if (this.clearSearchBtn) {
             this.clearSearchBtn.addEventListener('click', () => {
                 this.clearSearch();
             });
         }
 
-        // Filter button
         if (this.filterButton) {
             this.filterButton.addEventListener('click', () => {
                 this.toggleFilterMenu();
             });
         }
 
-        // Clear search/filter pills
         document.addEventListener('click', (e) => {
             if (e.target.closest('#clearSearchPill')) {
                 this.clearSearch();
@@ -1447,14 +1470,12 @@ class SearchFilterBar {
             }
         });
 
-        // Filter counter click
         document.addEventListener('click', (e) => {
             if (e.target.closest('#filterCounter')) {
                 this.toggleActiveFiltersMenu();
             }
         });
 
-        // Click outside to close menus
         document.addEventListener('click', (e) => {
             if (!this.container?.contains(e.target)) {
                 this.closeAllMenus();
@@ -1583,7 +1604,6 @@ class SearchFilterBar {
                 <div class="p-2">
         `;
 
-        // Categories
         if (filters.categories && filters.categories.length > 0) {
             html += `<div class="mb-3">
                 <button onclick="this.parentNode.querySelector('.filter-section-content').classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
@@ -1606,7 +1626,6 @@ class SearchFilterBar {
             html += `</div></div>`;
         }
 
-        // Meals
         if (filters.meals && filters.meals.length > 0) {
             html += `<div class="mb-3">
                 <button onclick="this.parentNode.querySelector('.filter-section-content').classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
@@ -1629,7 +1648,6 @@ class SearchFilterBar {
             html += `</div></div>`;
         }
 
-        // Cuisines
         if (filters.cuisines && filters.cuisines.length > 0) {
             html += `<div class="mb-3">
                 <button onclick="this.parentNode.querySelector('.filter-section-content').classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('rotate-180')"
@@ -2670,6 +2688,11 @@ class ModalManager {
         this.pendingTimeouts = [];
         this.recommendationUpdateTimeout = null;
 
+        // Viewport tracking
+        this.viewportUpdateTimer = null;
+        this.visualViewportListener = null;
+        this.viewportTrackingSetup = false;
+
         this.boundHandlers = {
             modalClick: null,
             resize: null,
@@ -2686,6 +2709,12 @@ class ModalManager {
     }
 
     setupEventListeners() {
+        // Setup viewport tracking once
+        if (!this.viewportTrackingSetup) {
+            this.setupViewportTracking();
+            this.viewportTrackingSetup = true;
+        }
+
         this.boundHandlers.modalClick = (e) => {
             const currentlyFullscreen = window.innerWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
             if (!currentlyFullscreen) {
@@ -2699,28 +2728,27 @@ class ModalManager {
         document.getElementById('recipeModal').addEventListener('click', this.boundHandlers.modalClick);
         
         this.boundHandlers.resize = () => {
-        if (this.currentRecipeId) {
-            clearTimeout(this.boundHandlers.resizeTimer);
-            this.boundHandlers.resizeTimer = setTimeout(() => {
-                this.updateModalLayout();
-                
-                const windowWidth = window.innerWidth;
-                const newIsFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
-                const newIsMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
-                const newIsNarrowWidth = windowWidth >= 700 && windowWidth <= 1000;
-                
-                // Check if any breakpoint was crossed
-                if (newIsFullscreen !== this.isFullscreen || 
-                    newIsMobileLayout !== this.isMobileLayout ||
-                    newIsNarrowWidth !== this.isNarrowWidth) {
-                    this.isFullscreen = newIsFullscreen;
-                    this.isMobileLayout = newIsMobileLayout;
-                    this.isNarrowWidth = newIsNarrowWidth;
-                    this.updateModalContent();
-                }
-            }, 250);
-        }
-    };
+            if (this.currentRecipeId) {
+                clearTimeout(this.boundHandlers.resizeTimer);
+                this.boundHandlers.resizeTimer = setTimeout(() => {
+                    this.updateModalLayout();
+                    
+                    const windowWidth = window.innerWidth;
+                    const newIsFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
+                    const newIsMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
+                    const newIsNarrowWidth = windowWidth >= 700 && windowWidth <= 1000;
+                    
+                    if (newIsFullscreen !== this.isFullscreen || 
+                        newIsMobileLayout !== this.isMobileLayout ||
+                        newIsNarrowWidth !== this.isNarrowWidth) {
+                        this.isFullscreen = newIsFullscreen;
+                        this.isMobileLayout = newIsMobileLayout;
+                        this.isNarrowWidth = newIsNarrowWidth;
+                        this.updateModalContent();
+                    }
+                }, 250);
+            }
+        };
         
         this.boundHandlers.orientationchange = (e) => {
             if (this.currentRecipeId) {
@@ -2742,11 +2770,29 @@ class ModalManager {
         window.addEventListener('orientationchange', this.boundHandlers.orientationchange);
     }
 
+    setupViewportTracking() {
+        const updateVH = () => {
+            clearTimeout(this.viewportUpdateTimer);
+            this.viewportUpdateTimer = setTimeout(() => {
+                const vh = window.visualViewport?.height || window.innerHeight;
+                document.documentElement.style.setProperty('--vvh', `${vh * 0.01}px`);
+            }, 16);
+        };
+        
+        updateVH();
+        
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', updateVH);
+        }
+        window.addEventListener('resize', updateVH);
+    }
+
     cleanupEventListeners() {
         clearTimeout(this.boundHandlers.resizeTimer);
         clearTimeout(this.boundHandlers.orientationTimer);
+        clearTimeout(this.viewportUpdateTimer);
 
-        // Cleanup visual viewport listener
+        // Cleanup iOS-specific visual viewport listener
         if (this.visualViewportListener && window.visualViewport) {
             window.visualViewport.removeEventListener('resize', this.visualViewportListener);
             this.visualViewportListener = null;
@@ -2799,7 +2845,6 @@ class ModalManager {
         this.pendingTimeouts = [];
     }
 
-
     clearStepsForRecipe(recipeId) {
         Array.from(this.completedSteps.keys()).forEach(key => {
             if (key.startsWith(recipeId + '-')) {
@@ -2817,7 +2862,6 @@ class ModalManager {
 
         this.currentRecipeId = recipeId;
 
-        // Initialize layout states
         const windowWidth = window.innerWidth;
         this.isFullscreen = windowWidth <= CONFIG.BREAKPOINTS.FULLSCREEN_MODAL;
         this.isMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
@@ -2854,15 +2898,12 @@ class ModalManager {
         requestAnimationFrame(() => {
             this.updateModalContent();
 
-            // Track view with delayed update (trackView handles the 10s delay and resort)
             this.userDataManager.trackView(recipeId);
-
-            // Update recommendation scores since viewing affects recommendations
             this.recommendationEngine.updateScoreForRecipe(recipeId);
 
             this.addPendingTimeout(() => {
                 if (this.urlManager && !skipURLUpdate) {
-                    this.urlManager.updateURL(); // Use pushState so modal opening is in history
+                    this.urlManager.updateURL();
                 }
             });
         });
@@ -2884,9 +2925,8 @@ class ModalManager {
             if (flexContainer) {
                 flexContainer.className = 'h-full';
                 if (isIOS && isPortrait) {
-                    // Force reflow to ensure safe area is applied correctly
                     flexContainer.style.paddingTop = '';
-                    void flexContainer.offsetHeight; // Trigger reflow
+                    void flexContainer.offsetHeight;
                     flexContainer.style.paddingTop = 'env(safe-area-inset-top, 0)';
                 } else {
                     flexContainer.style.paddingTop = '';
@@ -2906,12 +2946,15 @@ class ModalManager {
             }
         }
 
-        // Setup visual viewport listener for iOS keyboard handling
+        // Setup iOS-specific keyboard listener (only once)
         if (isIOS && window.visualViewport && !this.visualViewportListener) {
             this.visualViewportListener = () => {
-                // iOS Safari bug fix: force scroll/layout update when keyboard dismisses
                 const currentScroll = window.scrollY;
                 window.scrollTo(0, currentScroll);
+                
+                // Update viewport height when keyboard changes
+                const vh = window.visualViewport?.height || window.innerHeight;
+                document.documentElement.style.setProperty('--vvh', `${vh * 0.01}px`);
             };
             window.visualViewport.addEventListener('resize', this.visualViewportListener);
         }
@@ -2987,19 +3030,16 @@ class ModalManager {
         
         const windowWidth = window.innerWidth;
         const isMobileLayout = windowWidth <= CONFIG.BREAKPOINTS.SINGLE_COLUMN;
-        const isNarrowWidth = windowWidth >= 700 && windowWidth <= 1000; // Add this line
+        const isNarrowWidth = windowWidth >= 700 && windowWidth <= 1000;
         
         modalWrapper.innerHTML = `
             <div class="relative w-full h-full">
                 ${this.generateHeroSection(recipeWithUserData)}
                 ${this.generateCloseButton()}
 
-                <!-- Scrollable content -->
                 <div id="scrollableContent" class="absolute inset-0 overflow-y-auto z-10">
-                    <!-- Invisible spacer -->
                     <div class="${isMobileLayout ? 'h-48' : 'h-72'} pointer-events-none"></div>
 
-                    <!-- Actual content -->
                     <div class="min-h-full bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
                         ${
                             isMobileLayout 
@@ -3009,7 +3049,6 @@ class ModalManager {
                     </div>        
                 </div>
 
-                <!-- Category button with adjusted left position for narrow desktop -->
                 <div class="absolute top-4 left-4 z-0">
                     ${this.generateCategoryButton(recipeWithUserData)}
                 </div>
@@ -3409,9 +3448,7 @@ class ModalManager {
         modal.classList.add('hidden');
 
         if (this.urlManager && !skipURLUpdate) {
-            // Use pushState to create new history entry when manually closing
-            // This allows back/forward navigation to work correctly
-            this.urlManager.updateURL(false); // false = use pushState, not replaceState
+            this.urlManager.updateURL(false);
         }
 
         document.body.classList.remove('modal-open');
