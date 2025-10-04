@@ -1174,8 +1174,23 @@ class SearchFilterBar {
     // ============================================
     transitionToFixed() {
         if (this.state.position === 'fixed') return;
-
-        // Simple transition - just add the class
+    
+        // Get current height before transitioning
+        const containerHeight = this.container.offsetHeight;
+        const computedStyle = window.getComputedStyle(this.container);
+        const marginTop = parseFloat(computedStyle.marginTop) || 0;
+        const marginBottom = parseFloat(computedStyle.marginBottom) || 0;
+        const totalHeight = containerHeight + marginTop + marginBottom;
+    
+        // Create spacer to prevent content shift
+        const spacer = document.createElement('div');
+        spacer.id = 'searchBarSpacer';
+        spacer.style.cssText = `height: ${totalHeight}px; margin: 0; padding: 0; visibility: hidden;`;
+        
+        // Insert spacer before changing position
+        this.container.parentNode.insertBefore(spacer, this.container);
+    
+        // Now transition to fixed
         this.container.classList.add('search-bar-fixed');
         this.state.position = 'fixed';
         this.state.view = 'expanded';
@@ -1184,7 +1199,13 @@ class SearchFilterBar {
 
     transitionToStandard() {
         if (this.state.position === 'standard') return;
-
+    
+        // Remove spacer
+        const spacer = document.getElementById('searchBarSpacer');
+        if (spacer) {
+            spacer.remove();
+        }
+    
         // Remove fixed class
         this.container.classList.remove('search-bar-fixed');
         this.state.position = 'standard';
