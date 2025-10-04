@@ -1215,14 +1215,23 @@ class SearchFilterBar {
         // Check scroll direction to determine initial state
         const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
         const isScrollingDown = scrollY > this.scrollState.lastY;
+        const hasContent = this.hasActiveContent();
         
         if (isScrollingDown) {
-            // When scrolling down, start hidden/collapsed
-            this.state.view = 'collapsed';
-            this.container.style.opacity = '0';
-            this.container.style.pointerEvents = 'none';
+            if (hasContent) {
+                // When scrolling down with filters/search, show minimum view
+                this.state.view = 'collapsed';
+                this.container.style.opacity = '1';
+                this.container.style.pointerEvents = '';
+                this.showMinimumContent();
+            } else {
+                // When scrolling down without content, hide completely
+                this.state.view = 'collapsed';
+                this.container.style.opacity = '0';
+                this.container.style.pointerEvents = 'none';
+            }
         } else {
-            // When scrolling up (edge case), start visible
+            // When scrolling up, start visible/expanded
             this.state.view = 'expanded';
             this.container.style.opacity = '1';
             this.container.style.pointerEvents = '';
