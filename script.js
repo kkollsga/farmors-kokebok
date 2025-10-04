@@ -1107,9 +1107,27 @@ class SearchFilterBar {
         const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
         const scrollDelta = scrollY - this.scrollState.lastY;
         
-        // Get container position to determine if we should be fixed
-        const containerRect = this.container.getBoundingClientRect();
-        const shouldBeFixed = containerRect.top < 0;
+        // Define threshold for position transitions (pixels)
+        const POSITION_THRESHOLD = 20;
+        
+        // Determine if we should be fixed based on current state and threshold
+        let shouldBeFixed = false;
+        
+        if (this.state.position === 'standard') {
+            // When standard, check if container has scrolled past threshold
+            const containerRect = this.container.getBoundingClientRect();
+            shouldBeFixed = containerRect.top < -POSITION_THRESHOLD;
+        } else {
+            // When fixed, check if we've scrolled back above threshold
+            const spacer = document.getElementById('searchBarSpacer');
+            if (spacer) {
+                const spacerRect = spacer.getBoundingClientRect();
+                // Return to standard only when spacer is clearly visible again
+                shouldBeFixed = spacerRect.bottom < POSITION_THRESHOLD;
+            } else {
+                shouldBeFixed = true;
+            }
+        }
         
         // Handle position changes (standard <-> fixed)
         if (this.state.position === 'standard' && shouldBeFixed) {
@@ -1117,12 +1135,12 @@ class SearchFilterBar {
         } else if (this.state.position === 'fixed' && !shouldBeFixed) {
             this.transitionToStandard();
         }
-
+    
         // Handle view changes when fixed
         if (this.state.position === 'fixed') {
             const hasContent = this.hasActiveContent();
             this.scrollState.accumulator += scrollDelta;
-
+    
             // Check thresholds
             if (this.state.view === 'expanded' && this.scrollState.accumulator > this.config.scrollThreshold) {
                 if (hasContent) {
@@ -1141,14 +1159,14 @@ class SearchFilterBar {
                 this.setExpandedView();
                 this.scrollState.accumulator = 0;
             }
-
+    
             // Reset accumulator on direction change
             if ((scrollDelta > 0 && this.scrollState.accumulator < 0) || 
                 (scrollDelta < 0 && this.scrollState.accumulator > 0)) {
                 this.scrollState.accumulator = scrollDelta;
             }
         }
-
+    
         this.scrollState.lastY = scrollY;
     }
 
