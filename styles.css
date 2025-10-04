@@ -21,9 +21,27 @@ body.modal-open { overflow: hidden; position: relative; touch-action: none; }
     transform: translateX(-50%); 
     z-index: 50; 
 }
-#unifiedGlassBar { transition: width 0.3s ease-out, height 0.3s ease-out, padding 0.3s ease-out; }
+
+/* Allow bar to expand based on content, with min/max constraints */
+#unifiedGlassBar { 
+    min-height: 48px;
+    height: auto;
+    max-height: 80px;
+    transition: min-height 0.3s ease-out, max-height 0.3s ease-out, padding 0.3s ease-out; 
+}
+
 #standardContent.hidden, #minimumContent.hidden { display: none !important; }
-#minimumContent { padding: 0; }
+
+/* Add padding to minimum content for better spacing */
+#minimumContent { 
+    padding: 4px 0;
+}
+
+/* Allow pills to wrap if needed */
+#minimumContent .inline-flex {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
 
 /* FILTER DROPDOWN */
 #filterOptions { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
